@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: arc-reimagined
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
