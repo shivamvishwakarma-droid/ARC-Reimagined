@@ -2,10 +2,262 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=ARC-Concepts-Doc/ARC-FMS-Detailed-Walkthrough.html">
-<title>ARC Reimagined</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Detailed Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#26262e;--muted:#7a7f8c;--line:#e7e7ef;--bg:#f6f6fb;--blue:#2f5bff;--blue-soft:#eef2ff;--indigo:#5b3df5;--good:#1a9d5a;--bad:#d1425a;--warn:#d9822b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+  a{color:var(--blue);text-decoration:none}
+  .layout{display:flex;max-width:1180px;margin:0 auto}
+  /* sticky TOC */
+  .toc{width:252px;flex:none;position:sticky;top:0;height:100vh;overflow-y:auto;padding:16px 14px;background:linear-gradient(180deg,#efe9f6,#f4eff9);display:flex;flex-direction:column}
+  .toc .brand{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px 13px;box-shadow:0 2px 8px rgba(80,50,90,.06);margin-bottom:4px}
+  .toc .brand .lg{width:36px;height:36px;border-radius:9px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;font-size:16px;color:var(--indigo)}
+  .toc .brand .lg img{width:30px;height:30px}
+  .toc .brand b{font-size:15px}
+  .toc .mm{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#9a90a6;font-weight:600;margin:12px 10px 6px}
+  .toc a{display:flex;align-items:center;color:#3a3340;font-size:13.5px;padding:9px 13px;border-radius:11px;margin-bottom:2px;font-weight:500;position:relative}
+  .toc a:hover{background:rgba(255,255,255,.6)}
+  .toc a.on{background:#fff;font-weight:600;box-shadow:0 2px 6px rgba(80,40,60,.08)}
+  .toc a.on::before{content:"";position:absolute;left:-14px;top:9px;bottom:9px;width:4px;background:var(--blue);border-radius:0 3px 3px 0}
+  .toc a.lone{font-weight:600}
+  .toc .par{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:#7a6f82;font-weight:600;padding:10px 11px;cursor:pointer;border-radius:10px;margin-top:8px}
+  .toc .par:hover{background:rgba(255,255,255,.55)}
+  .toc .par .cr{font-size:9px;transition:transform .15s;color:#a99fb2}
+  .toc .par.exp .cr{transform:rotate(90deg)}
+  .toc .kids{display:none;margin:1px 0 2px 16px;padding-left:8px;border-left:1.5px solid #e3ddec}
+  .toc .kids.exp{display:block}
+  .toc .kids a{font-size:13px;padding:8px 12px}
+  .toc .kids a.on::before{left:-9px;top:8px;bottom:8px}
+  .toc .home{margin-top:auto;padding-top:12px}
+  .toc .home a{justify-content:center;background:#fff;font-weight:600;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+  .toc .home a.on::before{display:none}
+
+  .doc{flex:1;min-width:0;padding:34px 40px 90px;background:#fff;border-right:1px solid var(--line)}
+  .cover{background:linear-gradient(120deg,#e5cbd5,#eddbe3);color:#3a2230;border-radius:18px;padding:34px 38px;margin-bottom:30px}
+  .cover .kick{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#8a5a72;margin:0 0 6px}
+  .cover h1{margin:0 0 8px;font-size:29px;color:#3a2230}
+  .cover p{margin:0;color:#5a4550;font-size:14.5px}
+  .cover p b{color:#3a2230}
+  .cover .about{margin-top:16px;display:grid;gap:14px}
+  .cover .ab{font-size:13.5px;color:#5a4550;line-height:1.6}
+  .cover .ab b{display:block;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:#8a5a72;margin-bottom:3px;font-weight:700}
+  .cover .ab i{color:#3a2230;font-style:normal;font-weight:600}
+
+  h2.sec{font-size:23px;margin:46px 0 4px;padding-top:14px;border-top:2px solid var(--line)}
+  .secd{color:var(--muted);margin:0 0 8px;font-size:14px}
+  h3.step{font-size:18px;margin:30px 0 2px;display:flex;align-items:center;gap:10px}
+  .tag{font-size:9.5px;font-weight:700;letter-spacing:.4px;border-radius:5px;padding:2px 8px;text-transform:uppercase}
+  .tag.new{background:var(--blue-soft);color:var(--blue)} .tag.ux{background:#e7f7ee;color:var(--good)} .tag.ai{background:#efe9fb;color:var(--indigo)} .tag.bug{background:#fdeaea;color:var(--bad)}
+  .lead{font-size:14px}
+  .lbl{font-weight:600;color:#333}
+  .open{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px;margin:6px 0 4px}
+
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
+  .single{margin:14px 0}
+  .box{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fbfbfe}
+  .box .h{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:8px 12px}
+  .box.b .h{background:#fdeaea;color:var(--bad)} .box.a .h{background:#e7f7ee;color:var(--good)} .box.n .h{background:var(--blue-soft);color:var(--blue)}
+  .box img{width:100%;display:block;border-top:1px solid var(--line)}
+  .cap{font-size:12px;color:var(--muted);margin-top:6px}
+  @media(max-width:820px){.ba{grid-template-columns:1fr}.toc{display:none}}
+  .callout{background:#fff8ee;border:1px solid #ffe0b8;border-radius:12px;padding:14px 16px;margin:16px 0;font-size:13.5px;color:#8a5a1c}
+  .callout b{color:#6b4210}
+  ul.tight{margin:8px 0;padding-left:20px} ul.tight li{margin:3px 0;font-size:13.5px}
+  .foot{margin-top:50px;font-size:12px;color:var(--muted);text-align:center}
+</style>
 </head>
 <body>
-<p>Redirecting to the <a href="ARC-Concepts-Doc/ARC-FMS-Detailed-Walkthrough.html">ARC-FMS Detailed Walkthrough</a>…</p>
+<div class="layout">
+  <nav class="toc">
+    <div class="brand"><div class="lg"><img src="ARC-Transactions-Concepts/02-Student-Payment-Lookup/gq-logo.png" onerror="this.parentNode.textContent='◎'"></div><b>ARC-FMS</b></div>
+    <div class="mm">Main Menu</div>
+    <a class="lone" href="#cover">🏠 Overview</a>
+    <div class="node"><div class="par" data-tgt="n1"><span class="cr">▶</span>1 · GILE Navigation</div>
+      <div class="kids" id="n1"><a href="#gile">The problem</a><a href="#s-yah">You-Are-Here</a><a href="#s-bar">Persistent bar</a><a href="#s-search">Smart search</a><a href="#s-saved">Saved views</a><a href="#s-tree">Tree drill-down</a></div></div>
+    <div class="node"><div class="par" data-tgt="n2"><span class="cr">▶</span>2 · Stats</div>
+      <div class="kids" id="n2"><a href="#s-feehdr">Fee-header collection</a><a href="#s-worklist">Defaulter worklist</a><a href="#s-reminder">Payment reminder</a></div></div>
+    <div class="node"><div class="par" data-tgt="n3"><span class="cr">▶</span>3 · Institute</div>
+      <div class="kids" id="n3"><a href="#s-clone">Clone AY setup</a></div></div>
+    <div class="node"><div class="par" data-tgt="n4"><span class="cr">▶</span>4 · Transactions</div>
+      <div class="kids" id="n4"><a href="#s-breakup">Fee breakup</a><a href="#s-lookup">Student lookup + receipt</a></div></div>
+    <div class="node"><div class="par" data-tgt="n5"><span class="cr">▶</span>5 · Reports</div>
+      <div class="kids" id="n5"><a href="#s-report">Custom report</a></div></div>
+    <div class="node"><div class="par" data-tgt="n6"><span class="cr">▶</span>6 · AI Assistant</div>
+      <div class="kids" id="n6"><a href="#s-bot">Assistant</a><a href="#s-paylink">↳ action example</a><a href="#s-assist">Financial Assistance</a></div></div>
+    <div class="node"><div class="par" data-tgt="n7"><span class="cr">▶</span>7 · Bug</div>
+      <div class="kids" id="n7"><a href="#s-bug">Phantom pending</a></div></div>
+    <div class="home"><a href="#cover">↑ Back to top</a></div>
+  </nav>
+
+  <main class="doc" id="cover">
+    <div class="cover">
+      <p class="kick">ARC-FMS · Concept Walkthrough</p>
+      <h1>Fee Management, Reimagined</h1>
+      <div class="about">
+        <div class="ab"><span>Redesigning the institute experience by making critical workflows faster, more intuitive, and easier to navigate. The focus is on surfacing key information — collections, transactions, reports and student records — within the dashboard, reducing dependency on manual reports and repetitive tasks.</span></div>
+        <div class="ab"><b>What it contains</b><span>Seven sections — GILE navigation, stats &amp; collections, institute setup, transactions, reports and an AI assistant. Each shows the <i>live screen (before)</i>, the problem, and a clickable <i>prototype (after)</i> — ending with one verified production data bug.</span></div>
+      </div>
+    </div>
+    <div class="single"><div class="box b"><div class="h">Live today — a multi-campus institute on the current ARC dashboard</div><img src="ARC-Concepts-Doc/assets/b_vibgyor_live.jpeg"></div></div>
+
+    <!-- ============ 1. GILE ============ -->
+    <h2 class="sec" id="gile">1 · GILE Navigation</h2>
+    <p class="secd">Group › Institute › Location › Education. A large chain can span dozens of campuses × 3 boards — this is where navigation hurts most.</p>
+    <p class="lead"><span class="lbl">The problem:</span> selecting a GILE happens in a pop-up “Search &amp; Filter” modal — ~5 clicks, it covers the screen, and the choice resets when you move between Statistics / Transactions / Reports. Worse: once inside an institute you can’t tell <i>which</i> GILE you’re viewing.</p>
+    <div class="ba">
+      <div class="box b"><div class="h">Before — the GILE selector modal</div><img src="ARC-Concepts-Doc/assets/b_gile_modal.png"></div>
+      <div class="box b"><div class="h">Before — “Please Select Institute” (no context)</div><img src="ARC-Concepts-Doc/assets/b_selectinstitute.png"></div>
+    </div>
+
+    <h3 class="step" id="s-yah">1.1 “You-Are-Here” Breadcrumb <span class="tag ux">UX fix</span></h3>
+    <p class="lead">Show the full <b>Group › Institute › Location › Board</b> path under the title, always visible — no report download to find out where you are. Clicking it opens the selector pre-filled.</p>
+    <div class="single"><div class="box a"><div class="h">After — always-visible GILE breadcrumb</div><img src="ARC-Concepts-Doc/assets/a_youarehere.png"></div></div>
+    <a class="open" href="ARC-GILE-Concepts/05-You-Are-Here-Breadcrumb/You-Are-Here-Breadcrumb.html" target="_blank">▶ Open prototype</a>
+
+    <h3 class="step" id="s-bar">1.2 Persistent Filter Bar <span class="tag new">Concept</span></h3>
+    <p class="lead">Replace the modal with always-visible GILE chips; change one level at a time; the list filters live (no Search button), and the choice carries across tabs.</p>
+    <div class="single"><div class="box a"><div class="h">After — persistent GILE bar (multi-campus institute)</div><img src="ARC-Concepts-Doc/assets/a_persistent.png"></div></div>
+    <a class="open" href="ARC-GILE-Concepts/01-Persistent-Filter-Bar/Persistent-Filter-Bar.html" target="_blank">▶ Open prototype</a>
+
+    <h3 class="step" id="s-search">1.3 Smart Search <span class="tag new">Concept</span></h3>
+    <p class="lead">Type the way you think — “Marathahalli CBSE” — and it resolves the whole GILE path in one shot. Fastest for a known campus.</p>
+    <div class="single"><div class="box a"><div class="h">After — one search box across all 4 GILE levels</div><img src="ARC-Concepts-Doc/assets/a_search.png"></div></div>
+    <a class="open" href="ARC-GILE-Concepts/02-Smart-Search-Box/Smart-Search-Box.html" target="_blank">▶ Open prototype</a>
+
+    <h3 class="step" id="s-saved">1.4 Saved Views &amp; Recents <span class="tag new">Concept</span></h3>
+    <p class="lead">Pin the 2–3 campuses you open daily; search + recents. For the common case, navigation becomes one click.</p>
+    <div class="single"><div class="box a"><div class="h">After — pinned favourites + recents (filter)</div><img src="ARC-Concepts-Doc/assets/a_saved.png"></div></div>
+    <a class="open" href="ARC-GILE-Concepts/03-Saved-Views-Favourites/Saved-Views-Favourites.html" target="_blank">▶ Open prototype</a>
+
+    <h3 class="step" id="s-tree">1.5 Tree Drill-down <span class="tag new">Concept</span></h3>
+    <p class="lead">A collapsible Group→Board tree for browsing the org top-down. Best for exploration; lowest priority for shallow orgs.</p>
+    <div class="single"><div class="box a"><div class="h">After — GILE tree navigator</div><img src="ARC-Concepts-Doc/assets/a_tree.png"></div></div>
+    <a class="open" href="ARC-GILE-Concepts/04-Tree-Drilldown/Tree-Drilldown.html" target="_blank">▶ Open prototype</a>
+
+    <!-- ============ 2. STATS ============ -->
+    <h2 class="sec" id="s-feehdr">2 · Stats &amp; Collections</h2>
+    <p class="secd">Surface what accountants need on-screen instead of only in slow reports; turn passive numbers into action.</p>
+
+    <h3 class="step">2.1 Fee-Header-wise Collection <span class="tag new">Concept</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> the Fee Header screen only shows config (name/amount/due) — not how much is <b>collected vs pending</b>. That lives in an async report.</p>
+    <div class="ba">
+      <div class="box b"><div class="h">Before — Fee Header (config only)</div><img src="ARC-Concepts-Doc/assets/b_feehdr_page.png"></div>
+      <div class="box a"><div class="h">After — live Total · Discount · Paid · Pending</div><img src="ARC-Concepts-Doc/assets/a_feehdr.png"></div>
+    </div>
+    <a class="open" href="ARC-Stats-Concepts/01-Fee-Header-Wise-Collection/Fee-Header-Wise-Collection.html" target="_blank">▶ Open prototype</a>
+
+    <h3 class="step" id="s-worklist">2.2 Defaulter Worklist <span class="tag ux">Enhancement</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> the pending total is a <b>number</b> on the dashboard; the who-owes list is a <b>downloadable report</b>; reminders are a separate <b>scheduled broadcast</b> in Communications — the pieces exist but aren't in one place, so you can't see a live list and remind one student (or one overdue bucket) on the spot. <span class="lbl">Fix:</span> one live, actionable screen — each defaulter (amount · class · fee header · days overdue) with <b>Send reminder</b> per student, bulk multi-select, filter by overdue bucket (0–30 / 31–60 / 60d+), or “remind all overdue”. No report download, no separate scheduler.</p>
+    <div class="single"><div class="box a"><div class="h">After — actionable pending list</div><img src="ARC-Concepts-Doc/assets/a_worklist.png"></div></div>
+    <a class="open" href="ARC-Stats-Concepts/02-Defaulter-Worklist/Defaulter-Worklist.html" target="_blank">▶ Open prototype</a>
+
+    <h3 class="step" id="s-reminder">2.3 Payment Reminder — multi-class <span class="tag new">Concept</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> the live Schedule Reminder is tied to one payment page/class — you repeat it per class. <span class="lbl">Fix:</span> keep the exact timing rules, add a multi-select class dropdown so one reminder covers all classes at once.</p>
+    <div class="ba">
+      <div class="box b"><div class="h">Before — Schedule Reminder (one form/class)</div><img src="ARC-Concepts-Doc/assets/b_schedule.png"></div>
+      <div class="box a"><div class="h">After — multi-class select</div><img src="ARC-Concepts-Doc/assets/a_reminder.png"></div>
+    </div>
+    <a class="open" href="ARC-Stats-Concepts/03-Payment-Reminder/Payment-Reminder.html" target="_blank">▶ Open prototype</a>
+
+    <!-- ============ 3. INSTITUTE ============ -->
+    <h2 class="sec" id="s-clone">3 · Institute Setup</h2>
+    <p class="secd">Kill the yearly rebuild of classes / fee headers / financing modes / payment pages.</p>
+    <h3 class="step">3.1 Clone Previous Year Setup <span class="tag new">Full flow</span></h3>
+    <p class="lead"><span class="lbl">What we have today:</span> every new academic year the institute rebuilds all config from scratch — classes, fee headers, financing modes, payment pages — even though last year's is almost identical.</p>
+    <p class="lead"><span class="lbl">The gap:</span> there's no "carry forward" — weeks of manual re-entry each July, with a real chance of a fee or a page being missed or mistyped.</p>
+    <p class="lead"><span class="lbl">How this helps:</span> a <b>"Clone Setup"</b> action copies last year's classes/pages into the new AY (fresh URLs, reset expiry, amounts flagged to review) — config only, never student data.</p>
+    <div class="ba">
+      <div class="box b"><div class="h">Before — empty Payment Links for the new year</div><img src="ARC-Concepts-Doc/assets/b_paylinks.png"></div>
+      <div class="box a"><div class="h">After — Clone Setup (pick classes → cloned)</div><img src="ARC-Concepts-Doc/assets/a_clone.png"></div>
+    </div>
+    <a class="open" href="ARC-Institute-Management-Concepts/01-Clone-Previous-Year-Setup/Clone-Previous-Year-Setup.html" target="_blank">▶ Open prototype (4-stage flow)</a>
+
+    <!-- ============ 4. TRANSACTIONS ============ -->
+    <h2 class="sec" id="s-breakup">4 · Transactions</h2>
+    <p class="secd">Show what a payment was FOR, and pull every payment into one place.</p>
+    <h3 class="step">4.1 Fee Breakup in a Transaction <span class="tag new">Concept</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> a PG transaction shows total paid but not which fee headers it covered (that only lives in Student Management). <span class="lbl">Fix:</span> a “Fee Breakup” section inside the More-Details modal, reconciled to the transaction total.</p>
+    <div class="ba">
+      <div class="box b"><div class="h">Before — PG transactions list</div><img src="ARC-Concepts-Doc/assets/b_pg_list.png"></div>
+      <div class="box b"><div class="h">Before — More Details (no fee breakup)</div><img src="ARC-Concepts-Doc/assets/b_pg_modal.png"></div>
+    </div>
+    <div class="single"><div class="box a"><div class="h">After — same flow + Fee Breakup in the detail</div><img src="ARC-Concepts-Doc/assets/a_feebreakup.png"></div></div>
+    <a class="open" href="ARC-Transactions-Concepts/01-Fee-Breakup-In-Transaction/Fee-Breakup-In-Transaction.html" target="_blank">▶ Open prototype (click the eye on any row)</a>
+
+    <h3 class="step" id="s-lookup">4.2 Student Payment Lookup + Receipts <span class="tag new">Concept</span></h3>
+    <p class="lead"><span class="lbl">What we have today:</span> a student's payments are split across EMI / PG / Auto-Debit / Offline tabs, EMI shows separately, and the method (UPI / NACH…) isn't surfaced — no single view of one student.</p>
+    <p class="lead"><span class="lbl">The gap:</span> answering "what has this student paid — and give me a receipt" means hopping tabs and stitching it by hand; combined-year receipts aren't readily available.</p>
+    <p class="lead"><span class="lbl">How this helps:</span> one Student ID → a <b>unified timeline</b> (mode + method) plus <b>single &amp; combined (year) receipts</b> in the exact GrayQuest format.</p>
+    <div class="single"><div class="box a"><div class="h">After — unified payment timeline + receipts</div><img src="ARC-Concepts-Doc/assets/a_lookup.png"></div></div>
+    <a class="open" href="ARC-Transactions-Concepts/02-Student-Payment-Lookup/Student-Payment-Lookup.html" target="_blank">▶ Open prototype</a>
+
+    <!-- ============ 5. REPORTS ============ -->
+    <h2 class="sec" id="s-report">5 · Reports</h2>
+    <h3 class="step">5.1 Custom Report Builder <span class="tag new">Concept</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> the system exports Paid/Settled/Failed as three separate 30-column sheets; users manually merge + trim them (we saw a real user file that does exactly this). <span class="lbl">Fix:</span> pick columns, merge statuses into one sheet, filter, save as preset — in the familiar Generate-Report flow.</p>
+    <div class="ba">
+      <div class="box b"><div class="h">Before — Generate Report (fixed templates)</div><img src="ARC-Concepts-Doc/assets/b_generate.png"></div>
+      <div class="box a"><div class="h">After — Custom Report (merge + column picker)</div><img src="ARC-Concepts-Doc/assets/a_customreport.png"></div>
+    </div>
+    <a class="open" href="ARC-Reports-Concepts/01-Custom-Report-Builder/Custom-Report-Builder.html" target="_blank">▶ Open prototype</a>
+
+    <!-- ============ 6. AI ============ -->
+    <h2 class="sec" id="s-bot">6 · AI Assistant</h2>
+    <h3 class="step">6.1 Dashboard + Floating Assistant <span class="tag ai">AI</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> the dashboard shows numbers, but acting on them means navigating to the right screen and setting it up yourself — insight and action sit apart. <span class="lbl">Fix:</span> a grounded, scoped assistant that answers fixed queries inline (numbers from data, never invented) or opens the real screen prefilled — ending in an action.</p>
+    <div class="single"><div class="box n"><div class="h">Prototype — floating assistant over the dashboard</div><img src="ARC-Concepts-Doc/assets/a_bot.png"></div></div>
+    <a class="open" href="ARC-Bot-Concept/ARC-Dashboard-With-Assistant.html" target="_blank">▶ Open prototype</a>
+    <div class="callout"><b>Honest note:</b> a standalone insights panel would likely be ignored (accountants act, not analyse). The assistant works because it <b>ends in an action</b> — and only if it stays grounded (fixed queries), scoped (predefined set), and confirms before sending.</div>
+
+    <h3 class="step" id="s-paylink" style="font-size:16px">Example — what an Assistant “action” looks like</h3>
+    <p class="lead"><b>This is not a separate feature.</b> Creating a payment link already exists in Communications — this just shows the Assistant <b>ending in a real action</b>: ask “payment link for [student]” → it disambiguates the student and opens the <b>existing</b> Create Payment Link screen <b>pre-filled</b> (fee header, amount, share channels); you confirm to generate. The value is the one-line routing, not a new screen.</p>
+    <div class="single"><div class="box a"><div class="h">Example — the Assistant opens Create Payment Link, prefilled</div><img src="ARC-Concepts-Doc/assets/a_paylink.png"></div></div>
+    <a class="open" href="ARC-Communications-Concepts/01-Create-Payment-Link/Create-Payment-Link.html?name=Riona%20Joel&id=108370&cls=Grade%205&campus=Marathahalli" target="_blank">▶ Open the example</a>
+
+    <h3 class="step" id="s-assist">6.2 Financial Assistance Recommendation <span class="tag ai">AI</span></h3>
+    <p class="lead"><span class="lbl">What we have today:</span> a parent who stops paying is just a row in the pending report — a reliable, long-time payer looks identical to a chronic defaulter, and both get the same generic reminder.</p>
+    <p class="lead"><span class="lbl">The gap:</span> nothing separates <b>“won't pay”</b> from <b>“can't pay right now”</b> — the parent who paid on time for years and just bounced this term slips into a hard default, or a dropout, when a plan would have kept them.</p>
+    <p class="lead"><span class="lbl">How this helps:</span> it flags exactly the <b>reliable-but-now-slipping</b> parents (strong on-time history + current arrears, extra weight on a bounce) and lets the institute privately offer an <b>editable EMI / split plan in one click</b> — the decision, and the offer, stay with the institute.</p>
+    <div class="single"><div class="box a"><div class="h">Prototype — reliable payers now slipping, with a one-click plan offer</div><img src="ARC-Concepts-Doc/assets/a_financial_assistance.png"></div></div>
+    <a class="open" href="ARC-Assistance-Concepts/01-Financial-Assistance-Recommendation/Financial-Assistance-Recommendation.html" target="_blank">▶ Open prototype</a>
+
+    <!-- ============ 7. BUG ============ -->
+    <h2 class="sec" id="s-bug">7 · Verified Data Bug</h2>
+    <p class="secd">Not a mockup — confirmed against the production database.</p>
+    <h3 class="step">Fee Header Report — phantom pending = late fine <span class="tag bug">Bug</span></h3>
+    <p class="lead">The “Fee Header Due Amount” sheet computes <b>Paid Amount from the base fee (excludes the collected late fine)</b>, while Total Payable includes the fine — so every student who paid <i>with</i> a fine shows a <b>false Pending = the fine</b>.</p>
+    <ul class="tight">
+      <li><b>Proof:</b> BHAVADHINI S (2535S0003) — “Fee Header Paid” sheet shows <b>₹62,750 paid</b>; “Due Amount” sheet shows ₹62,500 paid / ₹250 pending. Source DB (<code>paid_amount</code>) confirms the fine was collected.</li>
+      <li><b>Impact:</b> <b>19,811 orders · ₹1,18,02,140 (~₹1.18 Cr)</b> of already-collected late fees falsely reported as pending, system-wide.</li>
+      <li><b>Fix:</b> the Due-Amount sheet's Paid Amount must use the actual collected amount (as the Paid sheet already does).</li>
+    </ul>
+    <div class="ba">
+      <div class="box a"><div class="h">Dashboard — CORRECT: ₹62,750 · SETTLED</div><img src="ARC-Concepts-Doc/assets/b_bug_dashboard.png"></div>
+      <div class="box b"><div class="h">Report “Due Amount” sheet — WRONG: ₹250 pending</div><img src="ARC-Concepts-Doc/assets/b_bug_sheet.png"></div>
+    </div>
+    <div class="cap">Same student <b>2535S0003</b> (ref GQDT-J1HMEERPQMB): the <b>dashboard</b> shows the full <b>₹62,750 paid · SETTLED</b> — correct, it includes the ₹250 fine. But the <b>report's Due-Amount sheet</b> (rows 4 &amp; 5) counts Paid as 62,500 and shows <b>Pending 250</b> — the phantom. Only the report is wrong; the dashboard reads the real collected amount.</div>
+    <a class="open" href="ARC-Bugs/01-Fee-Header-Report-Phantom-Pending/evidence_Fee-header-report.xlsx" download>⭳ Download Report (Excel)</a>
+
+    <div class="foot">ARC-FMS · detailed walkthrough · multi-institute research · faithful ARC UI · sample data · compiled 2026-07-03</div>
+  </main>
+</div>
+<script>
+  // TREE sidebar — collapsible sections + scroll-spy
+  function openNode(id,on){const k=document.getElementById(id),p=document.querySelector('[data-tgt="'+id+'"]');
+    k.classList.toggle('exp',on);p.classList.toggle('exp',on);}
+  document.querySelectorAll('.par').forEach(p=>p.addEventListener('click',()=>{
+    const k=document.getElementById(p.dataset.tgt);openNode(p.dataset.tgt,!k.classList.contains('exp'));}));
+  document.querySelectorAll('.par').forEach(p=>openNode(p.dataset.tgt,true)); // all branches open by default
+  const links=[...document.querySelectorAll('.toc a[href^="#"]')];
+  // scroll-spy candidates: skip the "↑ Back to top" link (duplicate #cover target) so it can't hijack the active section
+  const map=links.filter(a=>!a.closest('.home')).map(a=>({a,el:document.querySelector(a.getAttribute('href'))})).filter(x=>x.el);
+  function spy(){let cur=map[0];for(const m of map){if(m.el.getBoundingClientRect().top<=150)cur=m;}
+    links.forEach(a=>a.classList.remove('on'));
+    if(cur){cur.a.classList.add('on');const kids=cur.a.closest('.kids');if(kids)openNode(kids.id,true);}}
+  document.addEventListener('scroll',spy,{passive:true});window.addEventListener('load',spy);spy();
+</script>
 </body>
 </html>
