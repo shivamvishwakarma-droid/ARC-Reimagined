@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>ARC-FMS · Financial Assistance — Recommendations</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b2f3a; --muted:#8a8f9c; --line:#ececf3; --page:#f7f7fb;
+    --indigo:#3b3f9e; --indigo-soft:#eef0ff; --cream:#faf7f0;
+    --side1:#c98f9c; --side2:#b79ac2; --side3:#cfd0e8; --rose:#f4e7ea;
+    --good:#1a9d5a; --bad:#d1425a; --warn:#d9822b; --amber:#b3801f; --amber-soft:#fdf3df;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--page);color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+
+  /* sidebar (faithful ARC) */
+  .side{width:246px;flex:none;background:#bf92a1;padding:16px 14px;display:flex;flex-direction:column}
+  .inst{display:flex;align-items:center;gap:11px;background:#fff;border-radius:14px;padding:11px 13px;box-shadow:0 2px 8px rgba(60,40,90,.06);margin-bottom:16px}
+  .inst .ic{width:30px;height:30px;flex:none;display:grid;place-items:center;color:#16181d}
+  .inst .nm{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:#16181d;line-height:1.25;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .inst .cx{color:#8a8a97;font-size:16px;flex:none}
+  .mm{font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:#6b4a55;font-weight:700;margin:6px 10px 10px}
+  .nav{position:relative;display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:#3a2a30;margin-bottom:3px}
+  .nav .ic{width:20px;height:20px;flex:none;display:grid;place-items:center;color:#5a3f48}
+  .nav .chev{margin-left:auto;font-size:11px;color:#9a9aa8}
+  .nav:hover{background:rgba(255,255,255,.55)}
+  .nav.on{color:#16181d;font-weight:700}
+  .nav.on .ic{color:#16181d}
+  .nav.on::before{content:'';position:absolute;left:-14px;top:6px;bottom:6px;width:4px;border-radius:0 3px 3px 0;background:#2f5bff}
+  .side-foot{margin-top:auto;padding-top:12px}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:14px;padding:13px;font-weight:600;font-size:13.5px;color:#2b2f3a;box-shadow:0 2px 8px rgba(60,40,90,.06);cursor:pointer}
+  .master:hover{background:#fbfaff}
+
+  /* main */
+  .main{flex:1;padding:22px 28px;min-width:0}
+  .top{display:flex;align-items:center;margin-bottom:18px}
+  .hello{font-size:24px;font-weight:600}
+  .userpill{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500}
+  .userpill .av{width:20px;height:20px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:11px;color:var(--indigo)}
+
+  .head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+  .head .h1{font-size:19px;font-weight:600}
+  .head .sub{font-size:13px;color:var(--muted);margin-top:2px}
+  .newtag{font-size:9px;background:var(--indigo);color:#fff;border-radius:5px;padding:3px 7px;letter-spacing:.4px;margin-left:8px;vertical-align:middle}
+  .aitag{font-size:9px;background:#efe9fb;color:#5b3df5;border-radius:5px;padding:3px 7px;letter-spacing:.4px;margin-left:6px;vertical-align:middle;font-weight:700}
+
+  /* KPI row */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+  .kpi .lab{font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.3px}
+  .kpi .val{font-size:22px;font-weight:700;margin-top:4px}
+  .kpi .val.amber{color:var(--amber)} .kpi .val.good{color:var(--good)} .kpi .val.ind{color:var(--indigo)}
+  .kpi .foot{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* note banner */
+  .note{display:flex;gap:11px;align-items:flex-start;background:#efe9fb;border:1px solid #ddd2f5;border-radius:12px;padding:12px 15px;margin-bottom:14px;font-size:13px;color:#4b3b7a}
+  .note b{color:#3a2c63}
+
+  /* filter chips */
+  .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;background:#fff;font-weight:500}
+  .chip.on,.chip:hover{border-color:var(--indigo);background:var(--indigo-soft);color:var(--indigo);font-weight:600}
+
+  /* table */
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:13px 16px;background:#faf9fc}
+  td{padding:14px 16px;border-top:1px solid var(--line);font-size:13px;vertical-align:middle}
+  .who{display:flex;align-items:center;gap:11px}
+  .who .av{width:34px;height:34px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:13px;color:var(--indigo);font-weight:600;flex:none}
+  .who b{font-weight:600} .who small{color:var(--muted);display:block;font-size:11.5px}
+  .rel{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;border-radius:7px;padding:4px 9px}
+  .rel.strong{background:#e7f7ee;color:var(--good)} .rel.ok{background:#eef4ff;color:var(--indigo)}
+  .rel small{font-weight:500;color:var(--muted)}
+  .over b{color:var(--bad)} .over small{color:var(--muted);display:block;font-size:11.5px}
+  .why{font-size:12px;color:#55506a;line-height:1.5;max-width:250px}
+  .why .dot{color:var(--warn)}
+  .plan b{color:var(--indigo)} .plan small{color:var(--muted);display:block;font-size:11.5px}
+  .offer{border:1.4px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit}
+  .offer:hover{background:var(--indigo-soft)}
+  .offer.done{border-color:var(--good);color:var(--good);background:#e7f7ee;cursor:default}
+  .norows td{text-align:center;color:var(--muted);padding:30px}
+  .hint{font-size:12px;color:var(--muted);margin-top:16px;text-align:center;line-height:1.7}
+
+  /* offer modal */
+  .overlay{position:fixed;inset:0;background:rgba(30,25,45,.34);z-index:20;display:none}
+  .overlay.on{display:block}
+  .panel{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:92%;background:#fff;z-index:21;box-shadow:-12px 0 40px rgba(0,0,0,.16);
+    display:none;flex-direction:column;border-radius:22px 0 0 22px;overflow:hidden}
+  .panel.on{display:flex}
+  .phead{background:var(--cream);padding:24px 26px;position:relative;flex:none}
+  .phead .ttl{font-size:20px;font-weight:700} .phead .st{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .pclose{position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid var(--line);
+    box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;place-items:center;cursor:pointer;font-size:16px;color:#26262e;z-index:5}
+  .pclose:hover{background:#f4f4f8;color:#000}
+  .pbody{padding:20px 26px;overflow:auto;flex:1}
+  .fld{margin-bottom:16px}
+  .fld label{font-size:12.5px;color:#4a4a55;font-weight:600;display:block;margin-bottom:7px}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;border:1.4px solid var(--line);background:#fff;border-radius:10px;padding:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .seg button.on{border-color:var(--indigo);background:var(--indigo-soft);color:var(--indigo)}
+  .planbox{background:#f7f6fb;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13px}
+  .planbox .row{display:flex;justify-content:space-between;padding:5px 0}
+  .planbox .row b{font-weight:600}
+  .planbox .big{font-size:19px;font-weight:700;color:var(--indigo)}
+  .msg{width:100%;background:#fff;border:1px dashed var(--line);border-radius:12px;padding:13px 15px;font-size:12.5px;color:#3a3648;line-height:1.6;
+    font-family:inherit;resize:vertical;min-height:112px;outline:none}
+  .msg:focus{border-color:var(--indigo);border-style:solid;box-shadow:0 0 0 3px var(--indigo-soft)}
+  .msgfoot{display:flex;justify-content:space-between;align-items:center;margin-top:7px;font-size:11.5px;color:var(--muted)}
+  .msgfoot .reset{color:var(--indigo);cursor:pointer;font-weight:600}
+  .msgfoot .reset:hover{text-decoration:underline}
+  .pfoot{border-top:1px solid var(--line);padding:16px 26px;display:flex;gap:10px;flex:none}
+  .btn{flex:1;border:none;border-radius:11px;padding:12px;font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer}
+  .btn.g{background:var(--indigo);color:#fff} .btn.g:hover{filter:brightness(1.1)}
+  .btn.o{background:#fff;border:1.4px solid var(--line);color:var(--ink)}
+
+  /* toast */
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#26262e;color:#fff;
+    padding:12px 20px;border-radius:12px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transition:.25s;z-index:40;max-width:80%}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="inst">
+      <span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5H3z"/><path d="M5 8v9M9.5 8v9M14.5 8v9M19 8v9M3 20h18"/></svg></span>
+      <span class="nm">Vibgyor High, Marathahalli</span>
+      <span class="cx">›</span>
+    </div>
+    <div class="mm">Main Menu</div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="3" y="3" width="7.5" height="18" rx="1.6"/><rect x="12.5" y="3" width="8.5" height="7.5" rx="1.6"/><rect x="12.5" y="12" width="8.5" height="9" rx="1.6"/></svg></span> Dashboard</div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h2M8 11h2M8 15h2M14 7h2M14 11h2M14 15h2" stroke-linecap="round"/></svg></span> Institute Management <span class="chev">▾</span></div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0113 0"/></svg></span> Student Management</div>
+    <div class="nav on"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.3-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.7-7 10-7 10z"/></svg></span> Financial Assistance</div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10.5h18" stroke-linecap="round"/></svg></span> Transactions <span class="chev">▾</span></div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.6"/><path d="M8.5 8.5a5 5 0 000 7M15.5 8.5a5 5 0 010 7M6 6.2a8.5 8.5 0 000 11.6M18 6.2a8.5 8.5 0 010 11.6"/></svg></span> Communications <span class="chev">▾</span></div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 16.5h4"/></svg></span> Reports</div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div class="hello">Hello, Vibgyor!</div>
+      <div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div>
+    </div>
+
+    <div class="head">
+      <div>
+        <div class="h1">Financial Assistance — Recommendations<span class="newtag">NEW</span><span class="aitag">AI</span></div>
+        <div class="sub">Reliable payers who are <b>now slipping</b> — likely a temporary cash crunch, not a chronic defaulter.</div>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="note">
+      <span>🤖</span>
+      <span><b>How this is flagged:</b> a parent with a strong on-time payment history whose current fee is now overdue (or whose auto-debit just bounced) is surfaced as someone who may benefit from an <b>EMI or split plan</b>. It's a suggestion — <b>the final decision, and the offer, stay with the institute.</b></span>
+    </div>
+
+    <div class="filters" id="filters">
+      <span class="chip on" data-f="all" onclick="setFilter('all')">All flagged</span>
+      <span class="chip" data-f="strong" onclick="setFilter('strong')">Strong payers</span>
+      <span class="chip" data-f="bounce" onclick="setFilter('bounce')">Failed / bounced attempt</span>
+      <span class="chip" data-f="offered" onclick="setFilter('offered')">Offered</span>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead><tr>
+          <th>Parent / Student</th><th>Payment reliability</th><th>Now overdue</th>
+          <th>Why flagged</th><th>Suggested plan</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="hint">
+      <b>Concept — Financial Assistance Recommendation.</b> Turns a collections signal into a retention + financing opportunity:
+      catch a good payer's temporary hardship early, offer flexibility privately, keep the student enrolled.<br>
+      Institute-in-the-loop · faithful ARC UI · data from the shared store.
+    </div>
+  </main>
+</div>
+
+<!-- Offer plan drawer -->
+<div class="overlay" id="ov" onclick="if(event.target===this)closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="phead">
+    <span class="pclose" onclick="closePanel()">✕</span>
+    <div class="ttl" id="pTtl">Offer a payment plan</div>
+    <div class="st" id="pSt"></div>
+  </div>
+  <div class="pbody">
+    <div class="fld">
+      <label>Split the outstanding into</label>
+      <div class="seg" id="seg">
+        <button data-n="2" onclick="setN(2)">2 months</button>
+        <button data-n="3" class="on" onclick="setN(3)">3 months</button>
+        <button data-n="4" onclick="setN(4)">4 months</button>
+      </div>
+    </div>
+    <div class="fld">
+      <label>Plan</label>
+      <div class="planbox" id="planbox"></div>
+    </div>
+    <div class="fld">
+      <label>Message to parent (editable)</label>
+      <textarea class="msg" id="msg" oninput="msgEdited=true" spellcheck="false"></textarea>
+      <div class="msgfoot"><span>— sent privately, on the institute's behalf.</span><span class="reset" onclick="resetMsg()">↺ Reset to suggested</span></div>
+    </div>
+  </div>
+  <div class="pfoot">
+    <button class="btn o" onclick="closePanel()">Cancel</button>
+    <button class="btn g" onclick="sendOffer()">Send assistance offer</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+/* Financial Assistance Recommendation — data from window.ARCDB (single source of truth).
+   Signal = "reliable, now slipping": a good on-time history + a current pending/overdue fee
+   (extra weight if an auto-debit/PG attempt has bounced). Student data IS shown here — this is
+   exactly a screen where per-parent detail is needed. Institute makes the final call. */
+let CAND=[], filter='all', offered=new Set(), cur=null, curN=3, msgEdited=false;
+
+const toast=(m)=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2600);};
+const initials=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+/* build candidates from the store */
+function build(){
+  const dueOf={}; ARCDB.feeHeaders().forEach(f=>dueOf[f.name]=f.due);
+  CAND = ARCDB.students().map(s=>{
+    const led=ARCDB.studentLedger(s.id);
+    const pays=ARCDB.studentPayments(s.id);
+    const received=pays.filter(p=>p.status==='Paid'||p.status==='Settled');
+    const onTime=received.filter(p=> p.date <= (dueOf[p.feeHeader]||p.date));
+    const failed=pays.filter(p=>p.status==='Failed');
+    const pending=led.totals.pending;
+    const overdue=Math.max(0, ...led.rows.filter(r=>r.pending>0).map(r=>r.overdue), 0);
+    const onTimeRate=received.length? onTime.length/received.length : 0;
+    return {s, received:received.length, onTime:onTime.length, onTimeRate, failed:failed.length, pending, overdue, led};
+  })
+  /* flag = has a track record of paying on time AND is now in arrears */
+  .filter(c=> c.pending>0 && c.received>=1 && c.onTimeRate>=0.6)
+  .map(c=>({...c, tier: (c.received>=2 && c.onTimeRate>=0.9)?'strong':'ok'}))
+  .sort((a,b)=> b.overdue-a.overdue || b.pending-a.pending);
+}
+
+function kpis(){
+  const flagged=CAND.length;
+  const atrisk=CAND.reduce((a,c)=>a+c.pending,0);
+  const bounces=CAND.filter(c=>c.failed>0).length;
+  const strong=CAND.filter(c=>c.tier==='strong').length;
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi"><div class="lab">FLAGGED FOR ASSISTANCE</div><div class="val ind">${flagged}</div><div class="foot">reliable payers now slipping</div></div>
+    <div class="kpi"><div class="lab">OUTSTANDING AT RISK</div><div class="val amber">${ARCDB.inr(atrisk)}</div><div class="foot">recoverable via a plan</div></div>
+    <div class="kpi"><div class="lab">FAILED / BOUNCED ATTEMPT</div><div class="val">${bounces}</div><div class="foot">tried to pay, could not</div></div>
+    <div class="kpi"><div class="lab">STRONG-HISTORY PARENTS</div><div class="val good">${strong}</div><div class="foot">100% on-time until now</div></div>`;
+}
+
+function whyText(c){
+  const bits=[`<b>${c.onTime}/${c.received}</b> paid on time`];
+  if(c.overdue>0) bits.push(`<span class="dot">●</span> this fee <b>${c.overdue}d overdue</b>`);
+  if(c.failed>0) bits.push(`<span class="dot">●</span> <b>${c.failed}</b> failed/bounced attempt`);
+  return bits.join(' · ');
+}
+
+function rows(){
+  let list=CAND.slice();
+  if(filter==='strong') list=list.filter(c=>c.tier==='strong');
+  else if(filter==='bounce') list=list.filter(c=>c.failed>0);
+  else if(filter==='offered') list=list.filter(c=>offered.has(c.s.id));
+  const tb=document.getElementById('rows');
+  if(!list.length){tb.innerHTML=`<tr class="norows"><td colspan="6">No parents match this filter.</td></tr>`;return;}
+  tb.innerHTML=list.map(c=>{
+    const n=3, monthly=Math.round(c.pending/n);
+    const done=offered.has(c.s.id);
+    const relClass=c.tier==='strong'?'strong':'ok', relLabel=c.tier==='strong'?'Strong payer':'Reliable';
+    return `<tr>
+      <td><div class="who"><div class="av">${initials(c.s.name)}</div>
+        <div><b>${c.s.name}</b><small>#${c.s.id} · ${c.s.cls} · ${c.s.campus}</small></div></div></td>
+      <td><span class="rel ${relClass}">✓ ${relLabel}</span><br><small style="color:var(--muted)">${Math.round(c.onTimeRate*100)}% on-time (${c.onTime}/${c.received})</small></td>
+      <td class="over"><b>${ARCDB.inr(c.pending)}</b><small>${c.overdue>0?c.overdue+' days late':'due now'}</small></td>
+      <td class="why">${whyText(c)}</td>
+      <td class="plan"><b>${ARCDB.inr(monthly)}/mo</b><small>split ${ARCDB.inr(c.pending)} × 3 months</small></td>
+      <td style="text-align:right">${done
+        ? `<button class="offer done">✓ Offer sent</button>`
+        : `<button class="offer" onclick="openPanel('${c.s.id}')">Offer plan →</button>`}</td>
+    </tr>`;}).join('');
+}
+
+/* offer drawer */
+function openPanel(id){
+  cur=CAND.find(c=>c.s.id===id); if(!cur)return; curN=3;
+  document.getElementById('pTtl').textContent='Offer a payment plan';
+  document.getElementById('pSt').innerHTML=`For <b>${cur.s.name}</b> · #${cur.s.id} · outstanding ${ARCDB.inr(cur.pending)}`;
+  document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.n===3));
+  msgEdited=false;
+  paintPlan();
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('panel').classList.add('on');
+}
+function closePanel(){document.getElementById('ov').classList.remove('on');document.getElementById('panel').classList.remove('on');}
+function setN(n){curN=n;document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.n===n));paintPlan();}
+function paintPlan(){
+  const monthly=Math.round(cur.pending/curN);
+  const total=monthly*curN;
+  const start=ARCDB.today();
+  document.getElementById('planbox').innerHTML=`
+    <div class="row"><span>Outstanding</span><b>${ARCDB.inr(cur.pending)}</b></div>
+    <div class="row"><span>Split into</span><b>${curN} monthly instalments</b></div>
+    <div class="row"><span>Each month</span><span class="big">${ARCDB.inr(monthly)}</span></div>
+    <div class="row" style="color:var(--muted);font-size:12px"><span>First due</span><span>${ARCDB.fmtDate(start)}</span></div>`;
+  if(!msgEdited) document.getElementById('msg').value=msgTemplate();
+}
+function msgTemplate(){
+  const monthly=Math.round(cur.pending/curN);
+  return `Hi, we understand things can get tight. For ${cur.s.name}'s pending fee of ${ARCDB.inr(cur.pending)}, `
+    +`you can now split it into ${curN} easy monthly payments of ${ARCDB.inr(monthly)} — no extra paperwork. `
+    +`Tap to accept, or reach us anytime.`;
+}
+function resetMsg(){ msgEdited=false; document.getElementById('msg').value=msgTemplate(); }
+function sendOffer(){
+  if(!cur)return;
+  const message=document.getElementById('msg').value.trim();
+  if(!message){ toast('Message is empty — add a note before sending.'); return; }
+  offered.add(cur.s.id);
+  const monthly=Math.round(cur.pending/curN);
+  toast(`${msgEdited?'Custom offer':'Assistance offer'} sent to ${cur.s.name} — ${curN} × ${ARCDB.inr(monthly)}/mo. Awaiting acceptance.`);
+  closePanel(); rows();
+}
+
+function setFilter(f){filter=f;document.querySelectorAll('#filters .chip').forEach(c=>c.classList.toggle('on',c.dataset.f===f));rows();}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!window.ARCDB){document.getElementById('rows').innerHTML='<tr class="norows"><td colspan="6">Data store (ARCDB) not loaded.</td></tr>';return;}
+  build();
+  CAND.slice(0,2).forEach(c=>offered.add(c.s.id));   // demo seed: 2 offers already sent (so the "Offered" tab shows rows)
+  kpis(); rows();
+});
+</script>
+</body>
+</html>
