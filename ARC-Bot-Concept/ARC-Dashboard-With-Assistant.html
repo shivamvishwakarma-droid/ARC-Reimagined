@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Dashboard + Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1f2430;--muted:#8a8f9c;--line:#ececf3;--blue:#2f5bff;--blue-soft:#eef2ff;--indigo:#5b3df5;
+    --side1:#c9919c;--side2:#b49ac2;--side3:#a7b0d4;--rose:#f4e7ea;--active:#2a2532;--good:#1a9d5a;--bad:#d1425a;--warn:#d9822b;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#f7f7fb;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+  /* master maroon sidebar */
+  .side{width:250px;flex:none;background:linear-gradient(180deg,var(--side1),var(--side2) 55%,var(--side3));padding:16px 14px;display:flex;flex-direction:column;color:#3a2f38;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:10px;background:var(--rose);border-radius:14px;padding:12px 14px;margin-bottom:4px}
+  .brand .ic{width:34px;height:34px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:16px}
+  .brand b{display:block;font-size:15px}.brand span{font-size:11px;color:#6b5560}
+  .navh{font-size:10.5px;letter-spacing:1px;color:#5f4f59;margin:16px 8px 6px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;font-size:14px;font-weight:500;color:#3a2f38;margin-bottom:2px;cursor:pointer}
+  .nav:hover{background:rgba(255,255,255,.3)}
+  .nav.on{background:var(--active);color:#fff;font-weight:600}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .viewall{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:12px;font-weight:600;font-size:13px;box-shadow:0 2px 8px rgba(80,40,60,.12)}
+
+  .main{flex:1;min-width:0;padding:22px 30px 60px}
+  .headtop{display:flex;align-items:center;margin-bottom:16px}
+  .h1{font-size:26px;font-weight:700;margin:0}
+  .userpill{margin-left:auto;display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font-size:14px;font-weight:500}
+  .userpill .av{width:22px;height:22px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;font-size:12px;color:var(--blue)}
+  .hr{height:1px;background:var(--line);margin:0 0 18px}
+  .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .sf,.si{border:1px solid var(--line);border-radius:12px;padding:11px 16px;display:inline-flex;gap:8px;color:#555;font-size:14px;background:#fff}
+  .vinc{margin-left:auto;color:var(--blue);font-weight:600;font-size:14px;cursor:pointer}
+  .genrep{background:var(--blue);color:#fff;border:none;border-radius:11px;padding:11px 18px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
+  .dates{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+  .datepill{background:#efe9f7;border-radius:999px;padding:7px 16px;font-size:13px;color:#555}
+  .reset{color:var(--blue);font-weight:600;font-size:13.5px;cursor:pointer}
+
+  .thead,.trow{display:grid;grid-template-columns:1fr 1.2fr 1.3fr 1fr 1.1fr 1fr 1fr .8fr;gap:10px;align-items:center}
+  .thead{padding:16px 18px;background:#f6f5f9;border-radius:12px;margin-bottom:10px}
+  .thead div{font-size:11.5px;color:var(--muted);font-weight:600}
+  .trow{padding:16px 18px;border:1px solid var(--line);border-radius:14px;margin-bottom:12px;font-size:13.5px;background:#fff}
+  .sd b{display:block} .sd span{color:var(--muted);font-size:12.5px}
+  .idet b{color:#2a2532} .idet .loc{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:5px;margin-top:3px}
+  .idet .loc::before{content:"•";color:#bbb}
+  .chip{font-size:12px;font-weight:600;border-radius:999px;padding:5px 12px;display:inline-flex;align-items:center;gap:6px}
+  .chip.den{background:#fdeaea;color:var(--bad)} .chip.wd{background:#f0f0f4;color:#555} .chip.dis{background:#e7f7ee;color:var(--good)}
+  .dt .d{display:flex;align-items:center;gap:6px} .dt .t{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .dim{color:#bbb}
+  .acts{display:flex;gap:8px}
+  .acts span{width:34px;height:34px;border-radius:9px;background:#f1eef9;display:grid;place-items:center;cursor:pointer;font-size:14px}
+
+  /* ===== floating chat widget ===== */
+  .fab{position:fixed;bottom:26px;right:26px;width:60px;height:60px;border-radius:50%;background:var(--indigo);color:#fff;display:grid;place-items:center;font-size:26px;cursor:pointer;box-shadow:0 8px 24px rgba(91,61,245,.4);z-index:60;border:none}
+  .fab:hover{filter:brightness(1.08)}
+  .fab .badge{position:absolute;top:-2px;right:-2px;background:#fff;color:var(--indigo);font-size:9px;font-weight:700;border-radius:999px;padding:2px 6px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+  .widget{position:fixed;bottom:26px;right:26px;width:410px;height:640px;max-height:calc(100vh - 52px);background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(30,20,60,.28);z-index:61;display:none;flex-direction:column;overflow:hidden}
+  .widget.on{display:flex}
+  .wbar{background:var(--indigo);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+  .wbar .lg{width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center}
+  .wbar .lg img{width:20px;height:20px}
+  .wbar b{font-size:14px}.wbar small{display:block;font-size:11px;opacity:.85}
+  .wbar .x{margin-left:auto;cursor:pointer;font-size:18px;opacity:.9}
+  iframe{border:none;flex:1;width:100%}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="ic">🏠</div><div><b>Master</b><span>Dashboard</span></div></div>
+    <div class="nav" style="margin-top:6px">📊 <span>Statistics</span></div>
+    <div class="navh">TRANSACTIONS</div>
+    <div class="nav on">📅 <span>Emi Applications</span></div>
+    <div class="nav">₹ <span>PG</span><span class="ch">›</span></div>
+    <div class="nav">◎ <span>Auto Debit</span><span class="ch">›</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="viewall">View All Institutes ›</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="headtop"><h1 class="h1">Hello, Vibgyor!</h1>
+      <div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div></div>
+    <div class="hr"></div>
+    <div class="toolbar">
+      <div class="sf">🔍 Search &amp; Filter</div>
+      <div class="si">ⓘ Status Info</div>
+      <span class="vinc">View Incomplete →</span>
+      <button class="genrep">📊 Generate Report</button>
+    </div>
+    <div class="dates"><span class="datepill">Start Date : 05-04-2026</span><span class="datepill">End Date : 03-07-2026</span><span class="reset">Reset Filter</span></div>
+
+    <div class="thead">
+      <div>Application ID</div><div>Student Details</div><div>Institute Details</div><div>Application Status</div>
+      <div>Created On</div><div>Completion Date</div><div>Disbursement Date</div><div>Actions</div>
+    </div>
+    <div id="rows"></div>
+  </main>
+</div>
+
+<!-- floating assistant -->
+<button class="fab" id="fab" onclick="toggleBot()">💬<span class="badge">Ask</span></button>
+<div class="widget" id="widget">
+  <div class="wbar">
+    <span class="lg"><img src="../ARC-Transactions-Concepts/02-Student-Payment-Lookup/gq-logo.png" onerror="this.style.display='none'" alt="gq"></span>
+    <div><b>ARC Assistant</b><small>Ask · get answers · open screens</small></div>
+    <span class="x" onclick="toggleBot()">✕</span>
+  </div>
+  <iframe id="botframe" src="ARC-Assistant.html" title="ARC Assistant"></iframe>
+</div>
+
+<!-- data store = single source of truth (this file is ONE level deep -> ../) -->
+<script src="../ARC-Data/store.js"></script>
+<script>
+/* ─── EMI *applications* widget — ILLUSTRATIVE (no store equivalent) ───────
+   window.ARCDB has NO EMI-application entity: its EMI rows are *registered*
+   payments, not loan applications with a Denied/Withdrawn/Disbursed lifecycle.
+   So the application metadata below (application ID, status, created /
+   completion / disbursement dates) is illustrative only and is NOT sourced
+   from the store — do not treat it as source of truth. Per project rules we
+   keep this list as-is rather than fabricate a new hardcoded dataset.
+   Student IDENTITY (name + campus), however, IS wired to ARCDB.student(sid)
+   below so it stays consistent with every other screen / the assistant.
+   (For any EMI *money / registered* figure, use ARCDB.payments({mode:'EMI'}).)
+   ─────────────────────────────────────────────────────────────────────── */
+const EMI=[
+  {app:'1898485',sid:'108370',name:'Riona Joel',st:'den',stl:'Denied',cr:'30-Jun-2026',tm:'10:37 AM',comp:'',disb:''},
+  {app:'1825566',sid:'25105',name:'Jaskaran Singh',st:'wd',stl:'Withdrawn',cr:'28-May-2026',tm:'1:25 PM',comp:'',disb:''},
+  {app:'1822484',sid:'342529',name:'Omari Schwarz',st:'dis',stl:'Disbursed',cr:'26-May-2026',tm:'2:14 PM',comp:'15-May-2026',disb:'29-May-2026'},
+  {app:'1822465',sid:'342534',name:'Riansh H',st:'dis',stl:'Disbursed',cr:'26-May-2026',tm:'2:09 PM',comp:'15-May-2026',disb:'29-May-2026'},
+  {app:'1818603',sid:'336919',name:'Abhigna Singh',st:'dis',stl:'Disbursed',cr:'23-May-2026',tm:'10:51 PM',comp:'03-Jun-2026',disb:'04-Jun-2026'},
+  {app:'1815860',sid:'26142',name:'Kashvika K',st:'dis',stl:'Disbursed',cr:'22-May-2026',tm:'10:42 AM',comp:'24-May-2026',disb:'25-May-2026'},
+];
+
+function renderEMI(){
+  const rowsEl=document.getElementById('rows'); if(!rowsEl) return;
+  const hasDB=typeof window.ARCDB!=='undefined';
+  rowsEl.innerHTML=EMI.map(e=>{
+    // student identity from the single source of truth (fallback keeps the demo resilient)
+    const s=hasDB?ARCDB.student(e.sid):null;
+    const name=s?s.name:e.name;
+    const campus=s?s.campus:'Marathahalli';
+    return `<div class="trow">
+  <div>${e.app}</div>
+  <div class="sd"><b>${e.sid}</b><span>${name}</span></div>
+  <div class="idet"><b>Vibgyor.</b><div class="loc">Bangalore (${campus})</div><div class="loc">Vibgyor High</div></div>
+  <div><span class="chip ${e.st}">${e.st==='den'?'✕':e.st==='wd'?'⊖':'✓'} ${e.stl}</span></div>
+  <div class="dt"><div class="d">📅 ${e.cr}</div><div class="t">🕘 ${e.tm}</div></div>
+  <div>${e.comp?'<span class="dim">📅 '+e.comp+'</span>':'–'}</div>
+  <div>${e.disb?'📅 '+e.disb:'–'}</div>
+  <div class="acts"><span title="View">👁</span>${e.st==='dis'?'<span title="Disbursement">🧾</span>':''}</div>
+</div>`;
+  }).join('');
+}
+document.addEventListener('DOMContentLoaded', renderEMI);
+
+function toggleBot(){
+  const w=document.getElementById('widget'), f=document.getElementById('fab');
+  const open=w.classList.toggle('on');
+  f.style.display=open?'none':'grid';
+}
+</script>
+</body>
+</html>

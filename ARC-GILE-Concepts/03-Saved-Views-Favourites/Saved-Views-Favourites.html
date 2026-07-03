@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Master Dashboard — Filter, Saved Views & Recents</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b2f3a; --muted:#8a8f9c; --line:#ececf3; --page:#f7f7fb;
+    --indigo:#3b3f9e; --indigo-soft:#eef0ff;
+    --side1:#c98f9c; --side2:#b79ac2; --side3:#cfd0e8;
+    --rose:#f4e7ea; --gold:#e8a92b; --gold-soft:#fff7e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--page);color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+
+  /* SIDEBAR (unchanged) */
+  .side{width:240px;flex:none;background:linear-gradient(180deg,var(--side1) 0%,var(--side2) 52%,var(--side3) 100%);
+    padding:18px 14px;display:flex;flex-direction:column;color:#3a2f38}
+  .brand{display:flex;align-items:center;gap:10px;background:var(--rose);border-radius:14px;padding:12px 14px;margin-bottom:6px}
+  .brand .ic{width:34px;height:34px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:17px}
+  .brand .t b{display:block;font-size:15px;line-height:1.1}
+  .brand .t span{font-size:11px;color:#6b5560}
+  .nav-h{font-size:10.5px;letter-spacing:1px;color:#6b5560;margin:14px 8px 6px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;font-weight:500;color:#3a2f38}
+  .nav:hover{background:rgba(255,255,255,.35)}
+  .nav.on{background:#fff;font-weight:600;box-shadow:0 2px 6px rgba(80,40,60,.12)}
+  .nav .chev{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .viewall{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:12px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(80,40,60,.12)}
+
+  /* MAIN */
+  .main{flex:1;padding:22px 28px;min-width:0}
+  .top{display:flex;align-items:center;margin-bottom:18px}
+  .hello{font-size:24px;font-weight:600}
+  .userpill{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500}
+  .userpill .av{width:20px;height:20px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:11px;color:var(--indigo)}
+
+  .summary{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:14px}
+  .sumitem{display:flex;align-items:center;gap:10px;font-size:13.5px}
+  .sumitem .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center}
+  .sumitem b{font-weight:600}
+  .sumitem .lnk{color:var(--indigo);cursor:pointer;text-decoration:underline}
+  .vdiv{width:1px;height:26px;background:var(--line)}
+
+  /* MY VIEWS + FILTER */
+  .views{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+  .vhead{display:flex;align-items:center;margin-bottom:12px;gap:12px}
+  .cap{font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:600}
+  .newtag{font-size:9px;background:var(--indigo);color:#fff;border-radius:5px;padding:2px 6px;letter-spacing:.4px;margin-left:6px}
+  .fbox{position:relative;flex:1;max-width:460px}
+  .fbox .mag{position:absolute;left:12px;top:9px;color:var(--muted)}
+  .finput{width:100%;padding:9px 12px 9px 32px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13.5px;outline:none}
+  .finput:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-soft)}
+
+  .vrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .vrow:last-child{margin-bottom:0}
+  .vlabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;width:74px;flex:none}
+  .view{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:7px 12px;font-size:12.5px;cursor:pointer;border:1px solid var(--line);background:#faf9fc}
+  .view:hover{border-color:var(--indigo);background:var(--indigo-soft)}
+  .view.on{border-color:var(--indigo);background:var(--indigo-soft);color:var(--indigo);font-weight:600;box-shadow:0 0 0 2px var(--indigo-soft)}
+  .view.fav{background:var(--gold-soft);border-color:#f0dca6}
+  .view .star{color:var(--gold)}
+  .view .sub{color:var(--muted);font-size:11px}
+  .view .rm{color:var(--muted);font-weight:700;margin-left:2px}
+  .view .rm:hover{color:var(--indigo)}
+  .empty-v{font-size:12px;color:var(--muted);font-style:italic}
+
+  /* active-filter bar */
+  .fbar{display:none;align-items:center;gap:10px;background:var(--indigo-soft);color:var(--indigo);
+    border:1px solid #dfe2ff;border-radius:12px;padding:9px 14px;margin-bottom:14px;font-size:13px}
+  .fbar.on{display:flex}
+  .fbar b{font-weight:700}
+  .fbar .clr{margin-left:auto;color:var(--muted);cursor:pointer;text-decoration:underline}
+  .fbar .clr:hover{color:var(--indigo)}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:13px 18px;background:#faf9fc}
+  td{padding:13px 18px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+  .rowstar{cursor:pointer;font-size:16px;color:#d7d9e2;user-select:none}
+  .rowstar.on{color:var(--gold)}
+  .vd{border:1.4px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .vd:hover{background:var(--indigo);color:#fff}
+  .btag{display:inline-block;font-size:11.5px;background:#f2edf5;color:#5a4b63;border-radius:6px;padding:3px 9px}
+  .norows td{text-align:center;color:var(--muted);padding:24px}
+  .hint{font-size:12px;color:var(--muted);margin-top:16px;text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="ic">🏠</div><div class="t"><b>Master</b><span>Dashboard</span></div></div>
+    <div class="nav on" style="margin-top:8px">📊 <span>Statistics</span></div>
+    <div class="nav-h">TRANSACTIONS</div>
+    <div class="nav">📅 <span>Emi Applications</span></div>
+    <div class="nav">₹ <span>PG</span><span class="chev">›</span></div>
+    <div class="nav">🔁 <span>Auto Debit</span><span class="chev">›</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="viewall">View All Institutes ›</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div class="hello">Hello, Vibgyor!</div>
+      <div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div>
+    </div>
+
+    <div class="summary">
+      <div class="sumitem"><span class="ic">👥</span><span>Total Groups : <b>VIBGYOR</b> &amp; <span class="lnk">1 others</span></span></div>
+      <div class="vdiv"></div>
+      <div class="sumitem"><span class="ic">🏛️</span><span>Total Institute Count : <b>2</b></span></div>
+    </div>
+
+    <!-- ============ NEW: search filter + saved views ============ -->
+    <div class="views">
+      <div class="vhead">
+        <span class="cap">FIND / MY VIEWS<span class="newtag">NEW</span></span>
+        <div class="fbox">
+          <span class="mag">⌕</span>
+          <input class="finput" id="filter" placeholder="Search institute / location / board…" oninput="render()">
+        </div>
+      </div>
+      <div class="vrow">
+        <span class="vlabel">★ Pinned</span>
+        <span id="favWrap"></span>
+      </div>
+      <div class="vrow">
+        <span class="vlabel">Recent</span>
+        <span id="recWrap"></span>
+      </div>
+    </div>
+
+    <!-- active filter indicator -->
+    <div class="fbar" id="fbar">
+      <span>Filtered to:</span><b id="fbartxt"></b>
+      <span class="clr" onclick="clearFilter()">clear filter</span>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead><tr>
+          <th style="width:30px"></th>
+          <th>Sr.No</th><th>Institute Name</th><th>Locations</th><th>Education Type</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="hint">
+      <b>Suggestion #3 — Filter · Saved Views · Recents.</b> This is a <b>filter</b> to narrow the list — search or click a
+      Pinned/Recent chip, then open the one campus you want. Only one dashboard opens at a time. ★ pins a campus; opening one adds it to Recent.<br>
+      Faithful ARC colours, font &amp; layout — sequence Institute › Location › Board. Pinned &amp; Recent persist in your browser. Dummy data.
+    </div>
+  </main>
+</div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+// DATA is derived live from the shared store (window.ARCDB) — SINGLE SOURCE OF TRUTH.
+// Each GILE row = a distinct campus (Location) × board (Education Type) that actually
+// has students in ARCDB, in the store's campus order. Guard so the page degrades
+// gracefully if the store failed to load.
+function buildData(){
+  if(!window.ARCDB) return [];
+  const seen=new Set(), out=[];
+  ARCDB.students().forEach(s=>{
+    const k=s.campus+'|'+s.board;
+    if(seen.has(k)) return;
+    seen.add(k);
+    out.push({group:"VIBGYOR", inst:"Vibgyor High", loc:s.campus, edu:s.board});
+  });
+  return out;
+}
+let DATA=[];
+const key=r=>r.inst+'|'+r.loc+'|'+r.edu;
+const shortInst=r=>r.inst.includes('Kids')?'Vibgyor Kids':'Vibgyor';
+const label=r=>`${r.inst.includes('Kids')?'Vibgyor Kids':'Vibgyor'} › ${r.loc} › ${r.edu}`;
+const LS_F='arc_fav_v4', LS_R='arc_rec_v4';          // v4: keys now sourced from ARCDB
+let favs=[];
+let recents=[];
+let activeFilter=null;                               // a single GILE key applied as a filter
+
+function load(k,def){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:def;}catch(e){return def;}}
+function save(){localStorage.setItem(LS_F,JSON.stringify(favs));localStorage.setItem(LS_R,JSON.stringify(recents));}
+function byKey(k){return DATA.find(r=>key(r)===k);}
+function pushRecent(k){recents=[k,...recents.filter(x=>x!==k)].slice(0,5);save();}
+
+function applyFilter(k){ activeFilter = activeFilter===k ? null : k; render(); }  // chip toggles the filter
+function clearFilter(){ activeFilter=null; render(); }
+function toggleFav(k,ev){ev&&ev.stopPropagation();
+  favs = favs.includes(k)? favs.filter(x=>x!==k) : [k,...favs].slice(0,8); save(); render(); }
+function openDash(k){ pushRecent(k);
+  const r=byKey(k); alert('Opening dashboard:\n\n'+r.inst+' › '+r.loc+' › '+r.edu); render(); }
+
+function visibleRows(){
+  const q=document.getElementById('filter').value.trim().toLowerCase();
+  let rows=DATA.filter(r=>!q || (r.inst+' '+r.loc+' '+r.edu+' '+r.group).toLowerCase().includes(q));
+  if(activeFilter && !q) rows=rows.filter(r=>key(r)===activeFilter);
+  return rows;
+}
+function chip(k,isFav){
+  const r=byKey(k); if(!r)return'';
+  const on = activeFilter===k?'on':'';
+  const star = isFav?`<span class="star">★</span>`:'';
+  const rm = isFav?`<span class="rm" title="unpin" onclick="toggleFav('${k}',event)">✕</span>`:'';
+  return `<span class="view ${on} ${isFav?'fav':''}" onclick="applyFilter('${k}')">${star}
+     <span><b>${r.loc} › ${r.edu}</b> <span class="sub">${shortInst(r)}</span></span>${rm}</span>`;
+}
+function render(){
+  document.getElementById('favWrap').innerHTML = favs.length? favs.map(k=>chip(k,true)).join('')
+    : `<span class="empty-v">No pinned views yet — ★ a row to pin it.</span>`;
+  document.getElementById('recWrap').innerHTML = recents.length? recents.map(k=>chip(k,false)).join('')
+    : `<span class="empty-v">Nothing opened yet.</span>`;
+
+  const fb=document.getElementById('fbar');
+  if(activeFilter && !document.getElementById('filter').value.trim()){
+    fb.classList.add('on'); document.getElementById('fbartxt').textContent=label(byKey(activeFilter));
+  } else fb.classList.remove('on');
+
+  const rows=visibleRows();
+  const tb=document.getElementById('rows');
+  if(!rows.length){tb.innerHTML=`<tr class="norows"><td colspan="6">No campuses match</td></tr>`;return;}
+  tb.innerHTML=rows.map((r,i)=>{
+    const k=key(r), fav=favs.includes(k);
+    return `<tr>
+      <td><span class="rowstar ${fav?'on':''}" title="pin favourite" onclick="toggleFav('${k}',event)">${fav?'★':'☆'}</span></td>
+      <td>${String(i+1).padStart(2,'0')}</td>
+      <td>${r.inst}</td>
+      <td>${r.loc}</td>
+      <td><span class="btag">${r.edu}</span></td>
+      <td style="text-align:right"><button class="vd" onclick="openDash('${k}')">View Dashboard ›</button></td>
+    </tr>`;}).join('');
+}
+
+function init(){
+  DATA = buildData();
+  if(!DATA.length){
+    // Store missing/failed to load — leave a visible, non-breaking placeholder.
+    document.getElementById('rows').innerHTML =
+      `<tr class="norows"><td colspan="6">Data store unavailable</td></tr>`;
+    return;
+  }
+  // Default pinned/recent picks, derived from live ARCDB rows (were DATA[8],[5],[0]).
+  const k=r=>key(r);
+  const byLB=(loc,edu)=>DATA.find(r=>r.loc===loc&&r.edu===edu);
+  const defFav=(byLB('Whitefield','CBSE')||DATA[DATA.length-1]);
+  const defRec=[byLB('Yelahanka','CIE'), byLB('Marathahalli','CBSE')].filter(Boolean);
+  favs    = load(LS_F, [k(defFav)]);
+  recents = load(LS_R, defRec.map(k));
+  // keep only keys that still resolve against current ARCDB data
+  favs    = favs.filter(byKey);
+  recents = recents.filter(byKey);
+  render();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+</script>
+</body>
+</html>

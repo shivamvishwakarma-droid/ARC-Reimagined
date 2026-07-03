@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Master Dashboard — Smart GILE Search</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b2f3a; --muted:#8a8f9c; --line:#ececf3; --page:#f7f7fb;
+    --indigo:#3b3f9e; --indigo-soft:#eef0ff;
+    --side1:#c98f9c; --side2:#b79ac2; --side3:#cfd0e8;
+    --rose:#f4e7ea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--page);color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+
+  /* ---------------- SIDEBAR (unchanged) ---------------- */
+  .side{width:240px;flex:none;background:linear-gradient(180deg,var(--side1) 0%,var(--side2) 52%,var(--side3) 100%);
+    padding:18px 14px;display:flex;flex-direction:column;color:#3a2f38}
+  .brand{display:flex;align-items:center;gap:10px;background:var(--rose);border-radius:14px;padding:12px 14px;margin-bottom:6px}
+  .brand .ic{width:34px;height:34px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:17px}
+  .brand .t b{display:block;font-size:15px;line-height:1.1}
+  .brand .t span{font-size:11px;color:#6b5560}
+  .nav-h{font-size:10.5px;letter-spacing:1px;color:#6b5560;margin:14px 8px 6px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;font-weight:500;color:#3a2f38}
+  .nav:hover{background:rgba(255,255,255,.35)}
+  .nav.on{background:#fff;font-weight:600;box-shadow:0 2px 6px rgba(80,40,60,.12)}
+  .nav .chev{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .viewall{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:12px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(80,40,60,.12)}
+
+  /* ---------------- MAIN ---------------- */
+  .main{flex:1;padding:22px 28px;min-width:0}
+  .top{display:flex;align-items:center;margin-bottom:18px}
+  .hello{font-size:24px;font-weight:600}
+  .userpill{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500}
+  .userpill .av{width:20px;height:20px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:11px;color:var(--indigo)}
+
+  .summary{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:14px}
+  .sumitem{display:flex;align-items:center;gap:10px;font-size:13.5px}
+  .sumitem .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center}
+  .sumitem b{font-weight:600}
+  .sumitem .lnk{color:var(--indigo);cursor:pointer;text-decoration:underline}
+  .vdiv{width:1px;height:26px;background:var(--line)}
+
+  /* ============ NEW: SMART SEARCH BOX ============ */
+  .smart{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px;position:relative;z-index:20}
+  .smart .cap{font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:600;display:block;margin-bottom:8px}
+  .newtag{font-size:9px;background:var(--indigo);color:#fff;border-radius:5px;padding:2px 6px;letter-spacing:.4px;margin-left:6px}
+  .sbox{position:relative}
+  .sbox .mag{position:absolute;left:14px;top:13px;color:var(--muted);font-size:16px}
+  .sinput{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--line);border-radius:12px;font-size:15px;font-family:inherit;outline:none}
+  .sinput:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-soft)}
+  .drop{position:absolute;top:52px;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 14px 34px rgba(40,30,60,.16);overflow:hidden;display:none;max-height:340px;overflow-y:auto}
+  .drop.on{display:block}
+  .dh{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:10px 16px 4px;font-weight:600}
+  .showall{padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;color:var(--indigo);background:var(--indigo-soft);border-bottom:1px solid #e4e6ff}
+  .showall:hover,.showall.hi{background:#e2e5ff}
+  .showall .ico{width:26px;height:26px;border-radius:7px;background:#fff;display:grid;place-items:center;font-size:13px;flex:none}
+  .showall .sub{font-size:11px;color:var(--muted);font-weight:500}
+  .di{padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;border-top:1px solid #f4f4f9}
+  .di:first-of-type{border-top:none}
+  .di:hover,.di.hi{background:var(--indigo-soft)}
+  .di .ico{width:26px;height:26px;border-radius:7px;background:#f2edf5;display:grid;place-items:center;font-size:12px;flex:none}
+  .di .lab{font-weight:600;font-size:14px}
+  .di .path{font-size:12px;color:var(--muted)}
+  .di mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
+  .di .go{margin-left:auto;font-size:11px;color:var(--indigo);font-weight:600;opacity:0;white-space:nowrap}
+  .di:hover .go,.di.hi .go{opacity:1}
+  .chipsline{margin-top:10px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .rec{font-size:12px;padding:5px 11px;border-radius:999px;background:#faf9fc;border:1px solid var(--line);cursor:pointer}
+  .rec:hover{border-color:var(--indigo);color:var(--indigo)}
+  .active-scope{display:none;align-items:center;gap:8px;margin-top:10px;font-size:12.5px}
+  .active-scope.on{display:flex}
+  .crumb{background:var(--indigo-soft);color:var(--indigo);border-radius:8px;padding:5px 11px;font-weight:600}
+  .clearx{color:var(--muted);cursor:pointer;text-decoration:underline}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:14px 18px;background:#faf9fc}
+  td{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+  .vd{border:1.4px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .vd:hover{background:var(--indigo-soft)}
+  .btag{display:inline-block;font-size:11.5px;background:#f2edf5;color:#5a4b63;border-radius:6px;padding:3px 9px}
+  .norows td{text-align:center;color:var(--muted);padding:26px}
+  .hint{font-size:12px;color:var(--muted);margin-top:16px;text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="ic">🏠</div><div class="t"><b>Master</b><span>Dashboard</span></div></div>
+    <div class="nav on" style="margin-top:8px">📊 <span>Statistics</span></div>
+    <div class="nav-h">TRANSACTIONS</div>
+    <div class="nav">📅 <span>Emi Applications</span></div>
+    <div class="nav">₹ <span>PG</span><span class="chev">›</span></div>
+    <div class="nav">🔁 <span>Auto Debit</span><span class="chev">›</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="viewall">View All Institutes ›</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div class="hello">Hello, Vibgyor!</div>
+      <div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div>
+    </div>
+
+    <div class="summary">
+      <div class="sumitem"><span class="ic">👥</span><span>Total Groups : <b>VIBGYOR</b> &amp; <span class="lnk">1 others</span></span></div>
+      <div class="vdiv"></div>
+      <div class="sumitem"><span class="ic">🏛️</span><span>Total Institute Count : <b>2</b></span></div>
+    </div>
+
+    <!-- ============ NEW: single smart search box ============ -->
+    <div class="smart">
+      <span class="cap">FIND A GILE<span class="newtag">NEW</span></span>
+      <div class="sbox">
+        <span class="mag">⌕</span>
+        <input class="sinput" id="s" autocomplete="off"
+               placeholder="Type anything — “Marathahalli CBSE”, “Vibgyor ICSE”, “Hennur”…"
+               oninput="run()" onfocus="run()" onkeydown="nav(event)">
+        <div class="drop" id="drop"></div>
+      </div>
+      <div class="chipsline" id="chips">
+        <span>Recent:</span>
+      </div>
+      <div class="active-scope" id="scope">
+        <span>Showing:</span><span class="crumb" id="crumb"></span>
+        <span class="clearx" onclick="clearScope()">clear</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead><tr>
+          <th>Sr.No</th><th>Group Name</th><th>Institute Name</th><th>Locations</th><th>Education Type</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="hint">
+      <b>Suggestion #2 — Single smart search box.</b> One field instead of four dropdowns.
+      Type the way you think (“Marathahalli CBSE”) and it resolves the whole Group › Institute › Location › Education path in one shot — with keyboard ↑ ↓ Enter.<br>
+      Faithful ARC colours, font &amp; layout — only the finder changed. Dummy data.
+    </div>
+  </main>
+</div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+/* Smart Search Box — all data now comes from window.ARCDB (single source of truth).
+   ARCDB is student-centric and has no Group/Institute level, so:
+     • Group + Institute are the page's fixed context (see userpill / summary header).
+     • Location = student.campus, Education = student.board — derived per student.
+   Search uses ARCDB.findStudent(q) (name-contains / id-exact) plus an ARCDB-field
+   token match so multi-word queries like "Marathahalli CBSE" still resolve.
+   Picking a student resolves their Group › Institute › Location › Education path. */
+const GROUP='VIBGYOR', INSTITUTE='Vibgyor High';   // page context — no store equivalent
+let DATA=[], filtered=[], hiIndex=-1, current=[];
+
+function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function mark(text,q){
+  if(!q)return text;
+  const parts=q.split(/\s+/).filter(Boolean).map(esc);
+  let out=text;
+  parts.forEach(p=>{out=out.replace(new RegExp('('+p+')','ig'),'<mark>$1</mark>');});
+  return out;
+}
+/* pending context for a student, computed live from the store's ledger */
+function pendingLabel(id){
+  const L=window.ARCDB&&ARCDB.studentLedger(id);
+  return (L&&L.totals.pending>0) ? ' · '+ARCDB.inr(L.totals.pending)+' due' : '';
+}
+/* query the real store: name/id via findStudent, plus token match over ARCDB fields */
+function searchStudents(q){
+  if(!q) return DATA.slice();
+  const hits=new Set(ARCDB.findStudent(q).map(s=>s.id));   // name-contains / id-exact
+  const toks=q.toLowerCase().split(/\s+/).filter(Boolean);
+  return DATA.filter(r=>{
+    if(hits.has(r.id)) return true;
+    const hay=(r.name+' '+r.id+' '+r.cls+' '+r.loc+' '+r.edu).toLowerCase();
+    return toks.every(t=>hay.includes(t));
+  });
+}
+function run(){
+  if(!window.ARCDB)return;
+  const q=document.getElementById('s').value.trim();
+  const drop=document.getElementById('drop');
+  current = searchStudents(q);
+  hiIndex=-1;
+  if(!current.length){
+    drop.innerHTML=`<div class="di"><span class="path">No student matches “${q}”</span></div>`;
+    drop.classList.add('on');return;
+  }
+  const showAllRow = q && current.length>1
+    ? `<div class="showall ${hiIndex===-1?'hi':''}" onclick="showAll()" onmouseenter="hover(-1)">
+         <span class="ico">≡</span>
+         <span><div>Show all ${current.length} rows for “${q}”</div>
+         <div class="sub">everything matching — press Enter</div></span>
+       </div>` : '';
+  drop.innerHTML=showAllRow+`<div class="dh">${q?'Or jump to one':'Suggestions'}</div>`+
+    current.map((r,i)=>`
+      <div class="di" data-i="${i}" onclick="choose(${i})" onmouseenter="hover(${i})">
+        <span class="ico">🎓</span>
+        <span>
+          <div class="lab">${mark(r.name,q)}</div>
+          <div class="path">${mark(r.id+' · '+r.cls+' · '+r.loc+' · '+r.edu+' · '+r.mobile,q)}${pendingLabel(r.id)}</div>
+        </span>
+        <span class="go">Open ›</span>
+      </div>`).join('');
+  drop.classList.add('on');
+}
+function hover(i){hiIndex=i;paintHi();}
+function paintHi(){
+  document.querySelectorAll('.di').forEach(el=>el.classList.toggle('hi',+el.dataset.i===hiIndex));
+  const sa=document.querySelector('.showall'); if(sa)sa.classList.toggle('hi',hiIndex===-1);
+}
+function hasShowAll(){return !!document.querySelector('.showall');}
+function nav(e){
+  if(!current.length)return;
+  const min = hasShowAll()? -1 : 0;               // -1 = the "Show all" row
+  if(e.key==='ArrowDown'){e.preventDefault();hiIndex=Math.min(hiIndex+1,current.length-1);paintHi();}
+  else if(e.key==='ArrowUp'){e.preventDefault();hiIndex=Math.max(hiIndex-1,min);paintHi();}
+  else if(e.key==='Enter'){e.preventDefault();
+    if(hiIndex===-1 && hasShowAll()) showAll();     // default Enter = show all matches
+    else choose(hiIndex<0?0:hiIndex);}
+  else if(e.key==='Escape'){document.getElementById('drop').classList.remove('on');}
+}
+function choose(i){
+  const r=current[i]; if(!r)return;
+  filtered=[r];
+  document.getElementById('s').value='';
+  document.getElementById('drop').classList.remove('on');
+  document.getElementById('scope').classList.add('on');
+  document.getElementById('crumb').textContent=`${r.name} · ${r.loc} › ${r.edu}`;
+  render();
+}
+function showAll(){
+  const q=document.getElementById('s').value.trim();
+  if(!current.length)return;
+  filtered=current.slice();
+  document.getElementById('s').value='';
+  document.getElementById('drop').classList.remove('on');
+  document.getElementById('scope').classList.add('on');
+  document.getElementById('crumb').textContent=`“${q}” — ${filtered.length} rows`;
+  render();
+}
+function quick(text){document.getElementById('s').value=text;run();}
+function clearScope(){filtered=DATA.slice();document.getElementById('scope').classList.remove('on');render();}
+document.addEventListener('click',e=>{if(!e.target.closest('.sbox'))document.getElementById('drop').classList.remove('on');});
+
+/* "Recent" chips = real ARCDB students (single source of truth) */
+function renderChips(){
+  const box=document.getElementById('chips'); if(!box||!window.ARCDB)return;
+  box.innerHTML='<span>Recent:</span>'+ARCDB.students().slice(0,3)
+    .map(s=>`<span class="rec" onclick="quick('${s.name}')">${s.name} · ${s.campus}</span>`).join('');
+}
+
+function render(){
+  const tb=document.getElementById('rows');
+  if(!filtered.length){tb.innerHTML=`<tr class="norows"><td colspan="6">No matches</td></tr>`;return;}
+  tb.innerHTML=filtered.map((r,i)=>`<tr>
+    <td>${String(i+1).padStart(2,'0')}</td>
+    <td>${r.group}</td><td>${r.inst}</td><td>${r.loc}</td>
+    <td><span class="btag">${r.edu}</span></td>
+    <td style="text-align:right"><button class="vd">View Dashboard ›</button></td>
+  </tr>`).join('');
+}
+
+/* build everything from ARCDB on load */
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!window.ARCDB)return;                       // guard: store not loaded
+  DATA = ARCDB.students().map(s=>({
+    group:GROUP, inst:INSTITUTE,                 // page context (no store equivalent)
+    loc:s.campus, edu:s.board,                   // Location = campus, Education = board
+    id:s.id, name:s.name, cls:s.cls, mobile:s.mobile
+  }));
+  filtered = DATA.slice();
+  renderChips();
+  render();
+});
+</script>
+</body>
+</html>

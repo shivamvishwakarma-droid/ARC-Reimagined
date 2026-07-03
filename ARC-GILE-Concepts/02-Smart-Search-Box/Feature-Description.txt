@@ -1,0 +1,76 @@
+========================================================
+ ARC-FMS  ·  GILE Selector Concept #2
+ SINGLE SMART SEARCH BOX
+========================================================
+
+FILE
+----
+Smart-Search-Box.html  — open in any browser (dummy data, no DB connection)
+
+
+THE PROBLEM IT SOLVES
+---------------------
+The current "Search & Filter" modal makes the user think in the system's
+hierarchy: first pick Group, then Institute, then Location, then
+Education-type — four separate dropdowns, in order.
+
+But users don't think top-down. They think of the END point:
+"my Coimbatore MBA campus" or "Damodaran BSc". Forcing them to walk
+the tree is slower than letting them just say what they want.
+
+
+THE IDEA
+--------
+Replace the four dropdowns with ONE search field that understands GILE.
+
+    ⌕  Type anything — "Coimbatore MBA", "Damodaran BSc", "GRD MCA"...
+
+  - Type free text in any order; every word is matched across
+    Group + Institute + Location + Education-type at once.
+  - Live autocomplete shows the full resolved path for each match
+    (Location · Education on top, Group › Institute underneath),
+    with the matched words highlighted.
+  - Keyboard friendly: Up / Down to move, Enter to select, Esc to close.
+  - Selecting one result scopes the dashboard to that exact GILE and
+    shows a clear breadcrumb ("Showing: GRD Education Trust › ...").
+  - "Recent" chips give one-click return to the last few GILEs.
+
+
+WHY IT FITS USER BEHAVIOUR
+--------------------------
+  - Matches how people actually recall a campus (by name/place, not by
+    hierarchy position). Fewest keystrokes to the target.
+  - Fastest option for power users / daily ops who already know the
+    campus they want — no clicking through 4 lists.
+  - Forgiving: word order doesn't matter, partial words work.
+
+
+WHAT STAYED THE SAME
+--------------------
+A faithful copy of the live ARC screen:
+  - Maroon-to-lavender sidebar, "Master Dashboard" logo box, and the
+    Statistics / Transactions / PG / Auto Debit / Reports navigation.
+  - "Hello, GRD!" header + "GRD Institutions" user pill.
+  - "Total Groups / Total Institute Count" summary bar.
+  - Same table columns: Sr.No, Group Name, Institute Name, Locations,
+    Education Type, View Dashboard.
+  - Same colours and font (Poppins).
+Only the FINDER changed — from 4 dropdowns to 1 smart search box.
+
+
+HOW TO DEMO
+-----------
+  1. Click the search box (suggestions appear).
+  2. Type "Coimbatore MBA" — see matches with highlights.
+  3. Use Down arrow + Enter, or click a row.
+  4. The table scopes to that GILE and a breadcrumb appears; "clear"
+     resets. Try a "Recent" chip too.
+
+
+PERSISTENT-BAR (#1) vs SMART-SEARCH (#2)
+----------------------------------------
+  - #1 is best for BROWSING / changing one level at a time and always
+    seeing the current context.
+  - #2 is best for JUMPING straight to a known campus with minimal clicks.
+  - Ideal end-state = BOTH together (search to jump, breadcrumb bar to
+    browse & stay oriented).

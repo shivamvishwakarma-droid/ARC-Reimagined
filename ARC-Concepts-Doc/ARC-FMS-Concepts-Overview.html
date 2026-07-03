@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS — Concepts & Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#23232b;--muted:#7a7f8c;--line:#e8e8f0;--blue:#2f5bff;--blue-soft:#eef2ff;--bg:#f6f6fb;--good:#1a9d5a;--warn:#d9822b;--bad:#d1425a;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 28px 80px}
+  header.top{background:linear-gradient(120deg,#2f3a8f,#5b3f96);color:#fff;border-radius:20px;padding:36px 40px;margin-bottom:30px}
+  header.top h1{margin:0 0 8px;font-size:30px}
+  header.top p{margin:0;opacity:.9;font-size:15px}
+  .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;font-size:13px}
+  .meta b{display:block;font-size:20px}
+  .how{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:30px;font-size:14px;color:#555}
+  .how b{color:var(--ink)}
+  .toc{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .toc a{font-size:13px;background:var(--blue-soft);color:var(--blue);text-decoration:none;border-radius:8px;padding:6px 12px;font-weight:600}
+
+  h2.sec{font-size:22px;margin:44px 0 6px;padding-top:10px;border-top:2px solid var(--line)}
+  .sec-sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:20px;box-shadow:0 2px 10px rgba(30,20,50,.03)}
+  .card h3{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .tag{font-size:10px;font-weight:700;letter-spacing:.4px;border-radius:6px;padding:3px 8px;text-transform:uppercase}
+  .tag.new{background:var(--blue-soft);color:var(--blue)} .tag.bug{background:#fdeaea;color:var(--bad)} .tag.ux{background:#e7f7ee;color:var(--good)}
+  .card .p{font-size:14px;margin:10px 0}
+  .card .p .lbl{font-weight:600;color:#444}
+  .open{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;text-decoration:none;border-radius:10px;padding:10px 18px;font-weight:600;font-size:14px;margin-top:8px}
+  .open:hover{filter:brightness(.95)}
+  .files{font-size:12px;color:var(--muted);margin-top:8px}
+  .files a{color:var(--blue)}
+
+  .shot{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .shot img{width:100%;display:block}
+  .shot .cap{font-size:12px;color:var(--muted);padding:8px 12px;background:#faf9fc;border-top:1px solid var(--line)}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  .ba .box{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .ba .box img{width:100%;display:block}
+  .ba .box .h{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:8px 12px}
+  .ba .before .h{background:#fdeaea;color:var(--bad)} .ba .after .h{background:#e7f7ee;color:var(--good)}
+  @media(max-width:760px){.ba{grid-template-columns:1fr}}
+  .foot{margin-top:40px;font-size:12px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>ARC-FMS — Feature Concepts & Prototypes</h1>
+    <p>Research case: <b>VIBGYOR</b> — one of our heaviest EMI / PG / Auto-Debit institutes (37 campuses across Bangalore, Pune &amp; Mumbai; CBSE / ICSE / CIE). Clickable prototypes on VIBGYOR data, with before / after snapshots and one verified data bug.</p>
+    <div class="meta">
+      <div><b>VIBGYOR</b>research institute</div>
+      <div><b>11</b>prototypes</div>
+      <div><b>5</b>areas</div>
+      <div><b>1</b>verified bug (₹1.18 Cr)</div>
+    </div>
+  </header>
+
+  <div class="shot" style="margin-bottom:24px">
+    <img src="assets/before_vibgyor_live.jpeg" alt="VIBGYOR live dashboard">
+    <div class="cap">Live today — VIBGYOR (Bangalore Marathahalli) EMI Applications on the current ARC dashboard. The prototypes below rebuild these exact screens on VIBGYOR data.</div>
+  </div>
+
+  <div class="how">
+    <b>How to use:</b> click <b>▶ Open prototype</b> on any card to launch it in your browser (works locally, no login/DB needed — VIBGYOR-shaped sample data).
+    Each prototype rebuilds the exact ARC screen and changes only the one thing described. Snapshots below show live <span style="color:var(--bad)">before</span> vs proposed <span style="color:var(--good)">after</span>.
+    <div class="toc">
+      <a href="#gile">GILE Navigation</a><a href="#stats">Stats & Collections</a><a href="#inst">Institute Setup</a>
+      <a href="#txn">Transactions</a><a href="#rep">Reports</a><a href="#bug">Verified Bug</a>
+    </div>
+  </div>
+
+  <!-- ============ GILE ============ -->
+  <h2 class="sec" id="gile">1 · GILE Navigation</h2>
+  <p class="sec-sub">Group › Institute › Location › Education — the biggest usability gap for multi-location institutes (VIBGYOR, SVKM…).</p>
+
+  <div class="ba">
+    <div class="box before"><div class="h">Before — modal, resets, no context</div><img src="assets/before_gile_modal.png" alt="before gile modal"></div>
+    <div class="box after"><div class="h">After — "You are here" breadcrumb</div><img src="assets/after_youarehere.png" alt="after breadcrumb"></div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>You-Are-Here GILE Breadcrumb <span class="tag ux">UX fix</span></h3>
+    <div class="p"><span class="lbl">Problem:</span> Inside an institute dashboard you can't tell which GILE you're viewing — today you'd download a report to find out.</div>
+    <div class="p"><span class="lbl">Fix:</span> the full Group › Institute › Location › Board path shown as plain text under the title, always visible; the navigator opens pre-filled.</div>
+    <a class="open" href="../ARC-GILE-Concepts/05-You-Are-Here-Breadcrumb/You-Are-Here-Breadcrumb.html">▶ Open prototype</a>
+  </div>
+
+  <div class="card">
+    <h3>Persistent Filter Bar <span class="tag new">concept</span></h3>
+    <div class="p"><span class="lbl">Fix:</span> replace the pop-up modal with an always-visible GILE chip bar; change one level at a time; filters live, no "Search" button.</div>
+    <a class="open" href="../ARC-GILE-Concepts/01-Persistent-Filter-Bar/Persistent-Filter-Bar.html">▶ Open prototype</a>
+    <div class="shot"><img src="assets/after_persistent.png" alt="persistent bar"><div class="cap">After — persistent GILE bar over the institute list</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Smart Search · Saved Views · Tree Drill-down <span class="tag new">3 concepts</span></h3>
+    <div class="p"><span class="lbl">Fix:</span> three alternative finders — type-to-jump search, pinned/recent favourites (filter), and a collapsible Group→Board tree.</div>
+    <div class="files">
+      ▶ <a href="../ARC-GILE-Concepts/02-Smart-Search-Box/Smart-Search-Box.html">Smart Search</a> &nbsp;·&nbsp;
+      <a href="../ARC-GILE-Concepts/03-Saved-Views-Favourites/Saved-Views-Favourites.html">Saved Views</a> &nbsp;·&nbsp;
+      <a href="../ARC-GILE-Concepts/04-Tree-Drilldown/Tree-Drilldown.html">Tree Drill-down</a>
+    </div>
+  </div>
+
+  <!-- ============ STATS ============ -->
+  <h2 class="sec" id="stats">2 · Stats & Collections</h2>
+  <p class="sec-sub">Surface what accountants need on-screen instead of only in slow reports; turn passive numbers into action.</p>
+
+  <div class="card">
+    <h3>Fee-Header-wise Collection (on Dashboard) <span class="tag new">concept</span></h3>
+    <div class="p"><span class="lbl">Fix:</span> a live table per fee header — Total / Discount / Paid / Pending (Pending = Total − Discount − Paid) — no report download.</div>
+    <a class="open" href="../ARC-Stats-Concepts/01-Fee-Header-Wise-Collection/Fee-Header-Wise-Collection.html">▶ Open prototype</a>
+    <div class="shot"><img src="assets/after_feehdr.png" alt="fee header wise"><div class="cap">After — fee-header collection on the dashboard</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Defaulter Worklist <span class="tag new">concept</span></h3>
+    <div class="p"><span class="lbl">Problem:</span> "Pending" is a dead number; the who-owes list is buried in an async report.</div>
+    <div class="p"><span class="lbl">Fix:</span> a live list with per-row & bulk <b>Send reminder</b> (WhatsApp/SMS/Email), overdue buckets, "remind all overdue" — chase from the same screen.</div>
+    <a class="open" href="../ARC-Stats-Concepts/02-Defaulter-Worklist/Defaulter-Worklist.html">▶ Open prototype</a>
+    <div class="shot"><img src="assets/after_worklist.png" alt="worklist"><div class="cap">After — actionable pending list</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Payment Reminder — multi-class <span class="tag new">concept</span></h3>
+    <div class="p"><span class="lbl">Fix:</span> keeps the exact live Schedule-Reminder timing rules, adds a multi-select class dropdown so one reminder covers all classes at once.</div>
+    <a class="open" href="../ARC-Stats-Concepts/03-Payment-Reminder/Payment-Reminder.html">▶ Open prototype</a>
+    <div class="shot"><img src="assets/after_reminder.png" alt="reminder"><div class="cap">After — reminder with multi-class targeting</div></div>
+  </div>
+
+  <!-- ============ INSTITUTE ============ -->
+  <h2 class="sec" id="inst">3 · Institute Setup</h2>
+  <p class="sec-sub">Kill the yearly rebuild of Classes / Fee Headers / Financing modes / Payment Pages.</p>
+  <div class="card">
+    <h3>Clone Previous Year Setup <span class="tag new">concept · full flow</span></h3>
+    <div class="p"><span class="lbl">Fix:</span> a "Clone Setup" action on Payment Links — pick last year's classes/pages → clone into the new AY (new URLs, reset expiry, amounts flagged for review). Copies config, never student data.</div>
+    <a class="open" href="../ARC-Institute-Management-Concepts/01-Clone-Previous-Year-Setup/Clone-Previous-Year-Setup.html">▶ Open prototype (click through the 4 stages)</a>
+    <div class="shot"><img src="assets/after_clone.png" alt="clone"><div class="cap">After — 2024-25 pages + "Clone Setup" on the toolbar</div></div>
+  </div>
+
+  <!-- ============ TRANSACTIONS ============ -->
+  <h2 class="sec" id="txn">4 · Transactions</h2>
+  <p class="sec-sub">Show what a payment was FOR, not just how much.</p>
+  <div class="ba">
+    <div class="box before"><div class="h">Before — live PG transactions</div><img src="assets/before_pg_list.png" alt="before pg"></div>
+    <div class="box after"><div class="h">After — same list + Fee Breakup in detail</div><img src="assets/after_feebreakup.png" alt="after fee breakup"></div>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <h3>Fee Breakup in a Transaction <span class="tag new">concept</span></h3>
+    <div class="p"><span class="lbl">Problem:</span> PG/EMI transactions show total paid but not which fee headers it covered (that only lives in Student Management).</div>
+    <div class="p"><span class="lbl">Fix:</span> a "Fee Breakup" section inside the More-Details modal — headers + amounts, reconciled to the transaction total. Multiple headers stay clean as a mini-table.</div>
+    <a class="open" href="../ARC-Transactions-Concepts/01-Fee-Breakup-In-Transaction/Fee-Breakup-In-Transaction.html">▶ Open prototype (click the eye on any row)</a>
+  </div>
+
+  <!-- ============ REPORTS ============ -->
+  <h2 class="sec" id="rep">5 · Reports</h2>
+  <p class="sec-sub">Let users build the combined, trimmed sheet they make by hand today.</p>
+  <div class="card">
+    <h3>Custom Report Builder <span class="tag new">concept</span></h3>
+    <div class="p"><span class="lbl">Problem:</span> the system exports Paid/Settled/Failed as three separate 30-column sheets; users manually merge + trim them into a "combined" sheet.</div>
+    <div class="p"><span class="lbl">Fix:</span> pick columns, merge statuses into <b>one sheet</b>, filter, save as preset — built as the familiar half-panel "Generate Report" flow. Fields pre-set from a real user file.</div>
+    <a class="open" href="../ARC-Reports-Concepts/01-Custom-Report-Builder/Custom-Report-Builder.html">▶ Open prototype</a>
+    <div class="shot"><img src="assets/after_customreport.png" alt="custom report"><div class="cap">After — Generate Custom Report (status merge + column picker)</div></div>
+  </div>
+
+  <!-- ============ BUG ============ -->
+  <h2 class="sec" id="bug">6 · Verified Data Bug</h2>
+  <p class="sec-sub">Confirmed against the database — not a UI issue.</p>
+  <div class="card">
+    <h3>Fee Header Report — phantom pending = late fine <span class="tag bug">bug</span></h3>
+    <div class="p"><span class="lbl">What:</span> the "Fee Header Due Amount" sheet computes <b>Paid Amount from the base fee (excludes the collected late fine)</b>, while Total Payable includes the fine — so every student who paid <i>with</i> a fine shows a <b>false Pending = the fine</b>.</div>
+    <div class="p"><span class="lbl">Proof:</span> BHAVADHINI S (2535S0003) — "Fee Header Paid" sheet shows <b>₹62,750 paid</b>; "Due Amount" sheet shows ₹62,500 paid / ₹250 pending. Source DB (<span style="font-family:monospace">paid_amount</span>) confirms the fine was collected.</div>
+    <div class="p"><span class="lbl">Impact:</span> <b>19,811 orders · ₹1,18,02,140 (~₹1.18 Cr)</b> of already-collected late fees are wrongly reported as pending system-wide. Dashboard is correct; only the report is wrong.</div>
+    <div class="p"><span class="lbl">Fix:</span> in the Due-Amount sheet, Paid Amount must use the actual collected amount (as the "Paid" sheet already does).</div>
+    <div class="files"><a href="../ARC-Bugs/01-Fee-Header-Report-Phantom-Pending/evidence_Fee-header-report.xlsx" download>⭳ Download Report (Excel)</a> · <a href="../ARC-Bugs/01-Fee-Header-Report-Phantom-Pending/Bug-Report.txt">Full write-up</a></div>
+    <div class="shot"><img src="assets/before_feehdr_bug.png" alt="bug sheet"><div class="cap">The report sheet — Pending 250 exactly equals the late fee, for a fully-paid student</div></div>
+  </div>
+
+  <div class="foot">ARC-FMS concepts &amp; prototypes · dummy data · faithful ARC UI · compiled 2026-07-03</div>
+</div>
+</body>
+</html>

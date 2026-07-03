@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Institute Dashboard — GILE context + Filter</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#8a8f9c; --line:#eceaf1; --page:#fff;
+    --indigo:#2f57ff; --indigo-soft:#eef1ff;
+    --sideA:#efe9f6; --sideB:#f4eff9;
+    --active:#16181d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+
+  /* SIDEBAR — institute view */
+  .side{width:252px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column;position:relative}
+  .side::before{content:"";position:absolute;left:0;top:74px;height:44px;width:4px;background:var(--indigo);border-radius:0 3px 3px 0}
+  .instbox{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(80,50,90,.06);cursor:pointer}
+  .instbox .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center;font-size:15px;flex:none}
+  .instbox .nm{font-size:13px;font-weight:600;line-height:1.25;overflow:hidden}
+  .instbox .ch{margin-left:auto;color:var(--muted)}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:18px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;cursor:pointer;font-size:14px;font-weight:500;color:#3a3340;margin-bottom:2px}
+  .nav:hover{background:rgba(255,255,255,.5)}
+  .nav.on{background:var(--active);color:#fff;font-weight:600}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:13px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+
+  /* MAIN */
+  .main{flex:1;min-width:0}
+  .head{padding:20px 30px 0}
+  .headtop{display:flex;align-items:center;gap:16px}
+  .h1{font-size:26px;font-weight:700;margin:0}
+  .headright{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .ay{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px;color:#444}
+  .ay .x{color:var(--muted);cursor:pointer;font-size:12px}
+  .ay .cv{color:var(--muted);font-size:11px}
+  .userpill{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:14px;font-weight:500}
+  .userpill .av{width:22px;height:22px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:12px;color:var(--indigo)}
+
+  /* ============ NEW: Filter + plain-name GILE context ============ */
+  .gile{display:flex;align-items:center;gap:14px;margin:14px 0 16px;flex-wrap:wrap}
+  .filterbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--indigo);color:var(--indigo);background:#fff;
+    border-radius:10px;padding:8px 14px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .filterbtn:hover{background:var(--indigo-soft)}
+  .crumb{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .crumb .nm{color:#3a3a44;font-weight:500}
+  .crumb .sepc{color:#c9c9d4}
+  .crumb .cur{color:var(--indigo);font-weight:600}
+  .divider{height:1px;background:var(--line)}
+
+  /* BODY */
+  .body{padding:20px 30px 30px}
+  .secrow{display:flex;align-items:flex-end;margin-bottom:16px}
+  .sec-h{font-size:20px;font-weight:600}
+  .sec-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .detail{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--indigo);font-weight:600;font-size:14px;cursor:pointer}
+  .detail .rf{width:30px;height:30px;border-radius:8px;background:#eef0f6;display:grid;place-items:center}
+
+  .bigrow{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
+  .big{border-radius:16px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between}
+  .big.fees{background:linear-gradient(100deg,#f3ecfb,#fdeef4)}
+  .big.stud{background:linear-gradient(100deg,#fdf6e6,#fefaf0)}
+  .big .t{font-size:19px;font-weight:600}
+  .big .s{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .big .n{font-size:30px;font-weight:700;white-space:nowrap}
+
+  .pms{font-size:20px;font-weight:600}
+  .pmline{height:1px;background:var(--line);margin:12px 0 18px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .pc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 2px 10px rgba(30,20,50,.03)}
+  .pc .top2{display:flex;align-items:center;gap:12px}
+  .pc .pic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:15px}
+  .pc .pt{font-size:16px;font-weight:600}
+  .pc .pa{font-size:20px;font-weight:700;margin-top:2px}
+  .pc.emi .pic{background:#e6f7ee}.pc.emi .pt{color:#1a9d63}
+  .pc.auto .pic{background:#efe9fb}.pc.auto .pt{color:#6b48c9}
+  .pc.pg .pic{background:#fdeaea}.pc.pg .pt{color:#d1425a}
+  .pc.off .pic{background:#fdf3e0}.pc.off .pt{color:#d9822b}
+  .pc .rule{height:2px;border-radius:2px;margin:14px 0 12px;opacity:.5}
+  .pc.emi .rule{background:#1a9d63}.pc.auto .rule{background:#6b48c9}.pc.pg .rule{background:#d1425a}.pc.off .rule{background:#d9822b}
+  .pc .desc{font-size:12.5px;color:var(--muted)}
+  .pc .vd{color:var(--indigo);font-weight:600;font-size:13.5px;text-align:right;margin-top:10px;cursor:pointer}
+  .hint{font-size:12px;color:var(--muted);margin-top:22px;line-height:1.7}
+
+  /* live "Please Select Institute" modal (prefilled) */
+  .pop{position:fixed;inset:0;background:rgba(25,20,40,.4);display:none;align-items:center;justify-content:center;z-index:50}
+  .pop.on{display:flex}
+  .pcard{background:#fff;border-radius:18px;padding:6px 26px 26px;width:420px;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative}
+  .pclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;place-items:center;cursor:pointer;color:#26262e;z-index:5}
+  .pclose:hover{background:#f4f4f8;color:#000}
+  .ptitle{text-align:center;font-size:20px;font-weight:600;padding:20px 0 18px;border-bottom:1px solid #f6f2f0;margin:0 -26px 20px;background:#fffdf9;border-radius:18px 18px 0 0}
+  .fld{margin-bottom:14px}
+  .fld label{font-size:13.5px;color:#333;display:block;margin-bottom:6px}
+  .fld label .req{color:#e0483d}
+  .sel{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px;display:flex;align-items:center;justify-content:space-between;background:#fff}
+  .sel.filled{border-color:#cdd7ff;background:var(--indigo-soft);color:var(--indigo);font-weight:600}
+  .sel .cv{color:var(--muted)}
+  .pbtn{background:var(--indigo);color:#fff;border:none;border-radius:12px;padding:14px;width:100%;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="instbox" onclick="openNav()">
+      <span class="ic">🏛️</span>
+      <span class="nm">Vibgyor High<br>Bangalore</span>
+      <span class="ch">›</span>
+    </div>
+    <div class="mm">MAIN MENU</div>
+    <div class="nav on">▦ <span>Dashboard</span></div>
+    <div class="nav">🏢 <span>Institute Management</span><span class="ch">▾</span></div>
+    <div class="nav">👤 <span>Student Management</span></div>
+    <div class="nav">💳 <span>Transactions</span><span class="ch">▾</span></div>
+    <div class="nav">📡 <span>Communications</span><span class="ch">▾</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="head">
+      <div class="headtop">
+        <h1 class="h1">Dashboard</h1>
+        <div class="headright">
+          <div class="ay" id="ayPill">2025-2026 <span class="x">✕</span><span class="cv">▾</span></div>
+          <div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div>
+        </div>
+      </div>
+
+      <!-- ============ NEW: plain GILE name ============ -->
+      <div class="gile">
+        <span class="crumb">
+          <span class="nm">VIBGYOR</span><span class="sepc">›</span>
+          <span class="nm">Vibgyor High</span><span class="sepc">›</span>
+          <span class="nm" id="bcLoc">Marathahalli</span><span class="sepc">›</span>
+          <span class="cur" id="bcBoard">CBSE</span>
+        </span>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="body">
+      <div class="secrow">
+        <div>
+          <div class="sec-h">Realtime Stats Overview</div>
+          <div class="sec-sub" id="refreshed">Last Refreshed at 03-Jul-2026, 1:34 PM</div>
+        </div>
+        <div class="detail"><span class="rf">⟳</span> View Detailed Stats →</div>
+      </div>
+
+      <div class="bigrow">
+        <div class="big fees">
+          <div><div class="t">Total Fees Received</div><div class="s">Amount received via all of the payment options</div></div>
+          <div class="n" id="bigFees">Rs. 8,03,70,910</div>
+        </div>
+        <div class="big stud">
+          <div><div class="t">Total Student</div><div class="s">Number of students enrolled</div></div>
+          <div class="n" id="bigStud">1538 ↗</div>
+        </div>
+      </div>
+
+      <div class="pms">Payment Mode Stats</div>
+      <div class="pmline"></div>
+      <div class="cards">
+        <div class="pc emi"><div class="top2"><span class="pic">📅</span><div><div class="pt">EMI Payments</div><div class="pa" id="paEmi">Rs. 0</div></div></div>
+          <div class="rule"></div><div class="desc">Amount received to the institute via EMI payment option</div><div class="vd">View details →</div></div>
+        <div class="pc auto"><div class="top2"><span class="pic">🔁</span><div><div class="pt">Auto Payments</div><div class="pa" id="paAuto">Rs. 0</div></div></div>
+          <div class="rule"></div><div class="desc">Amount received to the institute via Auto Debit payment option</div><div class="vd">View details →</div></div>
+        <div class="pc pg"><div class="top2"><span class="pic">₹</span><div><div class="pt">Payment Gateway</div><div class="pa" id="paPg">Rs. 7,80,63,710</div></div></div>
+          <div class="rule"></div><div class="desc">Amount received to the institute via Online Payments option</div><div class="vd">View details →</div></div>
+        <div class="pc off"><div class="top2"><span class="pic">🤲</span><div><div class="pt">Offline Payments</div><div class="pa" id="paOff">Rs. 23,07,200</div></div></div>
+          <div class="rule"></div><div class="desc">Amount received to the institute via Offline transactions</div><div class="vd">View details →</div></div>
+      </div>
+
+      <div class="hint">
+        <b>“You are here” + Filter.</b> Plain-name GILE path under the title (Group › Institute › Location › <b>Board</b>) so you always
+        know which GILE you're viewing. The <b>Filter</b> button opens the live “Please Select Institute” selector — now <b>pre-filled</b>
+        with your current selection. Faithful ARC UI · dummy data.
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- live modal, prefilled -->
+<div class="pop" id="pop">
+  <div class="pcard">
+    <span class="pclose" onclick="closeNav()">✕</span>
+    <div class="ptitle">Please Select Institute</div>
+    <div class="fld"><label>Group <span class="req">*</span></label><div class="sel filled">VIBGYOR <span class="cv">▾</span></div></div>
+    <div class="fld"><label>Institute <span class="req">*</span></label><div class="sel filled">Vibgyor High <span class="cv">▾</span></div></div>
+    <div class="fld"><label>Location <span class="req">*</span></label><div class="sel filled" id="mLoc">Marathahalli <span class="cv">▾</span></div></div>
+    <div class="fld"><label>Education Type <span class="req">*</span></label><div class="sel filled" id="mBoard">CBSE <span class="cv">▾</span></div></div>
+    <button class="pbtn" onclick="closeNav()">💾 Save</button>
+  </div>
+</div>
+
+<!-- shared client-side data store (single source of truth) -->
+<script src="../../ARC-Data/store.js"></script>
+<script>
+  function openNav(){document.getElementById('pop').classList.add('on');}
+  function closeNav(){document.getElementById('pop').classList.remove('on');}
+  document.getElementById('pop').addEventListener('click',e=>{if(e.target.id==='pop')closeNav();});
+
+  /* ============================================================
+     DATA WIRING — all demo numbers/labels read from window.ARCDB
+     (single source of truth). Structure/CSS untouched — data only.
+     ============================================================ */
+  document.addEventListener('DOMContentLoaded', function(){
+    var DB = window.ARCDB;
+    if(!DB) return;                                   // guard: no store, keep static markup
+
+    // "Rs. X" formatting to match the existing ARC design (store.inr uses ₹)
+    var rs = function(n){ return 'Rs. ' + Math.round(n).toLocaleString('en-IN'); };
+    var set = function(id, txt){ var el=document.getElementById(id); if(el) el.textContent = txt; };
+    // set only the leading text node, preserving trailing icon spans (▾, ✕)
+    var setLead = function(id, txt){ var el=document.getElementById(id); if(el&&el.firstChild&&el.firstChild.nodeType===3) el.firstChild.nodeValue = txt + ' '; };
+
+    // --- current GILE node (the "you are here" leaf) ---------------------
+    // Group + Institute have no store equivalent → left hardcoded (VIBGYOR / Vibgyor High).
+    // Location (campus) + Education Type (board) are derived from ARCDB distinct values;
+    // the current node is anchored to the first student's campus+board so the view is stable.
+    var students = DB.students();
+    var campuses = [], boards = [];
+    students.forEach(function(s){
+      if(campuses.indexOf(s.campus)<0) campuses.push(s.campus);
+      if(boards.indexOf(s.board)<0)   boards.push(s.board);
+    });
+    var curCampus = students.length ? students[0].campus : campuses[0];
+    var curBoard  = students.length ? students[0].board  : boards[0];
+
+    // breadcrumb leaf + prefilled modal
+    set('bcLoc',  curCampus);
+    set('bcBoard', curBoard);
+    setLead('mLoc',  curCampus);
+    setLead('mBoard', curBoard);
+
+    // academic year + last-refreshed (fixed "today" from the store)
+    var ayEl = document.getElementById('ayPill');
+    if(ayEl && ayEl.firstChild && ayEl.firstChild.nodeType===3) ayEl.firstChild.nodeValue = DB.ay() + ' ';
+    set('refreshed', 'Last Refreshed at ' + DB.fmtDate(DB.today()) + ', 1:34 PM');
+
+    // --- context/summary panel for the current node (campus + board) -----
+    var nodeStudents = students.filter(function(s){ return s.campus===curCampus && s.board===curBoard; });
+    var ids = {};
+    nodeStudents.forEach(function(s){ ids[s.id]=true; });
+    var RECEIVED = {Paid:1, Settled:1};
+    var pays = DB.payments();
+    var sum = function(fn){ return pays.filter(fn).reduce(function(a,p){ return a+p.amount; },0); };
+    var inNode = function(p){ return ids[p.studentId]; };
+
+    // Total Fees Received = actual money in (Paid+Settled) for this node
+    var totalReceived = sum(function(p){ return inNode(p) && RECEIVED[p.status]; });
+    set('bigFees', rs(totalReceived));
+    set('bigStud', nodeStudents.length + ' ↗');
+
+    // payment-mode split (EMI counts Registered loans; others count received)
+    set('paEmi',  rs(sum(function(p){ return inNode(p) && p.mode==='EMI'        && p.status==='Registered'; })));
+    set('paAuto', rs(sum(function(p){ return inNode(p) && p.mode==='Auto-Debit' && RECEIVED[p.status]; })));
+    set('paPg',   rs(sum(function(p){ return inNode(p) && p.mode==='PG'         && RECEIVED[p.status]; })));
+    set('paOff',  rs(sum(function(p){ return inNode(p) && p.mode==='Offline'    && RECEIVED[p.status]; })));
+
+    // pending for the node (via studentLedger) — computed for parity even though
+    // this concept's panel has no visible pending tile; kept available for the design.
+    var pending = 0;
+    nodeStudents.forEach(function(s){ var l=DB.studentLedger(s.id); if(l) pending += l.totals.pending; });
+    void pending;
+  });
+</script>
+</body>
+</html>

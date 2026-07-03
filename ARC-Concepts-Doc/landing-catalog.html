@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Concept Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#8a8f9c; --line:#ececf1; --blue:#2f5bff; --blue-soft:#eef2ff; --indigo:#5b3df5;
+    --sideA:#efe9f6; --sideB:#f4eff9; --active:#16181d; --cream:#fdf9f1; --good:#1a9d5a; --bad:#d1425a; --warn:#d9822b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#f7f7fb;color:var(--ink);font-size:14px}
+  a{text-decoration:none;color:inherit}
+  .app{display:flex;min-height:100vh}
+  /* SIDEBAR — exact ARC institute style */
+  .side{width:250px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;align-self:flex-start}
+  .brand{display:flex;align-items:center;gap:11px;background:#fff;border-radius:14px;padding:12px 13px;box-shadow:0 2px 8px rgba(80,50,90,.06)}
+  .brand .lg{width:34px;height:34px;border-radius:9px;background:var(--indigo);display:grid;place-items:center;overflow:hidden}
+  .brand .lg img{width:24px;height:24px}
+  .brand b{display:block;font-size:15px;line-height:1.1} .brand span{font-size:11px;color:#6b5560}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:16px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;font-size:13.5px;font-weight:500;color:#3a3340;margin-bottom:2px;cursor:pointer}
+  .nav:hover{background:rgba(255,255,255,.55)}
+  .nav.on{background:var(--active);color:#fff;font-weight:600}
+  .nav .n{margin-left:auto;font-size:10.5px;background:#fff;color:var(--indigo);border-radius:999px;padding:1px 7px;font-weight:700}
+  .nav.on .n{background:rgba(255,255,255,.25);color:#fff}
+  .side-foot{margin-top:auto}
+  .vibchip{background:#fff;border-radius:12px;padding:12px;font-size:12px;color:#6b5560;box-shadow:0 2px 8px rgba(80,50,90,.08);text-align:center}
+  .vibchip b{color:var(--ink)}
+
+  .main{flex:1;min-width:0;padding:24px 34px 60px}
+  .topbar{display:flex;align-items:center;margin-bottom:20px}
+  .h1{font-size:26px;font-weight:700;margin:0}
+  .h1 span{color:var(--muted);font-weight:500;font-size:16px}
+  .pill{margin-left:auto;display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;font-size:14px;font-weight:500}
+  .pill .av{width:22px;height:22px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;font-size:12px;color:var(--blue)}
+
+  /* hero */
+  .hero{background:linear-gradient(120deg,#2f3a8f,#5b3f96);color:#fff;border-radius:18px;padding:28px 32px;margin-bottom:26px}
+  .hero h2{margin:0 0 6px;font-size:22px}
+  .hero p{margin:0;opacity:.9;font-size:14px;line-height:1.55}
+  .hero .stats{display:flex;gap:26px;margin-top:18px;flex-wrap:wrap}
+  .hero .stats b{display:block;font-size:20px} .hero .stats div{font-size:12px;opacity:.9}
+  .hero .cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#33265e;border-radius:10px;padding:10px 18px;font-weight:600;font-size:13.5px;margin-top:18px}
+
+  .sec{margin:34px 0 4px;display:flex;align-items:baseline;gap:10px}
+  .sec h3{font-size:19px;margin:0} .sec .d{color:var(--muted);font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(30,20,50,.03);transition:.15s}
+  .card:hover{border-color:#cdd3ea;box-shadow:0 8px 24px rgba(40,30,80,.08);transform:translateY(-2px)}
+  .card .ic{width:42px;height:42px;border-radius:12px;background:var(--blue-soft);display:grid;place-items:center;font-size:19px;margin-bottom:12px}
+  .card h4{margin:0 0 4px;font-size:15.5px;display:flex;align-items:center;gap:8px}
+  .tag{font-size:9px;font-weight:700;letter-spacing:.4px;border-radius:5px;padding:2px 7px;text-transform:uppercase}
+  .tag.new{background:var(--blue-soft);color:var(--blue)} .tag.ux{background:#e7f7ee;color:var(--good)} .tag.bug{background:#fdeaea;color:var(--bad)} .tag.ai{background:#efe9fb;color:var(--indigo)}
+  .card p{margin:0 0 14px;font-size:12.8px;color:#555;line-height:1.5;flex:1}
+  .card .open{color:var(--blue);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;align-self:flex-start}
+  .foot{margin-top:40px;font-size:12px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="lg"><img src="../ARC-Transactions-Concepts/02-Student-Payment-Lookup/gq-logo.png" onerror="this.parentNode.textContent='◎'" alt="gq"></div>
+      <div><b>ARC-FMS</b><span>Concept Prototypes</span></div>
+    </div>
+    <div class="mm">EXPLORE</div>
+    <a class="nav on" href="#top">🏠 <span>Overview</span></a>
+    <a class="nav" href="#gile">🧭 <span>GILE Navigation</span><span class="n">5</span></a>
+    <a class="nav" href="#stats">📊 <span>Stats &amp; Collections</span><span class="n">3</span></a>
+    <a class="nav" href="#inst">🏢 <span>Institute Setup</span><span class="n">1</span></a>
+    <a class="nav" href="#txn">🧾 <span>Transactions</span><span class="n">2</span></a>
+    <a class="nav" href="#rep">📄 <span>Reports</span><span class="n">1</span></a>
+    <a class="nav" href="#ai">🤖 <span>AI Assistant</span><span class="n">3</span></a>
+    <a class="nav" href="#bug">🐞 <span>Verified Bug</span></a>
+    <div class="side-foot"><div class="vibchip">Research institute<br><b>VIBGYOR High</b> · Bangalore</div></div>
+  </aside>
+
+  <main class="main" id="top">
+    <div class="topbar">
+      <h1 class="h1">Concept Prototypes <span>· ARC-FMS</span></h1>
+      <div class="pill"><span class="av">V</span> Vibgyor Bangalore M</div>
+    </div>
+
+    <div class="hero">
+      <h2>Feature concepts &amp; prototypes — VIBGYOR research</h2>
+      <p>Clickable prototypes rebuilt on the exact ARC-FMS UI with real VIBGYOR data (37 campuses across Bangalore, Pune &amp; Mumbai — CBSE / ICSE / CIE). Each changes one thing over the live screen. Plus one verified database bug.</p>
+      <div class="stats">
+        <div><b>13</b><div>prototypes</div></div>
+        <div><b>6</b><div>areas</div></div>
+        <div><b>₹1.18 Cr</b><div>verified bug impact</div></div>
+        <div><b>VIBGYOR</b><div>research case</div></div>
+      </div>
+      <a class="cta" href="ARC-FMS-Concepts-Overview.html">Read the full write-up →</a>
+    </div>
+
+    <!-- GILE -->
+    <div class="sec" id="gile"><h3>1 · GILE Navigation</h3><span class="d">Group › Institute › Location › Education — the multi-campus pain</span></div>
+    <div class="grid">
+      <a class="card" href="../ARC-GILE-Concepts/05-You-Are-Here-Breadcrumb/You-Are-Here-Breadcrumb.html" target="_blank"><div class="ic">📍</div><h4>You-Are-Here Breadcrumb <span class="tag ux">UX</span></h4><p>Always shows which GILE you're viewing — no more downloading a report to find out.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-GILE-Concepts/01-Persistent-Filter-Bar/Persistent-Filter-Bar.html" target="_blank"><div class="ic">🎚️</div><h4>Persistent Filter Bar <span class="tag new">Concept</span></h4><p>Always-visible GILE chips instead of a pop-up modal; change one level at a time, filters live.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-GILE-Concepts/02-Smart-Search-Box/Smart-Search-Box.html" target="_blank"><div class="ic">⌕</div><h4>Smart Search <span class="tag new">Concept</span></h4><p>Type “Marathahalli CBSE” → jumps straight to that campus. Fastest for known targets.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-GILE-Concepts/03-Saved-Views-Favourites/Saved-Views-Favourites.html" target="_blank"><div class="ic">★</div><h4>Saved Views &amp; Recents <span class="tag new">Concept</span></h4><p>Pin daily-use campuses; search + filter. One-click return to the usual suspects.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-GILE-Concepts/04-Tree-Drilldown/Tree-Drilldown.html" target="_blank"><div class="ic">🌳</div><h4>Tree Drill-down <span class="tag new">Concept</span></h4><p>Collapsible Group→Board tree for browsing the org top-down.</p><span class="open">Open prototype →</span></a>
+    </div>
+
+    <!-- STATS -->
+    <div class="sec" id="stats"><h3>2 · Stats &amp; Collections</h3><span class="d">Surface it on-screen; turn numbers into action</span></div>
+    <div class="grid">
+      <a class="card" href="../ARC-Stats-Concepts/02-Defaulter-Worklist/Defaulter-Worklist.html" target="_blank"><div class="ic">📋</div><h4>Defaulter Worklist <span class="tag new">Concept</span></h4><p>Live pending list with per-row &amp; bulk reminders (WhatsApp/SMS/Email), overdue buckets. Chase from one screen.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-Stats-Concepts/01-Fee-Header-Wise-Collection/Fee-Header-Wise-Collection.html" target="_blank"><div class="ic">🧾</div><h4>Fee-Header-wise Collection <span class="tag new">Concept</span></h4><p>Live table: Total · Discount · Paid · Pending per fee header — no report download.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-Stats-Concepts/03-Payment-Reminder/Payment-Reminder.html" target="_blank"><div class="ic">🔔</div><h4>Payment Reminder — multi-class <span class="tag new">Concept</span></h4><p>Live scheduler + a multi-select class dropdown so one reminder covers all classes at once.</p><span class="open">Open prototype →</span></a>
+    </div>
+
+    <!-- INSTITUTE -->
+    <div class="sec" id="inst"><h3>3 · Institute Setup</h3><span class="d">Kill the yearly rebuild</span></div>
+    <div class="grid">
+      <a class="card" href="../ARC-Institute-Management-Concepts/01-Clone-Previous-Year-Setup/Clone-Previous-Year-Setup.html" target="_blank"><div class="ic">⚡</div><h4>Clone Previous Year Setup <span class="tag new">Full flow</span></h4><p>Pick last year's classes/pages → clone into the new AY (new URLs, reset expiry, amounts to review). Config only, no student data.</p><span class="open">Open prototype →</span></a>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="sec" id="txn"><h3>4 · Transactions</h3><span class="d">Show what a payment was FOR &amp; how it was made</span></div>
+    <div class="grid">
+      <a class="card" href="../ARC-Transactions-Concepts/02-Student-Payment-Lookup/Student-Payment-Lookup.html" target="_blank"><div class="ic">👤</div><h4>Student Payment Lookup <span class="tag new">Concept</span></h4><p>One Student ID → every payment across EMI/PG/Auto-Debit/Offline with mode + method, plus single &amp; combined fee receipts.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-Transactions-Concepts/01-Fee-Breakup-In-Transaction/Fee-Breakup-In-Transaction.html" target="_blank"><div class="ic">🧮</div><h4>Fee Breakup in Transaction <span class="tag new">Concept</span></h4><p>A “Fee Breakup” section in the transaction detail — which fee headers the payment covered, reconciled to the total.</p><span class="open">Open prototype →</span></a>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="sec" id="rep"><h3>5 · Reports</h3><span class="d">Build the combined, trimmed sheet</span></div>
+    <div class="grid">
+      <a class="card" href="../ARC-Reports-Concepts/01-Custom-Report-Builder/Custom-Report-Builder.html" target="_blank"><div class="ic">📄</div><h4>Custom Report Builder <span class="tag new">Concept</span></h4><p>Pick columns, merge Paid+Settled+Failed into one sheet, filter, save as preset — in the familiar Generate-Report flow.</p><span class="open">Open prototype →</span></a>
+    </div>
+
+    <!-- AI -->
+    <div class="sec" id="ai"><h3>6 · AI Assistant</h3><span class="d">Grounded launcher — answers &amp; opens the real screens</span></div>
+    <div class="grid">
+      <a class="card" href="../ARC-Bot-Concept/ARC-Dashboard-With-Assistant.html" target="_blank"><div class="ic">🤖</div><h4>Dashboard + Floating Assistant <span class="tag ai">AI</span></h4><p>The bot as a floating widget on the live dashboard — keyword suggestions, inline answers, and opens the real prototypes.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-Bot-Concept/ARC-Assistant.html" target="_blank"><div class="ic">💬</div><h4>ARC Assistant (full) <span class="tag ai">AI</span></h4><p>The assistant standalone — ~50 predefined questions, class-parameter parsing, and the “payment link for Shivam” disambiguation.</p><span class="open">Open prototype →</span></a>
+      <a class="card" href="../ARC-Communications-Concepts/01-Create-Payment-Link/Create-Payment-Link.html?name=Riona%20Joel&id=108370&cls=Grade%205&campus=Marathahalli" target="_blank"><div class="ic">🔗</div><h4>Create Payment Link <span class="tag new">Concept</span></h4><p>What the Assistant opens for “payment link for [student]” — prefilled fee header, amount, partial-payment, share via WhatsApp/SMS/Email. (A Communications screen the bot routes into.)</p><span class="open">Open prototype →</span></a>
+    </div>
+
+    <!-- BUG -->
+    <div class="sec" id="bug"><h3>7 · Verified Data Bug</h3><span class="d">Confirmed against the database</span></div>
+    <div class="grid">
+      <a class="card" href="../ARC-Bugs/01-Fee-Header-Report-Phantom-Pending/evidence_Fee-header-report.xlsx" download><div class="ic">🐞</div><h4>Fee Header Report — phantom pending <span class="tag bug">Bug</span></h4><p>The Due-Amount sheet counts base fee as “paid” while Total Payable includes the late fine → false pending = the fine. <b>₹1.18 Cr</b> over-reported system-wide. Read the full write-up.</p><span class="open">⭳ Download report (Excel) →</span></a>
+    </div>
+
+    <div class="foot">ARC-FMS concept prototypes · VIBGYOR research · faithful ARC UI · sample data · compiled 2026-07-03</div>
+  </main>
+</div>
+</body>
+</html>

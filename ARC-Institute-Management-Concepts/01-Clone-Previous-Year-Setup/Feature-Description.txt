@@ -1,0 +1,59 @@
+========================================================
+ ARC-FMS · Institute Management / Communications Concept
+ CLONE PREVIOUS YEAR SETUP  (full flow)
+========================================================
+
+FILE
+----
+Clone-Previous-Year-Setup.html  — open in any browser (dummy data)
+It is a clickable 4-STAGE flow; a tracker at the bottom-left shows the stage.
+
+THE PROBLEM
+-----------
+Every academic year, an institute rebuilds its whole config from scratch —
+Classes, Fee Headers, Financing modes, Payment Pages. Tedious and error-prone.
+Config is stored per academic year (ay_id), so a new year legitimately needs
+NEW database rows — but they can be COPIED from last year instead of retyped.
+
+THE FEATURE
+-----------
+A "Clone Setup" button on the Communications › Payment Links toolbar (next to
+"Create Payment Page"). It replicates last year's setup into the new AY.
+
+FULL FLOW (4 stages in the prototype)
+-------------------------------------
+1. 2024-2025 Payment Links list (existing pages shown) + "⚡ Clone Setup".
+2. Clone panel: lists last year's payment pages; user TICKS which classes /
+   pages to replicate (select all / individual). An info box shows what rides
+   along automatically for the selected classes (Fee Headers, Class structure,
+   Financing modes) with live count chips. Options for the copied pages:
+   generate new URLs, reset expiry, review amounts after. Exclusion banner.
+3. Cloned ✓ summary: Classes / Fee Headers / Financing Modes created,
+   Payment Pages re-linked (counts reflect the selection).
+4. 2025-2026 Payment Links now populated with the cloned pages — new URLs,
+   Active, amounts flagged "review" (carried over, confirm before sharing).
+
+SCOPE (decided with the user)
+-----------------------------
+Replicate: Class · Fee Headers · Financing modes · ACTIVE Payment Pages.
+Do NOT replicate: Students, fee assignments, transactions, collected amounts.
+=> New year starts fresh at Rs 0; only configuration is carried over.
+
+ENGINEERING NOTES (flagged for build)
+-------------------------------------
+  - Clone = bulk INSERT ... SELECT with ay_id swapped; old rows untouched
+    (history preserved). It is ADDITIVE.
+  - RE-POINT IDs, don't copy them: new fee-header/page rows get new IDs;
+    references (pages -> fee headers/forms) must point to the NEW year's IDs.
+  - Payment pages need a NEW unique slug/URL and RESET expiry (not last year's).
+  - Idempotency: guard against double-clone creating duplicates.
+  - Open questions to confirm in schema:
+      * are Forms per-AY (must be cloned too) or reusable?
+      * do Discount/Fine rules ride along with fee headers?
+  - Dependency order: Class -> Fee Headers -> Forms -> Discount/Fine -> Pages
+    (pages are LAST because they reference the others).
+
+WHAT STAYED THE SAME
+--------------------
+Faithful ARC UI — lavender sidebar, Communications › Payment Links tabs,
+cream slide-in panel, blue accents, Poppins font.

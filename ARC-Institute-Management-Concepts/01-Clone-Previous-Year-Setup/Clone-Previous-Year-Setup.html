@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Clone Previous Year Setup — full flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#8a8f9c; --line:#e6e6ee; --blue:#2f5bff; --blue-soft:#eef2ff;
+    --sideA:#efe9f6; --sideB:#f4eff9; --active:#16181d; --cream:#fdf9f1; --good:#1a9d63; --warn:#d9822b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh;position:relative}
+  .side{width:250px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column;z-index:2}
+  .instbox{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(80,50,90,.06)}
+  .instbox .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center;font-size:15px;flex:none}
+  .instbox .nm{font-size:13px;font-weight:600;line-height:1.25}
+  .instbox .ch{margin-left:auto;color:var(--muted)}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:16px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;cursor:pointer;font-size:14px;font-weight:500;color:#3a3340;margin-bottom:2px}
+  .nav.exp{color:#16181d;font-weight:600}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .subnav{margin:0 0 6px 20px;border-left:1.5px solid #e2dcec;padding-left:8px}
+  .snav{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13.5px;color:#4a4450}
+  .snav.on{background:var(--active);color:#fff;font-weight:600}
+  .side-foot{margin-top:auto}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:13px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+
+  .main{flex:1;min-width:0;padding:22px 30px}
+  .main.dim::after{content:"";position:fixed;inset:0 0 0 250px;background:rgba(30,25,45,.28);z-index:5}
+  .headtop{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+  .h1{font-size:26px;font-weight:700;margin:0}
+  .ay{margin-left:auto;display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px;color:#444}
+  .tabs{display:flex;gap:26px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .tab{padding-bottom:12px;font-size:15px;color:var(--muted);cursor:pointer}
+  .tab.on{color:var(--blue);font-weight:600;border-bottom:2px solid var(--blue)}
+  /* toolbar with Clone Setup + Create */
+  .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .sf{border:1px solid var(--line);border-radius:12px;padding:12px 18px;display:inline-flex;gap:8px;color:#555;font-size:14px}
+  .clonebtn{margin-left:auto;border:1.6px solid var(--blue);color:var(--blue);background:#fff;border-radius:12px;padding:11px 18px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+  .clonebtn:hover{background:var(--blue-soft)}
+  .createbtn{background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 18px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
+  .emptyrow{padding:40px;text-align:center;color:var(--muted)}
+  .emptyrow b{color:var(--ink)}
+
+  .banner{display:flex;align-items:center;gap:12px;background:#eaf7ef;border:1px solid #bfe6cf;border-radius:14px;padding:14px 18px;margin-bottom:16px;font-size:13.5px;color:#1c6b40}
+  .banner b{color:#124a2c}
+  .banner .rv{margin-left:auto;background:#fff;border:1.5px solid var(--good);color:var(--good);border-radius:10px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px}
+  .card{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:13px 16px;background:#faf9fc}
+  td{padding:13px 16px;border-top:1px solid var(--line);font-size:13px;vertical-align:middle}
+  .pgname{font-weight:600}
+  .clschip{font-size:11.5px;background:#f2edf5;color:#5a4b63;border-radius:6px;padding:3px 9px}
+  .url{color:var(--blue);font-size:12px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+  .stat{font-size:11px;font-weight:600;border-radius:6px;padding:3px 9px;background:#e7f7ee;color:var(--good)}
+  .amt{font-weight:600}
+  .rev{font-size:10.5px;background:#fdf3e0;color:var(--warn);border-radius:5px;padding:2px 7px;margin-left:6px}
+  .acts{display:flex;gap:8px;color:var(--muted)}
+  .acts span{cursor:pointer;width:28px;height:28px;border-radius:7px;background:#f4f4f8;display:grid;place-items:center}
+
+  /* PANEL */
+  .panel{position:fixed;top:0;right:0;bottom:0;width:70%;max-width:1160px;background:#fff;z-index:10;box-shadow:-12px 0 40px rgba(0,0,0,.14);display:none;flex-direction:column;border-radius:22px 0 0 22px;overflow:hidden}
+  .panel.on{display:flex}
+  .phead{background:var(--cream);padding:24px 34px;display:flex;align-items:center;position:relative}
+  .pclose{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e6e6ef;box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;place-items:center;cursor:pointer;font-size:16px;color:#26262e;z-index:5}
+  .pclose:hover{background:#f4f4f8;color:#000}
+  .ptitle{font-size:23px;font-weight:700}
+  .ptitle small{display:block;font-size:12.5px;color:var(--muted);font-weight:400;margin-top:2px}
+  .aychip{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:14px}
+  .aypill{border:1px solid #e2ddcf;background:#fff;border-radius:10px;padding:9px 14px;font-weight:600;display:flex;gap:8px;align-items:center}
+  .aypill.to{background:var(--blue-soft);border-color:#cdd7ff;color:var(--blue)}
+  .arrowto{color:var(--muted);font-weight:700}
+  .pbody{padding:20px 34px;overflow:auto;flex:1}
+  .blabel{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 10px;display:flex;align-items:center}
+  .blabel .selall{margin-left:auto;font-size:12px;color:var(--blue);cursor:pointer;text-transform:none;letter-spacing:0;font-weight:600}
+
+  /* previous-year page selection list */
+  .plist{border:1px solid var(--line);border-radius:13px;overflow:hidden;margin-bottom:16px}
+  .prow{display:flex;align-items:center;gap:14px;padding:13px 16px;border-top:1px solid #f2f2f8;cursor:pointer}
+  .prow:first-child{border-top:none}
+  .prow:hover{background:#fbfcff}
+  .prow.on{background:#f7f9ff}
+  .pcbx{width:20px;height:20px;border-radius:6px;border:2px solid #cfd3e0;display:grid;place-items:center;color:#fff;flex:none}
+  .prow.on .pcbx{background:var(--blue);border-color:var(--blue)}
+  .prow .pn{font-weight:600;font-size:14px}
+  .prow .pu{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .prow .rt{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .prow .pa{font-weight:600}
+
+  .autoinc{background:#f4f7ff;border:1px solid #dfe6ff;border-radius:12px;padding:13px 16px;margin-bottom:16px;font-size:13px;color:#33459c;display:flex;gap:10px;align-items:flex-start}
+  .autoinc b{color:#22307a}
+  .autoinc .tags{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+  .autoinc .tg{background:#fff;border:1px solid #dfe6ff;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--blue)}
+
+  .subopts{background:#f7f7fa;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+  .subopts .st{font-weight:600;font-size:13.5px;margin-bottom:10px}
+  .opt{display:flex;align-items:center;gap:10px;font-size:13.5px;color:#444;padding:6px 0;cursor:pointer}
+  .opt input{width:16px;height:16px;accent-color:var(--blue)}
+  .exclude{border:1px solid #ffe0b8;background:#fff8ee;border-radius:12px;padding:14px 16px;font-size:13px;color:#8a5a1c;display:flex;gap:10px;align-items:flex-start}
+  .exclude b{color:#6b4210}
+
+  .done{display:none;text-align:center;padding:14px 10px}
+  .done.on{display:block}
+  .done .big{width:60px;height:60px;border-radius:50%;background:#e7f7ee;color:var(--good);display:grid;place-items:center;font-size:28px;margin:0 auto 14px}
+  .done h3{margin:0 0 4px;font-size:20px}
+  .done p{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+  .rlist{max-width:440px;margin:0 auto;text-align:left}
+  .rrow{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--line);border-radius:11px;margin-bottom:10px;font-size:14px}
+  .rrow .ok{color:var(--good);font-weight:700}
+  .rrow .c{margin-left:auto;font-weight:700}
+
+  .pfoot{border-top:1px solid var(--line);padding:16px 34px;display:flex;gap:14px;align-items:center}
+  .fnote{font-size:12.5px;color:var(--muted)}
+  .cancel{border:1.6px solid var(--line);color:#555;background:#fff;border-radius:12px;padding:13px 28px;font-weight:600;font-size:14.5px;cursor:pointer}
+  .clone{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:13px 30px;font-weight:600;font-size:14.5px;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .clone:hover{filter:brightness(.96)}
+  .stepbar{position:fixed;bottom:14px;left:266px;font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 12px;z-index:20}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="instbox"><span class="ic">🏛️</span><span class="nm">Vibgyor High<br>Bangalore</span><span class="ch">›</span></div>
+    <div class="mm">MAIN MENU</div>
+    <div class="nav">▦ <span>Dashboard</span></div>
+    <div class="nav">🏢 <span>Institute Management</span><span class="ch">▾</span></div>
+    <div class="nav">👤 <span>Student Management</span></div>
+    <div class="nav">💳 <span>Transactions</span><span class="ch">▾</span></div>
+    <div class="nav exp">📡 <span>Communications</span><span class="ch">▴</span></div>
+    <div class="subnav"><div class="snav on">Payment Links</div></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <main class="main" id="main"></main>
+
+  <!-- PANEL -->
+  <div class="panel" id="panel">
+    <div class="phead">
+      <span class="pclose" onclick="reset()">✕</span>
+      <div class="ptitle">Clone Previous Year Setup<small id="ptSub">Pick which classes / pages to bring into 2025-2026</small></div>
+      <div class="aychip">
+        <span class="aypill" id="aySrc">2024-2025 <span style="color:#aaa">▾</span></span>
+        <span class="arrowto">→</span>
+        <span class="aypill to" id="ayTgt">2025-2026</span>
+      </div>
+    </div>
+    <div class="pbody">
+      <div id="form">
+        <div class="blabel">Select classes to replicate <span style="text-transform:none;letter-spacing:0;color:#aaa;margin-left:6px">— from your 2024-2025 payment pages</span>
+          <span class="selall" id="selall" onclick="toggleAll()">Deselect all</span></div>
+        <div class="plist" id="plist"></div>
+
+        <div class="autoinc">ℹ️ <div><b>Copied automatically for the selected classes:</b> their Fee Headers, Class structure and Financing modes.
+          <div class="tags"><span class="tg" id="tgCls">6 classes</span><span class="tg" id="tgFh">6 fee headers</span><span class="tg" id="tgFm">4 financing modes</span></div></div></div>
+
+        <div class="subopts">
+          <div class="st">For the copied Payment Pages</div>
+          <label class="opt"><input type="checkbox" checked> Generate new page URLs for 2025-2026</label>
+          <label class="opt"><input type="checkbox" checked> Reset page expiry dates</label>
+          <label class="opt"><input type="checkbox" checked> Let me review &amp; edit fee amounts after cloning</label>
+        </div>
+
+        <div class="exclude">⚠️ <div><b>Not copied:</b> Students, fee assignments, transactions and collected amounts.
+          <b>2025-2026 starts fresh at ₹0.</b></div></div>
+      </div>
+
+      <div class="done" id="done">
+        <div class="big">✓</div>
+        <h3>2025-2026 setup created</h3>
+        <p>New entries added for the selected classes. Last year's data is untouched.</p>
+        <div class="rlist" id="rlist"></div>
+      </div>
+    </div>
+    <div class="pfoot" id="foot">
+      <span class="fnote" id="fnote"></span>
+      <button class="cancel" onclick="reset()">Cancel</button>
+      <button class="clone" onclick="doClone()">⚡ Clone Setup</button>
+    </div>
+  </div>
+</div>
+<div class="stepbar" id="stepbar"></div>
+
+<!-- shared single-source-of-truth demo store (defines window.ARCDB) -->
+<script src="../../ARC-Data/store.js"></script>
+<script>
+/* ===== ARCDB wiring — all demo data comes from window.ARCDB (single source of truth) ===== */
+const AR = window.ARCDB || null;
+const inr     = (AR && AR.inr)     ? AR.inr     : n => '₹' + (n || 0).toLocaleString('en-IN');
+const fmtDate = (AR && AR.fmtDate) ? AR.fmtDate : d => String(d);
+const slug    = s => String(s).toLowerCase().replace(/[^a-z]/g, '');
+
+/* Academic-year labels: SOURCE = ARCDB.ay(), TARGET = next year */
+function nextAY(a){ const p = String(a).split('-').map(Number); return (p[0]+1)+'-'+(p[1]+1); }
+const SRC_AY = AR ? AR.ay() : '2025-2026';
+const TGT_AY = AR ? (AR.nextAy ? AR.nextAy() : nextAY(AR.ay())) : nextAY(SRC_AY);
+
+/* financing modes count (UPI / Card / Netbanking / EMI) from ARCDB */
+const FMODES = (AR && AR.paymentModes) ? AR.paymentModes().length : 4;
+
+/* Fallback pages — used ONLY if ARCDB is unavailable (guard for rule #5) */
+const FALLBACK_PAGES=[
+  {fh:'Term 1 Fee',    nm:'Term 1 Fee · Marathahalli (CBSE)',     cls:'Grade 5',  amt:37325, due:'2025-06-15'},
+  {fh:'Term 2 Fee',    nm:'Term 2 Fee · Hennur (ICSE)',           cls:'Grade 8',  amt:28225, due:'2025-11-15'},
+  {fh:'Annual Fees',   nm:'Annual Fees · HSR Layout (CBSE)',      cls:'Grade 1',  amt:68080, due:'2025-04-30'},
+  {fh:'Term 1 Fee',    nm:'Term 1 Fee · Whitefield (CIE)',        cls:'Grade 10', amt:37325, due:'2025-06-15'},
+  {fh:'Tuition Fees',  nm:'Tuition Fees · Jakkur (ICSE)',         cls:'Grade 2',  amt:15000, due:'2025-05-30'},
+  {fh:'Transport',     nm:'Transport · Marathahalli (CBSE)',      cls:'UKG',      amt:15000, due:'2025-07-10'},
+];
+
+/* SOURCE-year payment pages, DERIVED from ARCDB:
+   one page per fee header, spread across the store's classes / campuses / boards.
+   (There is no "payment pages" entity in the store, so we derive it — rule #6.) */
+function buildPages(){
+  if(!AR) return FALLBACK_PAGES;
+  const fhs = AR.feeHeaders();
+  const studs = AR.students();
+  const classes  = [...new Set(studs.map(s=>s.cls))];
+  const campuses = [...new Set(studs.map(s=>s.campus))];
+  const boards   = AR.boards ? AR.boards() : [...new Set(studs.map(s=>s.board))];
+  return fhs.map((fh,i)=>{
+    const cls    = classes[i % classes.length];
+    const campus = campuses[i % campuses.length];
+    const m      = studs.find(s=>s.cls===cls && s.campus===campus);
+    const board  = m ? m.board : boards[i % boards.length];
+    return { fh:fh.name, nm:`${fh.name} · ${campus} (${board})`, cls, amt:fh.amount, due:fh.due };
+  });
+}
+const PAGES = buildPages();
+
+let sel=new Set(PAGES.map((_,i)=>i));   // all selected
+let step='empty';
+
+/* selection-derived counts (all from ARCDB-backed PAGES) */
+function classCount(ix){ return new Set([...ix].map(i=>PAGES[i].cls)).size; }
+function feeHeaderCount(ix){ return new Set([...ix].map(i=>PAGES[i].fh)).size; }
+
+/* ---- main render ---- */
+function renderMain(){
+  const m=document.getElementById('main');
+  const isResult = step==='result';
+  const yr = isResult ? TGT_AY : SRC_AY;
+  const head=`<div class="headtop"><h1 class="h1">Payment Links</h1><div class="ay">${yr} <span style="color:#aaa">▾</span></div></div>
+    <div class="tabs"><div class="tab on">Payment Links</div><div class="tab">Scheduled Links</div><div class="tab">Payment Link History</div></div>
+    <div class="toolbar">
+      <div class="sf">🔍 Search &amp; Filter</div>
+      <button class="clonebtn" onclick="openPanel()">⚡ Clone Setup</button>
+      <button class="createbtn">＋ Create Payment Page</button>
+    </div>`;
+  m.classList.toggle('dim', step==='panel'||step==='done');
+
+  if(isResult){
+    const chosen=[...sel].sort((a,b)=>a-b).map(i=>PAGES[i]);
+    m.innerHTML=head+`
+      <div class="banner">✓ <b>Cloned from ${SRC_AY}</b> — ${chosen.length} payment pages created (plus their classes, fee headers &amp; financing modes) for ${TGT_AY}.
+        <span class="rv" onclick="alert('Opens fee-amount review for the copied pages.')">Review amounts</span></div>
+      <div class="card"><table>
+        <thead><tr><th>S.No</th><th>Payment Page</th><th>Class</th><th>Status</th><th>New URL (${TGT_AY})</th><th>Amount</th><th></th></tr></thead>
+        <tbody>${chosen.map((p,i)=>`<tr>
+          <td>${String(i+1).padStart(2,'0')}</td>
+          <td class="pgname">${p.cls} — ${p.nm}</td>
+          <td><span class="clschip">${p.cls}</span></td>
+          <td><span class="stat">Active</span></td>
+          <td><span class="url">rapid.grayquest.com/${slug(p.cls)}-${TGT_AY}-…</span></td>
+          <td><span class="amt" title="Due ${fmtDate(p.due)}">${inr(p.amt)}</span><span class="rev">review</span></td>
+          <td><div class="acts"><span title="Copy">⧉</span><span title="Share">↗</span><span title="QR">▦</span></div></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px">Amounts marked <span class="rev">review</span> were carried over from ${SRC_AY} — confirm before sharing.</p>`;
+  } else {
+    // SOURCE-year Payment Links list (existing pages) — Clone Setup replicates these into TGT_AY
+    m.innerHTML=head+`
+      <div class="card"><table>
+        <thead><tr><th>S.No</th><th>Payment Page</th><th>Class</th><th>Status</th><th>URL</th><th>Amount</th><th></th></tr></thead>
+        <tbody>${PAGES.map((p,i)=>`<tr>
+          <td>${String(i+1).padStart(2,'0')}</td>
+          <td class="pgname">${p.cls} — ${p.nm}</td>
+          <td><span class="clschip">${p.cls}</span></td>
+          <td><span class="stat">Active</span></td>
+          <td><span class="url">rapid.grayquest.com/${slug(p.cls)}-${SRC_AY}-…</span></td>
+          <td><span class="amt" title="Due ${fmtDate(p.due)}">${inr(p.amt)}</span></td>
+          <td><div class="acts"><span title="Copy">⧉</span><span title="Share">↗</span><span title="QR">▦</span></div></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px">Set up next year in one click — <b>⚡ Clone Setup</b> replicates these pages (and their classes, fee headers &amp; financing modes) into 2025-2026.</p>`;
+  }
+}
+
+/* ---- panel ---- */
+function renderList(){
+  document.getElementById('plist').innerHTML=PAGES.map((p,i)=>`
+    <div class="prow ${sel.has(i)?'on':''}" onclick="togglePage(${i})">
+      <span class="pcbx">${sel.has(i)?'✓':''}</span>
+      <span><div class="pn">${p.cls} — ${p.nm}</div><div class="pu">rapid.grayquest.com/${slug(p.cls)}-${SRC_AY}-…</div></span>
+      <span class="rt"><span class="stat">Active</span><span class="pa" title="Due ${fmtDate(p.due)}">${inr(p.amt)}</span></span>
+    </div>`).join('');
+  const uCls=classCount(sel);
+  document.getElementById('tgCls').textContent=uCls+' classes';
+  document.getElementById('tgFh').textContent=feeHeaderCount(sel)+' fee headers';
+  document.getElementById('tgFm').textContent=FMODES+' financing modes';
+  document.getElementById('selall').textContent = sel.size===PAGES.length?'Deselect all':'Select all';
+  document.getElementById('fnote').textContent = `${sel.size} of ${PAGES.length} pages selected · ${uCls} class(es)`;
+}
+function togglePage(i){sel.has(i)?sel.delete(i):sel.add(i);renderList();}
+function toggleAll(){ if(sel.size===PAGES.length)sel.clear(); else sel=new Set(PAGES.map((_,i)=>i)); renderList(); }
+
+function openPanel(){step='panel';document.getElementById('panel').classList.add('on');
+  document.getElementById('form').style.display='block';document.getElementById('done').classList.remove('on');
+  document.getElementById('foot').style.display='flex';renderList();renderMain();stepbar();}
+function reset(){step='empty';document.getElementById('panel').classList.remove('on');renderMain();stepbar();}
+
+function doClone(){
+  if(!sel.size)return;
+  step='done';
+  document.getElementById('form').style.display='none';
+  document.getElementById('foot').style.display='none';
+  document.getElementById('done').classList.add('on');
+  const uCls=classCount(sel);
+  const rows=[['Classes',uCls,'created'],['Fee Headers',feeHeaderCount(sel),'created'],['Financing Modes',FMODES,'created'],['Payment Pages',sel.size,'re-linked']];
+  document.getElementById('rlist').innerHTML=rows.map(r=>`
+    <div class="rrow"><span class="ok">✓</span> ${r[0]} <span class="c">${r[1]} ${r[2]}</span></div>`).join('')
+    + `<div style="margin-top:16px;text-align:center"><button class="clone" style="margin:0 auto" onclick="goResult()">View Payment Pages →</button></div>`;
+  stepbar();
+}
+function goResult(){step='result';document.getElementById('panel').classList.remove('on');renderMain();stepbar();}
+
+function stepbar(){
+  const names={empty:'1 · '+SRC_AY+' pages (existing)',panel:'2 · Pick classes to replicate',done:'3 · Cloned ✓',result:'4 · '+TGT_AY+' created'};
+  document.getElementById('stepbar').textContent='Flow: '+names[step]+'   —   click through to see each stage';
+}
+
+/* set the AY labels that live in static HTML (panel header + subtitle) */
+function initAYLabels(){
+  const src=document.getElementById('aySrc'); if(src) src.innerHTML=SRC_AY+' <span style="color:#aaa">▾</span>';
+  const tgt=document.getElementById('ayTgt'); if(tgt) tgt.textContent=TGT_AY;
+  const sub=document.getElementById('ptSub'); if(sub) sub.textContent='Pick which classes / pages to bring into '+TGT_AY;
+}
+
+/* guard + render on DOMContentLoaded (rule #5) */
+document.addEventListener('DOMContentLoaded',function(){
+  if(!window.ARCDB){ console.warn('[ARC-FMS] window.ARCDB not found — falling back to built-in demo data.'); }
+  initAYLabels();
+  renderMain();
+  stepbar();
+});
+</script>
+</body>
+</html>

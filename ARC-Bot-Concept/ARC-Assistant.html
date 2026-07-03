@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#26262e;--muted:#8a8f9c;--line:#ececf3;--indigo:#5b3df5;--indigo-soft:#eef0ff;--navy:#1f2a63;--bg:#f5f5fb;--good:#1a9d5a;--bad:#d1425a;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:820px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#fff;box-shadow:0 0 40px rgba(30,20,60,.06)}
+  header{background:var(--indigo);color:#fff;padding:16px 22px;display:flex;align-items:center;gap:12px}
+  header .logo{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center}
+  header .logo img{width:24px;height:24px}
+  header .t b{font-size:16px} header .t span{font-size:12px;opacity:.85;display:block}
+  header .scope{margin-left:auto;font-size:12px;background:rgba(255,255,255,.18);border-radius:8px;padding:6px 12px}
+
+  .chat{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+  .msg{max-width:80%;padding:10px 13px;border-radius:13px;font-size:12.5px;line-height:1.45}
+  .bot{background:#f2f1fb;border-bottom-left-radius:4px;align-self:flex-start}
+  .user{background:var(--navy);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+  .bot .num{font-size:17px;font-weight:700;color:var(--indigo)}
+  .bot table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+  .bot td{padding:5px 8px;border-top:1px solid #e5e3f4}
+  .bot td:last-child{text-align:right;font-weight:600}
+  .openbtn{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;text-decoration:none;border-radius:9px;padding:8px 13px;font-weight:600;font-size:12px;margin-top:9px;cursor:pointer;border:none;font-family:inherit}
+  .openbtn:hover{filter:brightness(1.2)}
+  .prefill{font-size:12px;color:var(--muted);margin-top:6px}
+  .pick{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .pickbtn{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;cursor:pointer;font-family:inherit;font-size:12px}
+  .pickbtn:hover{border-color:var(--indigo);background:var(--indigo-soft)}
+  .pickbtn b{color:var(--ink)} .pickbtn span{color:var(--muted);font-size:12px}
+
+  /* category chips */
+  .cats{display:flex;gap:8px;flex-wrap:wrap;padding:0 22px 8px}
+  .catchip{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;cursor:pointer;background:#fff}
+  .catchip:hover,.catchip.on{border-color:var(--indigo);background:var(--indigo-soft);color:var(--indigo);font-weight:600}
+
+  /* input + suggestions */
+  .inputwrap{border-top:1px solid var(--line);padding:12px 18px 16px;position:relative}
+  .suggest{position:absolute;bottom:70px;left:18px;right:18px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 -8px 30px rgba(30,20,60,.12);overflow:hidden;display:none;max-height:300px;overflow-y:auto}
+  .suggest.on{display:block}
+  .sg{padding:10px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:9px;border-top:1px solid #f3f2fa}
+  .sg:first-child{border-top:none}
+  .sg:hover{background:var(--indigo-soft)}
+  .sg .tag{font-size:9px;font-weight:700;border-radius:5px;padding:2px 6px}
+  .sg .tag.A{background:#e6f7ee;color:var(--good)} .sg .tag.L{background:var(--indigo-soft);color:var(--indigo)}
+  .sg .cat{margin-left:auto;font-size:11px;color:var(--muted)}
+  .row{display:flex;gap:10px}
+  .row input{flex:1;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:12.5px;outline:none}
+  .row input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-soft)}
+  .send{background:var(--indigo);color:#fff;border:none;border-radius:12px;padding:0 18px;font-family:inherit;font-weight:600;font-size:12.5px;cursor:pointer}
+  .hint{font-size:10.5px;color:var(--muted);text-align:center;margin-top:7px}
+  body.embed header{display:none}
+  body.embed .cats{padding-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><img src="../ARC-Transactions-Concepts/02-Student-Payment-Lookup/gq-logo.png" onerror="this.style.display='none'" alt="gq"></div>
+    <div class="t"><b>ARC Assistant</b><span>VIBGYOR High · Bangalore Marathahalli</span></div>
+    <div class="scope">Accounts · scoped to your campus</div>
+  </header>
+
+  <div class="cats" id="cats"></div>
+  <div class="chat" id="chat"></div>
+
+  <div class="inputwrap">
+    <div class="suggest" id="suggest"></div>
+    <div class="row">
+      <input id="inp" autocomplete="off" placeholder="Ask or type a keyword… e.g. “report”, “pending”, “payment link for Shivam”"
+             oninput="onType()" onkeydown="if(event.key==='Enter')submitInput()">
+      <button class="send" onclick="submitInput()">Send</button>
+    </div>
+    <div class="hint">Type what you want — matching actions pop up. Answers are live; actions open the real screen prefilled.</div>
+  </div>
+</div>
+
+<script src="../ARC-Data/store.js"></script>
+<script>
+const P='..'; // sibling prototype folders
+const HREF={
+  worklist:P+'/ARC-Stats-Concepts/02-Defaulter-Worklist/Defaulter-Worklist.html',
+  reminder:P+'/ARC-Stats-Concepts/03-Payment-Reminder/Payment-Reminder.html',
+  feehdr:P+'/ARC-Stats-Concepts/01-Fee-Header-Wise-Collection/Fee-Header-Wise-Collection.html',
+  lookup:P+'/ARC-Transactions-Concepts/02-Student-Payment-Lookup/Student-Payment-Lookup.html',
+  breakup:P+'/ARC-Transactions-Concepts/01-Fee-Breakup-In-Transaction/Fee-Breakup-In-Transaction.html',
+  report:P+'/ARC-Reports-Concepts/01-Custom-Report-Builder/Custom-Report-Builder.html',
+  clone:P+'/ARC-Institute-Management-Concepts/01-Clone-Previous-Year-Setup/Clone-Previous-Year-Setup.html',
+  gile:P+'/ARC-GILE-Concepts/01-Persistent-Filter-Bar/Persistent-Filter-Bar.html',
+  paylink:P+'/ARC-Communications-Concepts/01-Create-Payment-Link/Create-Payment-Link.html',
+};
+// question bank: q, k=keywords, t=A/L, cat, a=answer html (A), h=href key (L), f=feature label, special
+const Q=[
+ // reports
+ {q:'Download the All-Transaction Report', k:'report download transaction all', t:'L', cat:'Reports', h:'report', f:'Report generator'},
+ {q:'Download the Settlement Report', k:'report settlement download bank', t:'L', cat:'Reports', h:'report', f:'Report generator'},
+ {q:'Download the Fee Header Report', k:'report fee header download', t:'L', cat:'Reports', h:'report', f:'Report generator'},
+ {q:'Build a Custom Report (pick columns)', k:'report custom columns build combine', t:'L', cat:'Reports', h:'report', f:'Custom Report'},
+ {q:'Combined PG report — Paid+Settled+Failed', k:'report pg combined paid settled failed sheet', t:'L', cat:'Reports', h:'report', f:'Custom Report'},
+ {q:'Email me the collection report', k:'report email collection schedule', t:'L', cat:'Reports', h:'report', f:'Report generator'},
+ // pending
+ {q:'Total pending fees right now', k:'pending due overdue total outstanding', t:'A', cat:'Pending', a:()=>`<b>Total pending:</b> <span class="num">${ARCDB.inr(ARCDB.pendingTotal())}</span><br>across <b>${ARCDB.pendingCount()} students</b> (AY 2025-26).`},
+ {q:'Show students with pending fees', k:'pending students list defaulter overdue', t:'L', cat:'Pending', h:'worklist', f:'Defaulter Worklist'},
+ {q:'Students 60+ days overdue', k:'pending overdue 60 days bucket defaulter', t:'L', cat:'Pending', h:'worklist', f:'Defaulter Worklist (60+ bucket)'},
+ {q:'Pending for Grade 5, Marathahalli', k:'pending grade 5 marathahalli class campus', t:'A', cat:'Pending', a:'<b>Grade 5 · Marathahalli</b> pending: <span class="num">₹1,42,000</span> · 38 students.'},
+ {q:'Top highest-pending students', k:'pending top highest students defaulter', t:'L', cat:'Pending', h:'worklist', f:'Defaulter Worklist'},
+ {q:'Download the defaulter list', k:'pending download defaulter list report', t:'L', cat:'Pending', h:'worklist', f:'Defaulter Worklist'},
+ // collection
+ {q:'Total collected this month', k:'collection collected month revenue total', t:'A', cat:'Collection', a:()=>`<b>Collected so far (AY 2025-26):</b> <span class="num">${ARCDB.inr(ARCDB.collectionTotal())}</span> across all modes · ${ARCDB.txnCount()} transactions.`},
+ {q:'Collection by payment mode', k:'collection mode emi pg auto debit offline split', t:'A', cat:'Collection', a:()=>{const m=ARCDB.byMode();return `<b>Collection by mode:</b><table>${Object.entries(m).map(([k,v])=>`<tr><td>${k==='EMI'?'EMI (registered)':k}</td><td>${ARCDB.inr(v)}</td></tr>`).join('')}</table>`;}},
+ {q:'This year vs last year (YoY)', k:'collection revenue year yoy compare last', t:'A', cat:'Collection', a:'<b>Collection YoY:</b> AY 25-26 <span class="num">₹1.21 Cr</span> vs AY 24-25 ₹1.11 Cr <b style="color:var(--good)">(+9%)</b>.'},
+ {q:'Collection by fee header', k:'collection fee header wise term tuition transport', t:'L', cat:'Collection', h:'feehdr', f:'Fee-Header Collection'},
+ {q:'Collection by class / grade', k:'collection class grade wise', t:'A', cat:'Collection', a:'Top grades: <b>Grade 8</b> ₹4.2L · <b>Grade 5</b> ₹3.8L · <b>Grade 10</b> ₹3.1L (this month).'},
+ {q:'Collection efficiency %', k:'collection efficiency percent received billed', t:'A', cat:'Collection', a:()=>{const p=ARCDB.collectionTotal(),pe=ARCDB.pendingTotal();return `<b>Collection efficiency:</b> <span class="num">${Math.round(p/(p+pe)*100)}%</span> (Received ${ARCDB.inr(p)} · Pending ${ARCDB.inr(pe)}).`;}},
+ // settlement
+ {q:'How much has settled to our bank?', k:'settlement settled bank reconcile', t:'A', cat:'Settlement', a:'<b>Settled to bank (this month):</b> <span class="num">₹14,10,000</span> · pending to settle ₹1,32,300.'},
+ {q:'Collected vs settled gap', k:'settlement collected vs settled gap reconcile', t:'A', cat:'Settlement', a:'Collected ₹15,42,300 · Settled ₹14,10,000 · <b>In transit ₹1,32,300</b>.'},
+ {q:'Find settlement by UTR', k:'settlement utr find reconcile bank', t:'L', cat:'Settlement', h:'lookup', f:'Settlement lookup'},
+ {q:'Last settlement date & amount', k:'settlement last date amount recent', t:'A', cat:'Settlement', a:'Last settlement: <b>02-Jul-2026</b> · ₹2,40,500 (UTR-90231…).'},
+ // student
+ {q:"Show a student's payments (all modes)", k:'student payments lookup history all modes', t:'L', cat:'Student', h:'lookup', f:'Student Payment Lookup'},
+ {q:'Is a student fully paid?', k:'student paid pending status balance', t:'L', cat:'Student', h:'lookup', f:'Student Payment Lookup'},
+ {q:"A student's fee breakup", k:'student fee breakup header transaction', t:'L', cat:'Student', h:'breakup', f:'Transaction fee breakup'},
+ {q:'Find a student by ID / name', k:'student find search id name', t:'L', cat:'Student', h:'lookup', f:'Student Payment Lookup'},
+ {q:'Which fee header did a student pay?', k:'student fee header paid which breakup', t:'L', cat:'Student', h:'breakup', f:'Transaction fee breakup'},
+ // receipt
+ {q:"Download a student's fee receipt", k:'receipt download student fee pdf', t:'L', cat:'Receipt', h:'lookup', f:'Student Lookup → Receipt'},
+ {q:'Combined (year) receipt for a student', k:'receipt combined consolidated year tax pdf', t:'L', cat:'Receipt', h:'lookup', f:'Student Lookup → Combined Receipt'},
+ {q:'Receipt for a PG / offline payment', k:'receipt pg offline payment download', t:'L', cat:'Receipt', h:'lookup', f:'Student Lookup → Receipt'},
+ // reminder / links
+ {q:'Send a payment reminder to a class', k:'reminder send class payment follow up', t:'L', cat:'Reminder', h:'reminder', f:'Payment Reminder'},
+ {q:'Remind all overdue students', k:'reminder overdue all send bulk', t:'L', cat:'Reminder', h:'worklist', f:'Defaulter Worklist → Remind all'},
+ {q:'Generate a payment link for a student', k:'payment link generate student create send', t:'special', cat:'Reminder', f:'Payment Link'},
+ {q:'Schedule a recurring reminder', k:'reminder schedule recurring weekly', t:'L', cat:'Reminder', h:'reminder', f:'Payment Reminder'},
+ // modes
+ {q:'Show EMI applications', k:'emi applications disbursed loan mode', t:'A', cat:'Modes', a:'<b>EMI (AY 25-26):</b> 214 applications · ₹41.2L disbursed · 6 denied.'},
+ {q:'PG failed transactions', k:'pg failed transactions payment gateway', t:'L', cat:'Modes', h:'breakup', f:'PG Transactions'},
+ {q:'PG success rate this week', k:'pg success rate percent week gateway', t:'A', cat:'Modes', a:'<b>PG success rate (this week):</b> <span class="num">82%</span> (18 failed of 100 attempts).'},
+ {q:'Auto-debit bounces this month', k:'auto debit bounce nach mandate fail', t:'A', cat:'Modes', a:'<b>Auto-debit bounces:</b> 11 of 190 (5.8%) this month.'},
+ {q:'Amount collected via each mode', k:'mode collected split emi pg offline auto', t:'A', cat:'Modes', a:'PG ₹9.8L · Auto-Debit ₹3.1L · Offline ₹1.5L · EMI ₹1.0L (this month).'},
+ // fee header / setup
+ {q:'Fee-header wise paid vs pending', k:'fee header paid pending wise collection', t:'L', cat:'Fees', h:'feehdr', f:'Fee-Header Collection'},
+ {q:'Total discount given', k:'discount total given fee', t:'A', cat:'Fees', a:'<b>Total discount (AY):</b> ₹1,75,000 (early-payment rebates).'},
+ {q:'Total late fees / fines applied', k:'fine late fee total applied', t:'A', cat:'Fees', a:'<b>Late fees applied:</b> ₹42,750 · collected ₹41,000 · pending ₹1,750.'},
+ {q:"Clone last year's fee setup", k:'clone previous year setup fee header page academic', t:'L', cat:'Fees', h:'clone', f:'Clone Previous Year Setup'},
+ {q:'Switch campus / GILE', k:'gile switch campus location board group filter navigate', t:'L', cat:'Fees', h:'gile', f:'GILE filter'},
+ // help
+ {q:'How do I create a payment page?', k:'help create payment page how', t:'A', cat:'Help', a:'Communications › Payment Links › <b>Create Payment Page</b> → name, class, form, fee headers, PG cards → Save.'},
+ {q:'What does "dynamic fee" mean?', k:'help dynamic fee meaning what', t:'A', cat:'Help', a:'A <b>dynamic fee</b> lets the payer enter their own amount on the payment page/link (open amount) instead of a fixed one.'},
+ {q:'Collected vs settled — difference?', k:'help collected settled difference reconcile', t:'A', cat:'Help', a:'<b>Collected</b> = money received via a mode. <b>Settled</b> = money actually deposited to your bank account (after PG settlement).'},
+ {q:'How do I set up a new academic year?', k:'help new academic year setup ay clone', t:'A', cat:'Help', a:'Use <b>Clone Previous Year Setup</b> (Payment Links › Clone Setup) to copy classes, fee headers, financing modes & pages into the new AY.'},
+];
+// students for the payment-link disambiguation demo
+const STU=[
+  // students shown on the dashboard (so name / ID lookups resolve)
+  {name:'Riona Joel',     id:'108370', cls:'Grade 5', campus:'Marathahalli'},
+  {name:'Jaskaran Singh', id:'25105',  cls:'Grade 8', campus:'Marathahalli'},
+  {name:'Omari Schwarz',  id:'342529', cls:'Grade 5', campus:'Hennur'},
+  {name:'Riansh H',       id:'342534', cls:'Grade 2', campus:'Marathahalli'},
+  {name:'Abhigna Singh',  id:'336919', cls:'Grade 1', campus:'HSR Layout'},
+  {name:'Kashvika K',     id:'26142',  cls:'UKG',     campus:'Marathahalli'},
+  // multiple "Shivam"s to demo disambiguation
+  {name:'Shivam Rao',      id:'108455', cls:'Grade 5', campus:'Marathahalli'},
+  {name:'Shivam Kulkarni', id:'342780', cls:'Grade 8', campus:'Hennur'},
+  {name:'Shivam Nair',     id:'115902', cls:'Grade 2', campus:'HSR Layout'},
+];
+const CATS=['Reports','Pending','Collection','Settlement','Student','Receipt','Reminder','Modes','Fees','Help'];
+// per-grade figures (parameterized answers)
+const GRADES={
+ 1:{c:'₹3,20,000',p:'₹90,000',s:42}, 2:{c:'₹2,74,500',p:'₹1,05,000',s:40},
+ 3:{c:'₹3,05,000',p:'₹78,000',s:41}, 4:{c:'₹3,40,000',p:'₹1,10,000',s:39},
+ 5:{c:'₹4,10,000',p:'₹1,42,000',s:38}, 6:{c:'₹3,80,000',p:'₹1,20,000',s:44},
+ 7:{c:'₹3,95,000',p:'₹95,000',s:43}, 8:{c:'₹4,20,000',p:'₹1,60,000',s:45},
+ 9:{c:'₹3,60,000',p:'₹1,05,000',s:37}, 10:{c:'₹3,10,000',p:'₹80,000',s:33},
+};
+
+const chat=document.getElementById('chat'), inp=document.getElementById('inp'), sug=document.getElementById('suggest');
+let pending=null; // 'student_for_link'
+
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+// JSON payload safe to drop inside a single-quoted onclick='' attribute (apostrophes/quotes escaped)
+function attrJSON(v){return JSON.stringify(v).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
+function bubble(cls,html){const d=document.createElement('div');d.className='msg '+cls;d.innerHTML=html;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;return d;}
+function botAnswer(item){
+  if(item.t==='A'){bubble('bot', typeof item.a==='function'?item.a():item.a);}
+  else if(item.t==='L'){
+    const href=HREF[item.h]||'';
+    bubble('bot',`Sure — I can open <b>${item.f}</b> for you, prefilled for VIBGYOR Marathahalli.
+      <div class="prefill">Set the last details (dates / student) &amp; confirm there.</div>
+      ${href?`<a class="openbtn" href="${href}" target="_blank">Open ${item.f} →</a>`:`<button class="openbtn" onclick="alert('Opens the ${item.f} screen (prototype not built).')">Open ${item.f} →</button>`}`);
+  } else if(item.t==='special'){ askStudentForLink(); }
+}
+function askStudentForLink(){ pending='student_for_link';
+  bubble('bot','Sure — <b>which student</b> should the payment link go to? Type their name or Student ID.'); }
+function resolveStudent(text){
+  pending=null;
+  const q=text.toLowerCase().replace(/.*for\s+student\s+/,'').replace(/.*for\s+/,'').replace(/["']/g,'').trim();
+  const matches=(window.ARCDB?ARCDB.findStudent(q):STU.filter(s=>s.name.toLowerCase().includes(q)||s.id===q));
+  if(matches.length===1){ openLinkFor(matches[0]); }
+  else if(matches.length>1){
+    bubble('bot',`I found <b>${matches.length}</b> students matching “${esc(q)}” — which one?
+      <div class="pick">${matches.map(s=>`<button class="pickbtn" onclick='openLinkFor(${attrJSON(s)})'><b>${s.name}</b> <span>· ID ${s.id} · ${s.cls} · ${s.campus}</span></button>`).join('')}</div>`);
+  } else { bubble('bot',`No student named “${esc(q)}” on your campus. Try the <b>Student ID</b> instead.`); pending='student_for_link'; }
+}
+function openLinkFor(s){
+  const url=HREF.paylink+`?name=${encodeURIComponent(s.name)}&id=${s.id}&cls=${encodeURIComponent(s.cls)}&campus=${encodeURIComponent(s.campus)}`;
+  bubble('bot',`Opening the <b>Create Payment Link</b> screen for <b>${s.name}</b> (ID ${s.id} · ${s.cls} · ${s.campus}), prefilled.
+    <div class="prefill">Pick the fee header &amp; amount, then Confirm to generate &amp; share. (Nothing is sent until you confirm.)</div>
+    <a class="openbtn" href="${url}" target="_blank">Open Create Payment Link →</a>`);
+}
+
+function score(item,q){
+  const hay=(item.q+' '+item.k).toLowerCase(); let s=0;
+  q.split(/\s+/).filter(Boolean).forEach(w=>{ if(hay.includes(w))s+=(item.q.toLowerCase().includes(w)?2:1); });
+  return s;
+}
+function onType(){
+  const q=inp.value.trim().toLowerCase();
+  if(!q){sug.classList.remove('on');return;}
+  const ranked=Q.map(i=>({i,s:score(i,q)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,6);
+  if(!ranked.length){sug.classList.remove('on');return;}
+  sug.innerHTML=ranked.map(x=>`<div class="sg" onclick='pick(${attrJSON(x.i.q)})'>
+     ${esc(x.i.q)}
+     <span class="cat">${x.i.cat}</span></div>`).join('');
+  sug.classList.add('on');
+}
+function pick(qtext){ sug.classList.remove('on'); inp.value=''; bubble('user',esc(qtext));
+  const item=Q.find(i=>i.q===qtext); if(item) setTimeout(()=>botAnswer(item),200); }
+function submitInput(){
+  const text=inp.value.trim(); if(!text)return;
+  sug.classList.remove('on'); inp.value='';
+  bubble('user',esc(text));
+  if(pending==='student_for_link'){ setTimeout(()=>resolveStudent(text),200); return; }
+  // payment-link intent with a name inline
+  if(/payment link/i.test(text) && /for\s+/i.test(text)){ setTimeout(()=>resolveStudent(text),200); return; }
+  // parameterized: fee collected / pending for class N  (entity-extraction demo)
+  const cm=text.match(/(?:class|grade|std)\s*(\d{1,2})/i);
+  if(cm && window.ARCDB){
+    const cls='Grade '+(+cm[1]);
+    const wantPending=/pending|due|overdue|outstanding|balance/i.test(text) && !/collect|paid|received|revenue/i.test(text);
+    const collected=ARCDB.collectionTotal({cls});
+    const pend=ARCDB.defaulters('all').filter(r=>r.cls===cls).reduce((a,r)=>a+r.pending,0);
+    const nStu=ARCDB.students().filter(s=>s.cls===cls).length;
+    const val=wantPending?ARCDB.inr(pend):ARCDB.inr(collected);
+    if(nStu){ setTimeout(()=>bubble('bot',`<b>${cls}</b> ${wantPending?'pending':'collected'}: <span class="num">${val}</span> · ${nStu} students. <div class="prefill">Computed live from the data store · parsed intent = ${wantPending?'pending':'collected'}.</div>`),200); }
+    else { setTimeout(()=>bubble('bot',`No students in ${cls} on this campus.`),200); }
+    return;
+  }
+  // else best match
+  const ranked=Q.map(i=>({i,s:score(i,text.toLowerCase())})).sort((a,b)=>b.s-a.s);
+  if(ranked[0].s>0){ setTimeout(()=>botAnswer(ranked[0].i),200); }
+  else { setTimeout(()=>bubble('bot',`I don't have that yet. Try a keyword like <b>report, pending, collection, settlement, student, receipt, reminder, EMI, fee header</b> — or browse the categories above.`),200); }
+}
+function catClick(c){ inp.value=''; sug.classList.remove('on');
+  const items=Q.filter(i=>i.cat===c).slice(0,8);
+  bubble('user',c);
+  bubble('bot',`Here's what I can do under <b>${c}</b>:
+    <div class="pick">${items.map(i=>`<button class="pickbtn" onclick='pick(${attrJSON(i.q)})'>${esc(i.q)}</button>`).join('')}</div>`);
+}
+document.getElementById('cats').innerHTML=CATS.map(c=>`<span class="catchip" onclick='catClick(${attrJSON(c)})'>${c}</span>`).join('');
+document.addEventListener('click',e=>{if(!e.target.closest('.inputwrap'))sug.classList.remove('on');});
+
+// greeting
+bubble('bot',`Hi! I'm the <b>ARC Assistant</b> for VIBGYOR High, Marathahalli. Ask me things like:
+  <div class="pick">
+    <button class="pickbtn" onclick='pick("Total collected this month")'>“How much collected this month?”</button>
+    <button class="pickbtn" onclick='pick("Show students with pending fees")'>“Show students with pending fees”</button>
+    <button class="pickbtn" onclick='pick("Download the All-Transaction Report")'>“Download the fee report”</button>
+    <button class="pickbtn" onclick='submitInputPreset("generate payment link for student Shivam")'>“Payment link for student Shivam”</button>
+  </div>`);
+function submitInputPreset(t){inp.value=t;submitInput();}
+// hide the inner header when embedded in the floating widget (avoids double header)
+if(window.self!==window.top){document.body.classList.add('embed');}
+</script>
+</body>
+</html>

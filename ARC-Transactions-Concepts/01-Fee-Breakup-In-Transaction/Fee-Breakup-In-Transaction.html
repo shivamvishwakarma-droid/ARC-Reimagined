@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Payment Gateway — Fee Breakup flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#9a9aa6; --line:#ececf1; --blue:#2f5bff; --blue-soft:#eef2ff;
+    --sideA:#efe9f6; --sideB:#f4eff9; --active:#16181d; --cream:#fdf9f1;
+    --settled:#e7ecfd; --settledtx:#3a4ad0; --failed:#fdeaea; --failedtx:#d1425a; --green:#1a9d5a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh;position:relative}
+  /* SIDEBAR */
+  .side{width:250px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column;z-index:2;position:sticky;top:0;height:100vh;align-self:flex-start;overflow-y:auto}
+  .instbox{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(80,50,90,.06)}
+  .instbox .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center;font-size:15px;flex:none}
+  .instbox .nm{font-size:13px;font-weight:600;line-height:1.25}
+  .instbox .ch{margin-left:auto;color:var(--muted)}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:16px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;font-size:14px;font-weight:500;color:#3a3340;margin-bottom:2px}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .subnav{margin:0 0 6px 8px}
+  .snav{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:11px;font-size:14px;color:#4a4450;position:relative}
+  .snav.on{background:var(--active);color:#fff;font-weight:600}
+  .snav.on::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:4px;background:var(--blue);border-radius:3px}
+  .side-foot{margin-top:auto}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:13px;font-weight:600;font-size:13.5px;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+
+  .main{flex:1;min-width:0;padding:22px 30px 40px}
+  .headtop{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+  .h1{font-size:26px;font-weight:700;margin:0}
+  .headright{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .ay{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px;color:#444}
+  .ay .x{color:var(--muted);font-size:12px}.ay .cv{color:var(--muted);font-size:11px}
+  .userpill{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:14px;font-weight:500}
+  .userpill .av{width:22px;height:22px;border-radius:50%;background:var(--blue-soft);display:grid;place-items:center;font-size:12px;color:var(--blue)}
+  .hr{height:1px;background:var(--line);margin:12px 0 18px}
+  .tabs{display:flex;gap:26px;margin-bottom:20px}
+  .tab{padding-bottom:10px;font-size:15px;color:var(--muted)}
+  .tab.on{color:#16181d;font-weight:600;border-bottom:2px solid #16181d}
+
+  .kpis{display:flex;gap:26px;margin-bottom:10px}
+  .kpi{flex:1;border:1px solid var(--line);border-radius:16px;padding:20px 22px;display:flex;align-items:flex-start;justify-content:space-between;box-shadow:0 2px 10px rgba(30,20,50,.03)}
+  .kpi .k{font-size:15px;color:#555}
+  .kpi .v{font-size:26px;font-weight:700;margin-top:10px}
+  .kpi .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:18px}
+  .kpi .ic.g{background:#e7f7ee;color:var(--green)} .kpi .ic.b{background:var(--blue-soft);color:var(--blue)}
+  .refresh{font-size:13px;color:var(--muted);margin:6px 0 18px}
+  .refresh a{color:var(--blue);cursor:pointer;font-weight:600}
+
+  .toolbar{display:flex;align-items:center;margin-bottom:14px}
+  .sf{border:1px solid var(--line);border-radius:12px;padding:12px 18px;display:inline-flex;gap:8px;color:#555;font-size:14px}
+  .dl{margin-left:auto;color:var(--blue);font-weight:600;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:8px}
+
+  /* table as separated rounded rows */
+  .thead,.trow{display:grid;grid-template-columns:56px 1.5fr 1.2fr 1.3fr 1fr 1.3fr .9fr 1fr 56px;align-items:center;gap:10px}
+  .thead{padding:16px 20px;background:#f6f5f9;border-radius:12px;margin-bottom:10px}
+  .thead div{font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .trow{padding:16px 20px;border:1px solid var(--line);border-radius:14px;margin-bottom:12px;font-size:13.5px}
+  .refid{font-weight:500;word-break:break-all;line-height:1.4}
+  .amt{font-weight:500}
+  .att .d{display:flex;align-items:center;gap:6px}
+  .att .t{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;margin-top:3px}
+  .sstat{color:var(--green);font-weight:500}
+  .chip{font-size:11.5px;font-weight:600;border-radius:7px;padding:5px 11px;display:inline-block}
+  .chip.settled{background:var(--settled);color:var(--settledtx)}
+  .chip.failed{background:var(--failed);color:var(--failedtx)}
+  .eye{width:38px;height:38px;border-radius:10px;background:#f1eef9;display:grid;place-items:center;cursor:pointer;font-size:15px;justify-self:end}
+  .eye:hover{background:#e7e2f4}
+  /* pagination */
+  .pager{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:6px}
+  .pg{min-width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:14px;color:#555;cursor:pointer;padding:0 8px}
+  .pg:hover{background:#f3f2f7}
+  .pg.on{background:#eef0ff;color:var(--blue);font-weight:700}
+  .pg.nav{display:flex;align-items:center;gap:6px;font-weight:500}
+  .pg.dis{color:#c7c7d2;cursor:not-allowed}
+  .pg.dis:hover{background:none}
+  .pg.dots{cursor:default}.pg.dots:hover{background:none}
+
+  /* MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(30,25,45,.34);z-index:20;display:none}
+  .overlay.on{display:block}
+  .modal{position:fixed;top:120px;left:150px;right:34px;bottom:36px;background:#fff;z-index:21;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden}
+  .modal.on{display:flex}
+  .mhead{background:var(--cream);padding:24px;text-align:center;position:relative;flex:none}
+  .mclose{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;place-items:center;cursor:pointer;font-size:16px;color:#26262e;z-index:5}
+  .mclose:hover{background:#f4f4f8;color:#000}
+  .mtitle{font-size:23px;font-weight:700}
+  .mbody{padding:16px 34px 34px;overflow:auto;flex:1}
+  .mtabs{display:flex;gap:26px;border-bottom:1px solid var(--line);margin-bottom:24px}
+  .mtab{padding-bottom:12px;font-size:15px;color:var(--muted);cursor:pointer}
+  .mtab.on{color:#16181d;font-weight:600;border-bottom:2px solid #16181d}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px 30px}
+  .fld .l{font-size:14px;color:#8a8f9c;margin-bottom:6px}
+  .fld .v{font-size:15px;font-weight:600}
+  .fld .v.mut{color:#c2c2cc;font-weight:400}
+
+  /* NEW fee breakup */
+  .fbsec{margin-top:28px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .fbh{display:flex;align-items:center;padding:14px 18px;background:#f6f8ff;border-bottom:1px solid var(--line)}
+  .fbh .t{font-weight:600;font-size:15px}
+  .fbh .newtag{font-size:9px;background:var(--blue);color:#fff;border-radius:5px;padding:2px 7px;letter-spacing:.4px;margin-left:8px}
+  .fbh .sub{margin-left:auto;font-size:12.5px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  .fbsec th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 18px}
+  .fbsec th.r,.fbsec td.r{text-align:right}
+  .fbsec td{padding:13px 18px;border-top:1px solid var(--line);font-size:14px}
+  .fbsec td.hd{font-weight:600}
+  .fbsec tr.tot td{border-top:2px solid #e6e4ee;background:#faf9fc;font-weight:700}
+  .match{font-size:12.5px;color:var(--green);margin-top:10px;display:flex;gap:6px;align-items:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="instbox"><span class="ic">🏛️</span><span class="nm">Vibgyor High<br>Bangalore</span><span class="ch">›</span></div>
+    <div class="mm">MAIN MENU</div>
+    <div class="nav">▦ <span>Dashboard</span></div>
+    <div class="nav">🏢 <span>Institute Management</span><span class="ch">▾</span></div>
+    <div class="nav">👤 <span>Student Management</span></div>
+    <div class="nav">🧾 <span>Transactions</span><span class="ch">▴</span></div>
+    <div class="subnav">
+      <div class="snav">📅 EMI</div>
+      <div class="snav on">₹ PG</div>
+      <div class="snav">◎ Auto Debit</div>
+      <div class="snav">🤲 Offline Collections</div>
+    </div>
+    <div class="nav">📡 <span>Communications</span><span class="ch">▾</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="headtop">
+      <h1 class="h1">Payment Gateway</h1>
+      <div class="headright">
+        <div class="ay">2025-2026 <span class="x">✕</span><span class="cv">▾</span></div>
+        <div class="userpill"><span class="av">V</span> Vibgyor High</div>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="tabs"><div class="tab on">Transactions</div><div class="tab">Settlement</div></div>
+
+    <div class="kpis">
+      <div class="kpi"><div><div class="k">Total fee amount collected</div><div class="v" id="kTotal">Rs. 0</div></div><div class="ic g">₹</div></div>
+      <div class="kpi"><div><div class="k">Number of transactions</div><div class="v" id="kCount">0</div></div><div class="ic b">▤</div></div>
+    </div>
+    <div class="refresh">Last Refreshed at 03-Jul-2026, 4:05 PM &nbsp; <a>⟳ Refresh</a></div>
+
+    <div class="toolbar">
+      <div class="sf">🔍 Search &amp; Filter</div>
+      <div class="dl">⭳ Download Report</div>
+    </div>
+
+    <div class="thead">
+      <div>S.No.</div><div>Reference ID</div><div>Primary Student Identifier</div><div>Student Name</div>
+      <div>Amount Paid</div><div>Payment Attempted</div><div>Student Status</div><div>Debit Status</div><div></div>
+    </div>
+    <div id="rows"></div>
+    <div class="pager" id="pager"></div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="mhead"><span class="mclose" onclick="closeModal()">✕</span><div class="mtitle">More Details</div></div>
+  <div class="mbody">
+    <div class="mtabs"><div class="mtab on">Details</div><div class="mtab">Transactions</div><div class="mtab">Other Notes</div></div>
+    <div class="grid" id="dgrid"></div>
+    <div class="fbsec">
+      <div class="fbh"><span class="t">Fee Breakup</span><span class="newtag">NEW</span><span class="sub" id="fbsub"></span></div>
+      <table><thead><tr><th>Fee Header</th><th class="r">Amount Paid</th></tr></thead><tbody id="fbrows"></tbody></table>
+    </div>
+    <div class="match" id="match"></div>
+  </div>
+</div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+/* ============================================================
+   DATA from window.ARCDB (single source of truth). Design unchanged.
+   Transactions = PG-mode payments joined to student(), grouped by
+   studentId+date (a student paying on the same date = one transaction
+   whose fee breakup can carry multiple fee-header lines). Totals
+   reconcile to the sum of the grouped fee-header amounts.
+   ============================================================ */
+
+/* Guard: if the store didn't load, keep the page inert rather than crash. */
+const DB = window.ARCDB || null;
+
+/* Use the store's shared formatters (inr / fmtDate). */
+const inr = DB ? DB.inr : n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const sum = fb=>fb.reduce((s,x)=>s+x[1],0);
+
+/* Store has no time-of-day field on payments — derive a stable, deterministic
+   business-hours time from the reference id so reloads look identical. */
+function txTime(ref){
+  let h=0; for(let i=0;i<ref.length;i++) h=(h*31+ref.charCodeAt(i))>>>0;
+  const hr24 = 9 + (h % 9);                 // 9 AM–5 PM
+  const min  = h % 60;
+  const ap   = hr24>=12?'PM':'AM';
+  const hh   = hr24>12?hr24-12:hr24;
+  return hh+':'+String(min).padStart(2,'0')+' '+ap;
+}
+
+/* Build the transactions list from ARCDB: PG payments grouped by studentId+date. */
+function buildTX(){
+  if(!DB) return [];
+  const groups={};
+  DB.payments({mode:'PG'}).forEach(p=>{
+    const k=p.studentId+'|'+p.date;
+    (groups[k]=groups[k]||[]).push(p);
+  });
+  return Object.keys(groups).map(k=>{
+    const ps=groups[k].slice().sort((a,b)=> a.feeHeader<b.feeHeader?-1:1);
+    const st=DB.student(ps[0].studentId)||{};
+    const failed=ps.some(p=>p.status==='Failed');
+    return {
+      iso:  ps[0].date,                       // for sorting only
+      ref:  ps[0].id,
+      pid:  ps[0].studentId,
+      name: st.name || '-',
+      mob:  st.mobile || '-',
+      date: DB.fmtDate(ps[0].date),
+      time: txTime(ps[0].id),
+      debit: failed ? 'failed' : 'settled',   // PG status: Settled -> settled, Failed -> failed
+      mode: ps[0].mode, method: ps[0].method, status: ps[0].status, // kept from store
+      fb:   ps.map(p=>[p.feeHeader, p.amount]),
+    };
+  }).sort((a,b)=> a.iso<b.iso?1:(a.iso>b.iso?-1:0)); // newest first, mirrors original
+}
+
+const TX=buildTX();
+
+/* list + pagination (10 per page) */
+const PAGE_SIZE=10;
+let curPage=1;
+const totalPages=Math.max(1, Math.ceil(TX.length/PAGE_SIZE));
+
+function renderRows(){
+  const start=(curPage-1)*PAGE_SIZE;
+  const slice=TX.map((t,i)=>({t,i})).slice(start,start+PAGE_SIZE);
+  document.getElementById('rows').innerHTML=slice.map(({t,i})=>{
+    const amt=sum(t.fb);
+    const chip = t.debit==='settled'?'<span class="chip settled">SETTLED</span>':'<span class="chip failed">FAILED</span>';
+    return `<div class="trow">
+      <div>${String(i+1).padStart(2,'0')}</div>
+      <div class="refid">${t.ref}</div>
+      <div>${t.pid}</div>
+      <div>${t.name}</div>
+      <div class="amt">${inr(amt)}</div>
+      <div class="att"><div class="d">📅 ${t.date}</div><div class="t">🕘 ${t.time}</div></div>
+      <div class="sstat">Active</div>
+      <div>${chip}</div>
+      <div class="eye" title="View Transaction Details" onclick="openModal(${i})">👁</div>
+    </div>`;
+  }).join('');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderPager(){
+  let pages='';
+  for(let p=1;p<=totalPages;p++){ pages+=`<div class="pg ${p===curPage?'on':''}" onclick="goPage(${p})">${p}</div>`; }
+  document.getElementById('pager').innerHTML=`
+    <div class="pg nav ${curPage===1?'dis':''}" onclick="${curPage===1?'':'goPage('+(curPage-1)+')'}">‹ Prev</div>
+    ${pages}
+    <div class="pg dots">…</div>
+    <div class="pg nav ${curPage===totalPages?'dis':''}" onclick="${curPage===totalPages?'':'goPage('+(curPage+1)+')'}">Next ›</div>`;
+}
+function goPage(p){ if(p<1||p>totalPages)return; curPage=p; renderRows(); renderPager(); }
+
+document.addEventListener('DOMContentLoaded', function(){
+  renderRows(); renderPager();
+  /* Total fee collected via PG = received (Settled) PG amounts from the store. */
+  const total = DB ? DB.collectionTotal({mode:'PG'})
+                   : TX.filter(t=>t.debit==='settled').reduce((s,t)=>s+sum(t.fb),0);
+  document.getElementById('kTotal').textContent='Rs. '+total.toLocaleString('en-IN');
+  document.getElementById('kCount').textContent=TX.length;
+});
+
+/* modal */
+function openModal(i){
+  const t=TX[i], amt=sum(t.fb);
+  const charge=+(amt*0.01).toFixed(2), tax=+(charge*0.18).toFixed(2), pay=+(amt+charge+tax).toFixed(2);
+  document.getElementById('dgrid').innerHTML=`
+    <div class="fld"><div class="l">Reference ID :</div><div class="v">${t.ref}</div></div>
+    <div class="fld"><div class="l">Student Name :</div><div class="v">${t.name}</div></div>
+    <div class="fld"><div class="l">Primary Student Identifier :</div><div class="v">${t.pid}</div></div>
+    <div class="fld"><div class="l">Student Status :</div><div class="v">ACTIVE</div></div>
+    <div class="fld"><div class="l">Secondary Identifier :</div><div class="v mut">-</div></div>
+    <div class="fld"><div class="l">Additional Identifier :</div><div class="v mut">-</div></div>
+    <div class="fld"><div class="l">Parent Name :</div><div class="v mut">-</div></div>
+    <div class="fld"><div class="l">Parent Email :</div><div class="v mut">-</div></div>
+    <div class="fld"><div class="l">Parent Mobile :</div><div class="v">${t.mob}</div></div>
+    <div class="fld"><div class="l">Amount :</div><div class="v">${inr(amt)}</div></div>
+    <div class="fld"><div class="l">Payment Amount :</div><div class="v">${inr(pay)}</div></div>
+    <div class="fld"><div class="l">Service Charge :</div><div class="v">${inr(charge)}</div></div>
+    <div class="fld"><div class="l">Service Tax :</div><div class="v">${inr(tax)}</div></div>`;
+  document.getElementById('fbsub').textContent=`what this ${inr(amt)} payment was for`;
+  document.getElementById('fbrows').innerHTML=t.fb.map(f=>`<tr><td class="hd">${f[0]}</td><td class="r">${inr(f[1])}</td></tr>`).join('')
+    +`<tr class="tot"><td>Total</td><td class="r">${inr(amt)}</td></tr>`;
+  document.getElementById('match').innerHTML=`✓ Reconciles with the Amount (${inr(amt)}) above.`;
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('on');document.getElementById('modal').classList.remove('on');}
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+========================================================
+ ARC-FMS  ·  GILE Selector Concept #4
+ TREE / DRILL-DOWN NAVIGATOR
+========================================================
+
+FILE
+----
+Tree-Drilldown.html  — open in any browser (dummy data, no DB)
+
+
+THE PROBLEM IT SOLVES
+---------------------
+Search (#2) and filters (#3) assume you know what you're looking for.
+Some users — especially group/org admins — instead want to BROWSE the
+organisation top-down and see its full shape: which groups exist, how
+many institutes each has, which locations, which boards.
+
+
+THE IDEA
+--------
+A collapsible hierarchy panel (like a file explorer) beside the table:
+
+    🏢 GRD Education Trust                 (Group)
+       🏛️ Dr. G.R. Damodaran College       (Institute)
+          📍 Coimbatore                    (Location)
+             🎓 MBA · MA · BSc             (Board / Education)
+    🏢 GRD Institutions ...
+
+  - Expand any node with the caret (▸ / ▾) to reveal the level below.
+  - Click any level to FILTER the table to that node:
+       * click a Group  -> whole group's rows
+       * click a Location -> all boards at that location
+       * click a Board  -> one exact GILE
+  - Each node shows a count of what's inside it.
+  - A "Showing: ..." breadcrumb + "show all" sits above the table.
+
+
+WHY IT FITS USER BEHAVIOUR
+--------------------------
+  - Matches a top-down mental model (Group -> down) used by people who
+    manage the whole trust, not a single campus.
+  - Great for discovery / auditing: "what do we even have where?"
+  - Always shows WHERE you are in the org, with structure visible.
+
+
+WEAKNESSES (honest)
+-------------------
+  - Slower than search for a KNOWN campus (more clicks/expands).
+  - Takes permanent horizontal space.
+  - For ARC's current data (mostly 1 institute x 1 location x many
+    boards) the tree is shallow -> it mostly becomes a long board list,
+    which the filter (#3) already covers. Highest value only when groups
+    get deep (many institutes across many cities).
+
+
+WHAT STAYED THE SAME
+--------------------
+A faithful copy of the live ARC screen:
+  - Maroon-to-lavender sidebar, "Master Dashboard" logo box, nav.
+  - "Hello, GRD!" header + "GRD Institutions" pill.
+  - "Total Groups / Total Institute Count" summary bar.
+  - Same table columns + View Dashboard.
+  - Same colours and font (Poppins). Sequence Institute > Location > Board.
+Added: a left "GILE Navigator" tree panel; table becomes the right column.
+
+
+HOW THE 4 CONCEPTS COMPARE
+--------------------------
+  #1 Persistent bar  -> change one level, stay oriented
+  #2 Smart search    -> jump to a known campus fast
+  #3 Filter + views  -> return to daily-use campuses (search/pin/recent)
+  #4 Tree drill-down -> browse / explore the org top-down
+
+Recommended for ARC: #1 + #2 + #3 together. #4 only if groups become
+genuinely deep (many institutes x many locations).

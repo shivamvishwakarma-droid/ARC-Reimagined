@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Schedule Reminder (all-class)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#8a8f9c; --line:#e6e6ee; --blue:#2f5bff; --blue-soft:#eef2ff;
+    --sideA:#efe9f6; --sideB:#f4eff9; --active:#16181d; --cream:#fdf9f1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh;position:relative}
+  /* SIDEBAR */
+  .side{width:250px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column}
+  .instbox{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(80,50,90,.06)}
+  .instbox .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center;font-size:15px;flex:none}
+  .instbox .nm{font-size:13px;font-weight:600;line-height:1.25}
+  .instbox .ch{margin-left:auto;color:var(--muted)}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:16px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;cursor:pointer;font-size:14px;font-weight:500;color:#3a3340;margin-bottom:2px}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .subnav{margin:2px 0 6px 6px}
+  .snav{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:11px;cursor:pointer;font-size:14px;color:#4a4450;font-weight:500}
+  .snav.on{background:var(--active);color:#fff;font-weight:600;position:relative}
+  .snav.on::before{content:"";position:absolute;left:-20px;top:8px;bottom:8px;width:4px;background:var(--blue);border-radius:3px}
+  .side-foot{margin-top:auto}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:13px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+
+  /* dimmed main behind panel */
+  .main{flex:1;min-width:0;padding:22px 30px;filter:saturate(.9)}
+  .main::after{content:"";position:fixed;inset:0 0 0 250px;background:rgba(30,25,45,.28);z-index:5}
+  .h1{font-size:26px;font-weight:700;margin:0 0 14px}
+  .tabs{display:flex;gap:26px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .tab{padding-bottom:12px;font-size:15px;color:var(--muted);cursor:pointer}
+  .tab.on{color:var(--blue);font-weight:600;border-bottom:2px solid var(--blue)}
+  .sf{border:1px solid var(--line);border-radius:12px;padding:12px 18px;display:inline-flex;gap:8px;color:#555;font-size:14px}
+
+  /* SLIDE-IN PANEL */
+  .panel{position:fixed;top:0;right:0;bottom:0;width:64%;max-width:1120px;background:#fff;z-index:10;box-shadow:-12px 0 40px rgba(0,0,0,.14);display:flex;flex-direction:column;border-radius:22px 0 0 22px;overflow:hidden}
+  .phead{background:var(--cream);padding:26px 34px;display:flex;align-items:flex-start;position:relative}
+  .pclose{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e6e6ef;box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;place-items:center;cursor:pointer;font-size:16px;color:#26262e;z-index:5}
+  .pclose:hover{background:#f4f4f8;color:#000}
+  .ptitle{font-size:24px;font-weight:700}
+  .pmeta{margin-left:auto;text-align:left;font-size:13.5px;color:var(--muted);line-height:1.9}
+  .pmeta b{color:#3a3a44;font-weight:500}
+  .pbody{padding:24px 34px;overflow:auto;flex:1}
+  .lbl{font-size:14px;color:#3a3a44;margin:18px 0 8px}
+  .lbl:first-child{margin-top:0}
+  .inp{width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;outline:none;background:#fff}
+  .inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#999 50%),linear-gradient(135deg,#999 50%,transparent 50%);background-position:calc(100% - 18px) 20px,calc(100% - 13px) 20px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+
+  .hlp{font-size:12px;color:var(--blue);margin-top:8px}
+  /* custom multi-select */
+  .msel{position:relative}
+  .mtrigger{min-height:52px;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;flex-wrap:wrap;background:#fff}
+  .mtrigger:hover{border-color:#c9ccd8}
+  .mtext{display:flex;gap:7px;flex-wrap:wrap;align-items:center;flex:1}
+  .mcaret{color:#999;font-size:12px}
+  .mchip{background:var(--blue-soft);color:var(--blue);border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+  .mchip .cx{cursor:pointer;opacity:.7;font-size:11px}
+  .mchip .cx:hover{opacity:1}
+  .mplace{color:var(--muted);font-size:14px}
+  .mmenu{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(30,25,60,.14);padding:6px;z-index:30;display:none;max-height:300px;overflow:auto}
+  .mmenu.on{display:block}
+  .mopt{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;cursor:pointer;font-size:14px}
+  .mopt:hover{background:var(--blue-soft)}
+  .mopt.on{color:var(--blue);font-weight:600}
+  .mopt .cb{width:20px;height:20px;border-radius:6px;border:2px solid #cfd3e0;display:grid;place-items:center;flex:none;font-size:12px;color:#fff}
+  .mopt.on .cb{background:var(--blue);border-color:var(--blue)}
+  .mopt.all{border-bottom:1px solid var(--line);margin-bottom:4px;padding-bottom:12px;font-weight:600;color:var(--ink)}
+  .mopt.all.on{color:var(--blue)}
+  .mopt small{color:var(--muted);font-weight:400;font-size:11.5px;display:block;margin-top:1px}
+  /* radio cards */
+  .radios{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .rcard{border:1.6px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600}
+  .rcard.on{border-color:var(--blue)}
+  .rdot{width:20px;height:20px;border-radius:50%;border:2px solid #cfd3e0;display:grid;place-items:center}
+  .rcard.on .rdot{border-color:var(--blue)}
+  .rcard.on .rdot::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--blue)}
+
+  /* date time block */
+  .dtblock{background:#f7f7fa;border-radius:14px;padding:18px;margin-top:10px}
+  .dthead{font-weight:600;margin-bottom:14px}
+  .trow{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .trow .n{width:18px;color:#555}
+  .datew{position:relative;flex:1;max-width:330px}
+  .datew input{width:100%;padding:14px 40px 14px 16px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;color:#555;outline:none}
+  .datew .cal{position:absolute;right:14px;top:14px;color:#888}
+  .dash{color:#c9c9d4}
+  .tt{width:90px;padding:14px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;background:#fff;color:#555}
+  .ampm{width:78px;padding:14px 12px;border:1px solid var(--line);border-radius:10px;background:#f0f0f4;color:#8a8f9c;display:flex;align-items:center;justify-content:space-between}
+  .rmv{color:#d1425a;cursor:pointer}
+  .addt{color:var(--blue);font-weight:600;font-size:14.5px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;margin-top:2px}
+  .addt.dis{color:var(--muted);cursor:not-allowed}
+
+  /* channels */
+  .chans{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:8px}
+  .chan{border:1.6px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:600;font-size:15px}
+  .chan.on{border-color:var(--blue)}
+  .chan .cbx{margin-left:auto;width:20px;height:20px;border-radius:5px;border:2px solid #cfd3e0;display:grid;place-items:center}
+  .chan.on .cbx{background:var(--blue);border-color:var(--blue);color:#fff}
+  .chan .ci{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:14px}
+  .ci.em{background:#efe9fb}.ci.sm{background:#eaf1ff}.ci.wa{background:#e7f7ee}
+
+  .pfoot{border-top:1px solid var(--line);padding:18px 34px;display:flex;gap:14px}
+  .back{border:1.6px solid var(--blue);color:var(--blue);background:#fff;border-radius:12px;padding:14px 40px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
+  .set{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:14px 40px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
+  .set:hover{filter:brightness(.96)}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:#16181d;color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;transition:.25s;z-index:90}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* reminder summary modal (reuses page design tokens) */
+  .rmodal-ov{position:fixed;inset:0;background:rgba(30,25,45,.45);z-index:100;display:none;place-items:center;padding:20px}
+  .rmodal-ov.on{display:grid}
+  .rmodal{background:#fff;border-radius:22px;width:100%;max-width:470px;box-shadow:0 24px 60px rgba(0,0,0,.28);overflow:hidden;font-size:14px}
+  .rmodal .rhead{background:var(--cream);padding:22px 26px;display:flex;align-items:flex-start;gap:12px}
+  .rmodal .rhic{width:42px;height:42px;border-radius:12px;background:#e7f7ee;display:grid;place-items:center;font-size:20px;flex:none}
+  .rmodal .rht{font-size:19px;font-weight:700;line-height:1.3}
+  .rmodal .rhs{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .rmodal .rx{margin-left:auto;cursor:pointer;color:var(--muted);font-size:16px}
+  .rmodal .rbody{padding:20px 26px}
+  .rmetrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+  .rmet{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .rmet.full{grid-column:1/-1}
+  .rmet .k{font-size:10.5px;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;font-weight:600}
+  .rmet .v{font-size:20px;font-weight:700;margin-top:3px}
+  .rmet.blue{background:var(--blue-soft);border-color:var(--blue-soft)}
+  .rmet.blue .v{color:var(--blue)}
+  .rlist-h{font-size:12.5px;color:#3a3a44;font-weight:600;margin-bottom:8px}
+  .rlist{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .rli{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .rli:last-child{border-bottom:none}
+  .rli .nm{font-weight:600}
+  .rli .cl{font-size:11.5px;color:var(--muted);margin-left:7px;font-weight:400}
+  .rli .pd{font-weight:600;color:#d1425a}
+  .rli .pd.zero{color:#3aa76d}
+  .rmore{padding:10px 14px;font-size:12.5px;color:var(--muted);text-align:center}
+  .rfoot{padding:14px 26px 22px;display:flex}
+  .rdone{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:12px 36px;font-family:inherit;font-weight:600;font-size:14.5px;cursor:pointer}
+  .rdone:hover{filter:brightness(.96)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="instbox"><span class="ic">🏛️</span><span class="nm">Vibgyor High<br>Bangalore</span><span class="ch">›</span></div>
+    <div class="mm">MAIN MENU</div>
+    <div class="nav">▦ <span>Dashboard</span></div>
+    <div class="nav">🏢 <span>Institute Management</span><span class="ch">▾</span></div>
+    <div class="nav">👤 <span>Student Management</span></div>
+    <div class="nav">💳 <span>Transactions</span><span class="ch">▾</span></div>
+    <div class="nav">📡 <span>Communications</span><span class="ch">▴</span></div>
+    <div class="subnav"><div class="snav on">▤ Payment Links</div></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <!-- dimmed background -->
+  <main class="main">
+    <h1 class="h1">Payment Links</h1>
+    <div class="tabs"><div class="tab on">Payment Links</div><div class="tab">Scheduled Links</div><div class="tab">Payment Link History</div></div>
+    <div class="sf">🔍 Search &amp; Filter</div>
+  </main>
+
+  <!-- SLIDE-IN PANEL -->
+  <div class="panel">
+    <div class="phead">
+      <span class="pclose">✕</span>
+      <div class="ptitle">Schedule Reminder</div>
+      <div class="pmeta">
+        Form Name&nbsp;&nbsp;&nbsp;: <b id="mForm">All Forms</b><br>
+        Payment Page : <b id="mPage">All Payment Pages</b>
+      </div>
+    </div>
+
+    <div class="pbody">
+      <div class="lbl">Schedule Name</div>
+      <input class="inp" placeholder="Please enter Schedule Name">
+
+      <!-- NEW: custom multi-select class dropdown -->
+      <div class="lbl">Select Class</div>
+      <div class="msel">
+        <div class="mtrigger" onclick="toggleMenu(event)">
+          <span class="mtext" id="mselText"></span>
+          <span class="mcaret">▾</span>
+        </div>
+        <div class="mmenu" id="mmenu"></div>
+      </div>
+      <div class="hlp" id="classHlp"></div>
+
+      <div class="lbl">Select which students should receive this link</div>
+      <div class="radios">
+        <div class="rcard on" id="r-all" onclick="pickAud('all')">All Students <span class="rdot"></span></div>
+        <div class="rcard" id="r-pend" onclick="pickAud('pend')">Only student with Pending fees <span class="rdot"></span></div>
+      </div>
+
+      <div class="dtblock">
+        <div class="dthead">Set Date &amp; time</div>
+        <div id="slots"></div>
+        <span class="addt" id="addt" onclick="addSlot()">＋ Add Another Time</span>
+      </div>
+
+      <div class="lbl">Send this message via</div>
+      <div class="chans">
+        <div class="chan on" data-c="Email" onclick="toggleChan(this)"><span class="ci em">✉️</span> Email <span class="cbx">✓</span></div>
+        <div class="chan" data-c="SMS" onclick="toggleChan(this)"><span class="ci sm">📩</span> SMS <span class="cbx"></span></div>
+        <div class="chan" data-c="Whatsapp" onclick="toggleChan(this)"><span class="ci wa">💬</span> Whatsapp <span class="cbx"></span></div>
+      </div>
+    </div>
+
+    <div class="pfoot">
+      <button class="back">Back</button>
+      <button class="set" onclick="setReminder()">Set Reminder</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Reminder summary modal (data-driven from window.ARCDB) -->
+<div class="rmodal-ov" id="rmodalOv" onclick="if(event.target===this)closeRmodal()">
+  <div class="rmodal">
+    <div class="rhead">
+      <span class="rhic">📤</span>
+      <div>
+        <div class="rht">Reminder Scheduled</div>
+        <div class="rhs" id="rmSub"></div>
+      </div>
+      <span class="rx" onclick="closeRmodal()">✕</span>
+    </div>
+    <div class="rbody">
+      <div class="rmetrics" id="rmMetrics"></div>
+      <div class="rlist-h">Payment links shared with</div>
+      <div class="rlist" id="rmList"></div>
+    </div>
+    <div class="rfoot"><button class="rdone" onclick="closeRmodal()">Done</button></div>
+  </div>
+</div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+const TIMES=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0'));
+const MINS=['00','30'];
+let slots=[{}]; let aud='all'; let chans=new Set(['Email']);
+
+/* ---- custom multi-select classes ---- */
+/* distinct student classes from the shared store (single source of truth);
+   fallback list only used if store.js failed to load */
+const FALLBACK_CLASSES=['Nursery','LKG','UKG','Grade 1','Grade 2','Grade 5','Grade 8','Grade 10'];
+const CLASSES=(window.ARCDB && ARCDB.students)
+  ? [...new Set(ARCDB.students().map(s=>s.cls))]
+  : FALLBACK_CLASSES;
+let cls=new Set(CLASSES);   // default: all selected
+
+function toggleMenu(e){e.stopPropagation();document.getElementById('mmenu').classList.toggle('on');}
+document.addEventListener('click',e=>{if(!e.target.closest('.msel'))document.getElementById('mmenu').classList.remove('on');});
+function toggleCls(c,e){e&&e.stopPropagation(); cls.has(c)?cls.delete(c):cls.add(c); renderCls();}
+function toggleAllCls(e){e&&e.stopPropagation(); if(cls.size===CLASSES.length)cls.clear(); else cls=new Set(CLASSES); renderCls();}
+function removeCls(e,c){e.stopPropagation(); cls.delete(c); renderCls();}
+
+function renderCls(){
+  const allSel=cls.size===CLASSES.length;
+  document.getElementById('mmenu').innerHTML =
+    `<div class="mopt all ${allSel?'on':''}" onclick="toggleAllCls(event)">
+        <span class="cb">${allSel?'✓':''}</span>
+        <span>All Classes<small>send reminder to every class at once</small></span>
+     </div>` +
+    CLASSES.map(c=>`<div class="mopt ${cls.has(c)?'on':''}" onclick="toggleCls('${c}',event)">
+        <span class="cb">${cls.has(c)?'✓':''}</span><span>${c}</span></div>`).join('');
+
+  const t=document.getElementById('mselText');
+  if(allSel) t.innerHTML=`<span class="mchip">All Classes</span>`;
+  else if(cls.size===0) t.innerHTML=`<span class="mplace">Select class(es)</span>`;
+  else t.innerHTML=[...cls].map(c=>`<span class="mchip">${c}<span class="cx" onclick="removeCls(event,'${c}')">✕</span></span>`).join('');
+
+  const hlp=document.getElementById('classHlp');
+  if(allSel){hlp.style.display='block';hlp.innerHTML='✓ One reminder will go to <b>all classes</b> in a single shot.';}
+  else if(cls.size>1){hlp.style.display='block';hlp.innerHTML=`✓ One reminder will go to <b>${cls.size} classes</b> at once.`;}
+  else{hlp.style.display='none';}
+
+  document.getElementById('mForm').textContent = allSel?'All Forms':(cls.size?cls.size+' class(es)':'—');
+  document.getElementById('mPage').textContent = allSel?'All Payment Pages':([...cls].join(', ')||'—');
+}
+function pickAud(a){aud=a;
+  document.getElementById('r-all').classList.toggle('on',a==='all');
+  document.getElementById('r-pend').classList.toggle('on',a==='pend');}
+function toggleChan(el){const c=el.dataset.c;chans.has(c)?chans.delete(c):chans.add(c);
+  el.classList.toggle('on');el.querySelector('.cbx').textContent=chans.has(c)?'✓':'';}
+
+function renderSlots(){
+  document.getElementById('slots').innerHTML=slots.map((s,i)=>`
+    <div class="trow">
+      <span class="n">${i+1}.</span>
+      <span class="datew"><input type="text" placeholder="DD/MM/YYYY" onfocus="(this.type='date')"><span class="cal">📅</span></span>
+      <span class="dash">┈┈</span>
+      <select class="tt"><option>HH</option>${TIMES.map(t=>`<option>${t}</option>`).join('')}</select>
+      <select class="tt"><option>MM</option>${MINS.map(t=>`<option>${t}</option>`).join('')}</select>
+      <span class="ampm">AM ⃠</span>
+      ${slots.length>1?`<span class="rmv" onclick="rmSlot(${i})">✕</span>`:''}
+    </div>`).join('');
+  const at=document.getElementById('addt');
+  at.classList.toggle('dis',slots.length>=3);
+  at.textContent = slots.length>=3 ? '✓ Max 3 reminders' : '＋ Add Another Time';
+}
+function addSlot(){if(slots.length>=3)return;slots.push({});renderSlots();}
+function rmSlot(i){slots.splice(i,1);renderSlots();}
+
+let toastT;
+function toast(m){const t=document.getElementById('toast');t.textContent='✓ '+m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2800);}
+/* recipients for the selected classes, straight from ARCDB */
+function reminderRecipients(){
+  if(!window.ARCDB) return [];
+  let list = ARCDB.students().filter(s=>cls.has(s.cls)).map(s=>{
+    const led = ARCDB.studentLedger(s.id);
+    return {id:s.id, name:s.name, cls:s.cls, pending:led?led.totals.pending:0};
+  });
+  if(aud==='pend') list = list.filter(r=>r.pending>0);   // pending-only audience
+  return list;
+}
+function closeRmodal(){document.getElementById('rmodalOv').classList.remove('on');}
+function setReminder(){
+  if(!cls.size){toast('Select at least one class');return;}
+  if(!chans.size){toast('Choose at least one channel');return;}
+  if(!window.ARCDB){toast('Data store not loaded — cannot compute recipients');return;}
+
+  const chanArr = [...chans];
+  const recips  = reminderRecipients();
+  const totalMsgs = recips.length * slots.length * chanArr.length;   // recipients × slots × channels
+
+  /* persist each send to the store (one per recipient per channel) */
+  recips.forEach(r=>chanArr.forEach(ch=>ARCDB.sendReminder(r.id, ch)));
+
+  const scope = cls.size===CLASSES.length ? 'All classes' : [...cls].join(', ');
+  document.getElementById('rmSub').innerHTML =
+    `${scope} · ${aud==='all'?'All students':'Pending fees only'} · via ${chanArr.join(', ')}`;
+
+  document.getElementById('rmMetrics').innerHTML =
+    met('Recipients', recips.length) +
+    met('Time Slots', slots.length) +
+    met('Channels', chanArr.join(' · ')) +
+    met('Payment Links', recips.length+' scheduled') +
+    met('Total Messages', totalMsgs.toLocaleString('en-IN'), 'blue full');
+
+  const shown = recips.slice(0,5);
+  let html = shown.map(r=>`
+      <div class="rli">
+        <span><span class="nm">${r.name}</span><span class="cl">${r.cls}</span></span>
+        <span class="pd ${r.pending>0?'':'zero'}">${ARCDB.inr(r.pending)}</span>
+      </div>`).join('');
+  if(recips.length===0) html = `<div class="rmore">No students match this selection.</div>`;
+  else if(recips.length>shown.length) html += `<div class="rmore">+ ${recips.length-shown.length} more recipient(s)</div>`;
+  document.getElementById('rmList').innerHTML = html;
+
+  document.getElementById('rmodalOv').classList.add('on');
+}
+function met(k,v,cls){return `<div class="rmet ${cls||''}"><div class="k">${k}</div><div class="v">${v}</div></div>`;}
+
+document.addEventListener('DOMContentLoaded',()=>{renderSlots(); renderCls();});
+</script>
+</body>
+</html>

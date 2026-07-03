@@ -1,0 +1,82 @@
+========================================================
+ ARC-FMS  ·  GILE Selector Concept #3
+ SAVED VIEWS  (FAVOURITES & RECENTS)
+ + MULTI-SELECT  + SEARCH/FILTER
+========================================================
+
+UPDATE (this is a FILTER — one dashboard at a time)
+---------------------------------------------------
+Only ONE dashboard can be open at a time, so there is no multi-select /
+tick. The block is purely a FILTER to narrow the list down to the one
+campus you want:
+  - SEARCH box (Institute / Location / Board) filters the table live.
+  - Click a PINNED or RECENT chip -> filters the table to that campus
+    (an "Filtered to: ..." bar appears; "clear filter" resets).
+  - ★ pins a campus to Pinned; opening a dashboard drops it into Recent.
+  - Then click "View Dashboard" on the single row you want.
+
+
+FILE
+----
+Saved-Views-Favourites.html  — open in any browser (dummy data, no DB)
+
+
+THE PROBLEM IT SOLVES
+---------------------
+Filtering (whether by modal, bar, or search) assumes every visit is a
+fresh hunt. In reality most users open the SAME 2-3 campuses every day.
+Making them re-select those every time is wasted effort.
+
+
+THE IDEA
+--------
+Let users SAVE a GILE as a one-click view, and surface RECENTS automatically.
+
+  ★ Pinned : [Coimbatore › BSc]  [Coimbatore › MBA IB]   (+ Save current view)
+  Recent   : [Coimbatore › MCA]  ...
+
+  - Click the ★ on any row to pin that Institute › Location › Board as a
+    favourite. It appears in the "Pinned" row at the top.
+  - Every campus you open is remembered under "Recent" (auto, last 4).
+  - One click on a pinned/recent chip scopes the dashboard to that GILE
+    (breadcrumb "Showing view: ..." + "show all" to reset).
+  - "＋ Save current view" pins whatever you're currently viewing.
+  - Favourites persist in the browser (localStorage) across reloads.
+
+
+WHY IT FITS USER BEHAVIOUR
+--------------------------
+  - ~80% of visits go to a handful of repeat campuses -> for those, the
+    common case becomes ZERO filtering (one click, or already there).
+  - Recents remove the "I was just here 5 minutes ago" re-filtering.
+  - Complements the finder concepts rather than replacing them:
+      * Search (#2) = find something new / rarely visited.
+      * Saved Views (#3) = return to the usual suspects instantly.
+
+
+WHAT STAYED THE SAME
+--------------------
+A faithful copy of the live ARC screen:
+  - Maroon-to-lavender sidebar, "Master Dashboard" logo box, and the
+    Statistics / Transactions / PG / Auto Debit / Reports navigation.
+  - "Hello, GRD!" header + "GRD Institutions" user pill.
+  - "Total Groups / Total Institute Count" summary bar.
+  - The dashboard table + View Dashboard action.
+  - Same colours and font (Poppins). Sequence: Institute > Location > Board.
+Added: a ★ star column on each row + the "My Views" bar on top.
+
+
+HOW TO DEMO
+-----------
+  1. Click the ☆ star on any row -> it turns gold and appears under "Pinned".
+  2. Click a "Pinned" or "Recent" chip -> table scopes to that GILE.
+  3. Click "View Dashboard" on a row -> it's added to "Recent".
+  4. "show all" clears the scope. Reload the page -> favourites remain.
+
+
+HOW THE 3 CONCEPTS FIT TOGETHER (recommended end-state)
+-------------------------------------------------------
+  #1 Persistent bar  -> browse / change one level, always see context
+  #2 Smart search    -> jump straight to a known campus (or "show all")
+  #3 Saved views     -> one-click return to daily-use campuses
+  Best product = all three on the same screen.

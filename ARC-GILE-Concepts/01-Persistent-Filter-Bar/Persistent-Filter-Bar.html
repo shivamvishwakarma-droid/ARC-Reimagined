@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Master Dashboard — Persistent GILE Bar</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b2f3a; --muted:#8a8f9c; --line:#ececf3; --page:#f7f7fb;
+    --indigo:#3b3f9e; --indigo-soft:#eef0ff;
+    --side1:#c98f9c; --side2:#b79ac2; --side3:#cfd0e8; /* maroon->lavender gradient */
+    --rose:#f4e7ea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--page);color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+
+  /* ---------------- SIDEBAR (unchanged from ARC) ---------------- */
+  .side{width:240px;flex:none;background:linear-gradient(180deg,var(--side1) 0%,var(--side2) 52%,var(--side3) 100%);
+    padding:18px 14px;display:flex;flex-direction:column;color:#3a2f38}
+  .brand{display:flex;align-items:center;gap:10px;background:var(--rose);border-radius:14px;padding:12px 14px;margin-bottom:6px}
+  .brand .ic{width:34px;height:34px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:17px}
+  .brand .t b{display:block;font-size:15px;line-height:1.1}
+  .brand .t span{font-size:11px;color:#6b5560}
+  .navsep{height:1px;background:rgba(255,255,255,.5);margin:12px 4px}
+  .nav-h{font-size:10.5px;letter-spacing:1px;color:#6b5560;margin:14px 8px 6px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;font-weight:500;color:#3a2f38}
+  .nav:hover{background:rgba(255,255,255,.35)}
+  .nav.on{background:#fff;font-weight:600;box-shadow:0 2px 6px rgba(80,40,60,.12)}
+  .nav .chev{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .viewall{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:12px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(80,40,60,.12)}
+
+  /* ---------------- MAIN ---------------- */
+  .main{flex:1;padding:22px 28px;min-width:0}
+  .top{display:flex;align-items:center;margin-bottom:18px}
+  .hello{font-size:24px;font-weight:600}
+  .userpill{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500}
+  .userpill .av{width:20px;height:20px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:11px;color:var(--indigo)}
+
+  /* summary bar (unchanged) */
+  .summary{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:14px}
+  .sumitem{display:flex;align-items:center;gap:10px;font-size:13.5px}
+  .sumitem .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center}
+  .sumitem b{font-weight:600}
+  .sumitem .lnk{color:var(--indigo);cursor:pointer;text-decoration:underline}
+  .vdiv{width:1px;height:26px;background:var(--line)}
+
+  /* ============ NEW: PERSISTENT GILE BAR ============ */
+  .gile{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);
+    border-radius:14px;padding:12px 16px;margin-bottom:14px;position:sticky;top:0;z-index:20}
+  .gile .cap{font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:600;margin-right:2px}
+  .lvl{position:relative}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:#faf9fc;border:1px solid var(--line);
+    border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px;transition:.15s}
+  .chip:hover{border-color:var(--indigo);background:var(--indigo-soft)}
+  .chip .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600}
+  .chip .v{font-weight:600}
+  .chip .ca{color:var(--muted);font-size:10px}
+  .arw{color:#c9c9d6}
+  .menu{position:absolute;top:46px;left:0;min-width:190px;background:#fff;border:1px solid var(--line);
+    border-radius:12px;box-shadow:0 12px 30px rgba(40,30,60,.14);padding:6px;display:none;z-index:30}
+  .menu.on{display:block}
+  .mi{padding:9px 12px;border-radius:8px;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+  .mi:hover{background:var(--indigo-soft)}
+  .mi.sel{color:var(--indigo);font-weight:600}
+  .mi .ct{color:var(--muted);font-size:11px}
+  .gile .reset{margin-left:auto;font-size:12.5px;color:var(--indigo);cursor:pointer;font-weight:500}
+  .gile .count{font-size:12px;color:var(--muted)}
+
+  /* table (unchanged) */
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:14px 18px;background:#faf9fc}
+  td{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+  .vd{border:1.4px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+  .vd:hover{background:var(--indigo-soft)}
+  .btag{display:inline-block;font-size:11.5px;background:#f2edf5;color:#5a4b63;border-radius:6px;padding:3px 9px}
+  .norows td{text-align:center;color:var(--muted);padding:26px}
+  .hint{font-size:12px;color:var(--muted);margin-top:16px;text-align:center;line-height:1.7}
+  .newtag{font-size:9px;background:var(--indigo);color:#fff;border-radius:5px;padding:2px 6px;letter-spacing:.4px;vertical-align:middle;margin-left:6px}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand"><div class="ic">🏠</div><div class="t"><b>Master</b><span>Dashboard</span></div></div>
+    <div class="nav on" style="margin-top:8px">📊 <span>Statistics</span></div>
+    <div class="nav-h">TRANSACTIONS</div>
+    <div class="nav">📅 <span>Emi Applications</span></div>
+    <div class="nav">₹ <span>PG</span><span class="chev">›</span></div>
+    <div class="nav">🔁 <span>Auto Debit</span><span class="chev">›</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot">
+      <div class="viewall">View All Institutes ›</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top">
+      <div class="hello">Hello, Vibgyor!</div>
+      <div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div>
+    </div>
+
+    <!-- summary bar (unchanged) -->
+    <div class="summary">
+      <div class="sumitem"><span class="ic">👥</span><span>Total Groups : <b>VIBGYOR</b> &amp; <span class="lnk">1 others</span></span></div>
+      <div class="vdiv"></div>
+      <div class="sumitem"><span class="ic">🏛️</span><span>Total Institute Count : <b>2</b></span></div>
+    </div>
+
+    <!-- ============ NEW: persistent GILE bar (replaces the modal) ============ -->
+    <div class="gile">
+      <span class="cap">FILTER<span class="newtag">NEW</span></span>
+      <div class="lvl">
+        <div class="chip" onclick="toggle('group',event)"><span class="k">Group</span><span class="v" id="v-group">All Groups</span><span class="ca">▾</span></div>
+        <div class="menu" id="m-group"></div>
+      </div>
+      <span class="arw">›</span>
+      <div class="lvl">
+        <div class="chip" onclick="toggle('inst',event)"><span class="k">Institute</span><span class="v" id="v-inst">All Institutes</span><span class="ca">▾</span></div>
+        <div class="menu" id="m-inst"></div>
+      </div>
+      <span class="arw">›</span>
+      <div class="lvl">
+        <div class="chip" onclick="toggle('loc',event)"><span class="k">Location</span><span class="v" id="v-loc">All Locations</span><span class="ca">▾</span></div>
+        <div class="menu" id="m-loc"></div>
+      </div>
+      <span class="arw">›</span>
+      <div class="lvl">
+        <div class="chip" onclick="toggle('edu',event)"><span class="k">Education</span><span class="v" id="v-edu">All Types</span><span class="ca">▾</span></div>
+        <div class="menu" id="m-edu"></div>
+      </div>
+      <span class="reset" onclick="resetAll()">Reset</span>
+      <span class="count" id="count"></span>
+    </div>
+
+    <!-- table (unchanged structure/columns) -->
+    <div class="card">
+      <table>
+        <thead><tr>
+          <th>Sr.No</th><th>Group Name</th><th>Institute Name</th><th>Locations</th><th>Education Type</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="hint">
+      <b>Suggestion #1 — Persistent filter bar.</b> The GILE selectors live inline and stay visible; no modal to open.
+      Click any chip → pick a value → the list filters instantly, and the choice will carry across Statistics / Transactions / Reports.<br>
+      Faithful ARC colours, font (Poppins) &amp; layout — only the filter mechanism changed. Dummy data.
+    </div>
+  </main>
+</div>
+
+<!-- shared client-side data store: single source of truth for all ARC-FMS prototypes -->
+<script src="../../ARC-Data/store.js"></script>
+<script>
+// ---- GILE rows derived live from ARCDB (single source of truth) ----
+// Location  <- student.campus   |   Education <- student.board
+// ARCDB has no Group/Institute concept, so those stay fixed to this page's
+// context (the VIBGYOR "Master Dashboard"). Rows = distinct campus×board pairs.
+let DATA=[];
+function buildData(){
+  const seen=new Set(); const out=[];
+  ARCDB.students().forEach(s=>{
+    const key=s.campus+'|'+s.board;
+    if(seen.has(key)) return;
+    seen.add(key);
+    out.push({group:"VIBGYOR", inst:"Vibgyor High", loc:s.campus, edu:s.board});
+  });
+  return out;
+}
+const F={group:"",inst:"",loc:"",edu:""};
+const KEYALL={group:"All Groups",inst:"All Institutes",loc:"All Locations",edu:"All Types"};
+
+function opts(key){ // build dependent option list from current filters
+  let rows=DATA.filter(r=>
+    (!F.group||r.group===F.group)&&(!F.inst||r.inst===F.inst)&&(!F.loc||r.loc===F.loc)&&(!F.edu||r.edu===F.edu));
+  // for the field itself, ignore its own filter so user can switch
+  rows=DATA.filter(r=>
+    (key==='group'||!F.group||r.group===F.group)&&
+    (key==='inst'||!F.inst||r.inst===F.inst)&&
+    (key==='loc'||!F.loc||r.loc===F.loc)&&
+    (key==='edu'||!F.edu||r.edu===F.edu));
+  const counts={};
+  rows.forEach(r=>counts[r[key]]=(counts[r[key]]||0)+1);
+  return counts;
+}
+function buildMenu(key){
+  const c=opts(key); const m=document.getElementById('m-'+key);
+  let html=`<div class="mi ${!F[key]?'sel':''}" onclick="pick('${key}','')">${KEYALL[key]}</div>`;
+  html+=Object.keys(c).sort().map(v=>`<div class="mi ${F[key]===v?'sel':''}" onclick="pick('${key}','${v.replace(/'/g,"\\'")}')"><span>${v}</span><span class="ct">${c[v]}</span></div>`).join('');
+  m.innerHTML=html;
+}
+function toggle(key,e){e.stopPropagation();closeAll(key);buildMenu(key);document.getElementById('m-'+key).classList.toggle('on');}
+function closeAll(except){['group','inst','loc','edu'].forEach(k=>{if(k!==except)document.getElementById('m-'+k).classList.remove('on');});}
+document.addEventListener('click',()=>closeAll());
+function pick(key,val){F[key]=val;
+  // reset lower levels that no longer match
+  if(key==='group'){F.inst='';F.loc='';F.edu='';}
+  if(key==='inst'){F.loc='';F.edu='';}
+  render();closeAll();}
+function resetAll(){F.group=F.inst=F.loc=F.edu='';render();closeAll();}
+
+function render(){
+  document.getElementById('v-group').textContent=F.group||KEYALL.group;
+  document.getElementById('v-inst').textContent=F.inst||KEYALL.inst;
+  document.getElementById('v-loc').textContent=F.loc||KEYALL.loc;
+  document.getElementById('v-edu').textContent=F.edu||KEYALL.edu;
+  const rows=DATA.filter(r=>
+    (!F.group||r.group===F.group)&&(!F.inst||r.inst===F.inst)&&(!F.loc||r.loc===F.loc)&&(!F.edu||r.edu===F.edu));
+  document.getElementById('count').textContent=`${rows.length} of ${DATA.length} rows`;
+  const tb=document.getElementById('rows');
+  if(!rows.length){tb.innerHTML=`<tr class="norows"><td colspan="6">No matches</td></tr>`;return;}
+  tb.innerHTML=rows.map((r,i)=>`<tr>
+    <td>${String(i+1).padStart(2,'0')}</td>
+    <td>${r.group}</td>
+    <td>${r.inst}</td>
+    <td>${r.loc}</td>
+    <td><span class="btag">${r.edu}</span></td>
+    <td style="text-align:right"><button class="vd">View Dashboard ›</button></td>
+  </tr>`).join('');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!window.ARCDB) return;   // guard: store must be loaded
+  DATA=buildData();
+  render();
+});
+</script>
+</body>
+</html>

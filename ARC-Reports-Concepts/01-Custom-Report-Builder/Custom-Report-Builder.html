@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Generate Custom Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1f2430; --muted:#8a8f9c; --line:#e6e6ee; --blue:#2f5bff; --blue-soft:#eef2ff;
+    --side1:#c9919c; --side2:#b49ac2; --side3:#a7b0d4; --rose:#f4e7ea; --active:#2a2532;
+    --cream:#fdf8ef; --yellow:#fdf3d6; --yellowbar:#e6b34a; --green:#1a9d5a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#f7f7fb;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh;position:relative}
+  /* MASTER maroon sidebar */
+  .side{width:250px;flex:none;background:linear-gradient(180deg,var(--side1),var(--side2) 55%,var(--side3));padding:16px 14px;display:flex;flex-direction:column;color:#3a2f38}
+  .brand{display:flex;align-items:center;gap:10px;background:var(--rose);border-radius:14px;padding:12px 14px;margin-bottom:4px}
+  .brand .ic{width:34px;height:34px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:16px}
+  .brand b{display:block;font-size:15px}.brand span{font-size:11px;color:#6b5560}
+  .navh{font-size:10.5px;letter-spacing:1px;color:#5f4f59;margin:16px 8px 6px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;font-size:14px;font-weight:500;color:#3a2f38;margin-bottom:2px;cursor:pointer}
+  .nav:hover{background:rgba(255,255,255,.3)}
+  .nav.on{background:var(--active);color:#fff;font-weight:600}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .viewall{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:12px;font-weight:600;font-size:13px;box-shadow:0 2px 8px rgba(80,40,60,.12)}
+
+  .main{flex:1;min-width:0;padding:24px 30px}
+  .main::after{content:"";position:fixed;inset:0 0 0 250px;background:rgba(30,25,45,.30);z-index:5}
+  .hello{font-size:26px;font-weight:700;margin:0 0 18px}
+  .segwrap{background:#efe9f2;border-radius:14px;padding:12px 14px;display:inline-flex;flex-direction:column;gap:8px;margin-bottom:16px}
+  .segwrap .my{font-size:14px;color:#8a8290}
+  .seg{background:#fff;border-radius:10px;padding:10px 18px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+  .choose{font-size:15px;color:#555;margin-bottom:12px}
+  .rtbl{background:#fff;border-radius:14px;border:1px solid var(--line);overflow:hidden;max-width:640px}
+  .rth{display:grid;grid-template-columns:90px 1fr;padding:14px 20px;background:#f4f3f7;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:600}
+  .rtr{display:grid;grid-template-columns:90px 1fr;padding:16px 20px;border-top:1px solid var(--line);font-size:14.5px}
+  .rtr.sel{background:var(--blue-soft)}
+
+  /* HALF PANEL */
+  .panel{position:fixed;top:0;right:0;bottom:0;width:60%;max-width:1080px;background:#fff;z-index:10;box-shadow:-12px 0 40px rgba(0,0,0,.16);display:flex;flex-direction:column;border-radius:20px 0 0 20px;overflow:hidden}
+  .phead{background:var(--cream);padding:22px 30px;display:flex;align-items:center;position:relative}
+  .pclose{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e6e6ef;box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;place-items:center;cursor:pointer;font-size:16px;color:#26262e;z-index:5}
+  .pclose:hover{background:#f4f4f8;color:#000}
+  .ptitle{font-size:23px;font-weight:700}
+  .pbody{padding:20px 30px;overflow:auto;flex:1}
+  .crumb{font-size:14px;color:var(--muted);margin-bottom:16px}
+  .crumb b{color:var(--ink)}
+  .infobar{display:flex;gap:12px;background:var(--yellow);border-left:5px solid var(--yellowbar);border-radius:10px;padding:14px 16px;font-size:14px;margin-bottom:20px}
+  .lbl{font-size:14px;color:#3a3a44;margin-bottom:8px;font-weight:500}
+  .row{display:flex;gap:14px;align-items:flex-end}
+  .inp{padding:14px 16px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;outline:none;background:#fff}
+  .inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  select.inp{cursor:pointer}
+
+  /* status chips */
+  .schips{display:flex;gap:10px}
+  .schip{border:1.6px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:13.5px}
+  .schip.on{border-color:var(--blue);background:var(--blue-soft);color:var(--blue)}
+  .schip .cb{width:17px;height:17px;border-radius:5px;border:2px solid #cfd3e0;display:grid;place-items:center;color:#fff;font-size:10px}
+  .schip.on .cb{background:var(--blue);border-color:var(--blue)}
+  .combnote{font-size:12.5px;color:var(--green);margin-top:10px}
+
+  .card{background:#f7f7fa;border-radius:14px;padding:16px 18px;margin-bottom:18px}
+  .cardh{display:flex;align-items:center;font-weight:600;margin-bottom:14px}
+  .cardh .ic{margin-right:8px}
+  .cardh .cnt{margin-left:auto;font-size:12px;color:var(--blue);font-weight:600}
+
+  .fsearch{position:relative;margin-bottom:12px;max-width:320px}
+  .fsearch .mag{position:absolute;left:11px;top:10px;color:var(--muted)}
+  .fsearch input{width:100%;padding:9px 12px 9px 32px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13.5px;outline:none;background:#fff}
+  .fgroup{margin-bottom:12px}
+  .fgname{font-size:12px;font-weight:600;color:#555;margin-bottom:7px}
+  .fgname .sa{color:var(--blue);cursor:pointer;font-weight:600;margin-left:6px}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fchk{display:flex;align-items:center;gap:9px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;cursor:pointer;font-size:12.5px;background:#fff}
+  .fchk.on{border-color:var(--blue);background:#fbfcff}
+  .fchk .cb{width:17px;height:17px;border-radius:5px;border:2px solid #cfd3e0;display:grid;place-items:center;color:#fff;font-size:10px;flex:none}
+  .fchk.on .cb{background:var(--blue);border-color:var(--blue)}
+  .chipsprev{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .colchip{background:#fff;border:1px solid #dfe6ff;color:var(--blue);border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:600}
+
+  .filterbox{background:#f7f7fa;border-radius:14px;padding:16px 18px;margin-bottom:18px}
+  .fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fgrid2 .lbl{margin-bottom:6px}
+
+  .emailbar{display:flex;align-items:center;gap:12px;background:var(--blue-soft);border-radius:10px;padding:14px 16px;font-size:14px;margin-bottom:6px}
+  .emailbar input{width:18px;height:18px;accent-color:var(--blue)}
+
+  .pfoot{border-top:1px solid var(--line);padding:16px 30px;display:flex;gap:14px}
+  .reset{border:1.6px solid var(--blue);color:var(--blue);background:#fff;border-radius:11px;padding:13px 34px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
+  .gen{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:11px;padding:13px 30px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:#16181d;color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;transition:.25s;z-index:80}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="ic">🏠</div><div><b>Master</b><span>Dashboard</span></div></div>
+    <div class="nav" style="margin-top:6px">📊 <span>Statistics</span></div>
+    <div class="navh">TRANSACTIONS</div>
+    <div class="nav">📅 <span>Emi Applications</span></div>
+    <div class="nav">₹ <span>PG</span><span class="ch">›</span></div>
+    <div class="nav">◎ <span>Auto Debit</span><span class="ch">›</span></div>
+    <div class="nav on">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="viewall">View All Institutes ›</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="hello">Hello, Vibgyor High!</div>
+    <div class="segwrap"><span class="my">My Reports</span><span class="seg">Report Templates</span></div>
+    <div class="choose">Choose the type of report you want to generate</div>
+    <div class="rtbl">
+      <div class="rth"><div>Sr.NO</div><div>Report Type</div></div>
+      <div class="rtr"><div>1</div><div>All Transaction Report</div></div>
+      <div class="rtr"><div>2</div><div>Student report</div></div>
+      <div class="rtr"><div>3</div><div>All Institute Report</div></div>
+      <div class="rtr sel"><div>4</div><div>Custom Report</div></div>
+      <div class="rtr"><div>5</div><div>Settlement Report</div></div>
+      <div class="rtr"><div>6</div><div>Fee Header Report</div></div>
+    </div>
+  </main>
+
+  <!-- HALF PANEL -->
+  <div class="panel">
+    <div class="phead"><span class="pclose">✕</span><div class="ptitle">Generate Custom Report</div></div>
+    <div class="pbody">
+      <div class="crumb">Reports &nbsp;›&nbsp; <b>Custom Report</b></div>
+      <div class="infobar">ⓘ <div>The report generation might take up to <b>30 mins</b>. You can view the progress in the <b>My Reports</b> section.</div></div>
+
+      <div class="lbl">Report Name</div>
+      <div class="row" style="margin-bottom:20px">
+        <input class="inp" style="flex:1" value="PG-Combined-Paid-Settled-Failed">
+        <select class="inp" style="width:130px"><option>.XLSX</option><option>.CSV</option></select>
+      </div>
+
+      <!-- statuses -->
+      <div class="lbl">Include statuses <span style="color:var(--muted);font-weight:400">— merged into one sheet</span></div>
+      <div class="schips" style="margin-bottom:6px">
+        <div class="schip on" data-s="Paid" onclick="tglStat(this)"><span class="cb">✓</span> Paid</div>
+        <div class="schip on" data-s="Settled" onclick="tglStat(this)"><span class="cb">✓</span> Settled</div>
+        <div class="schip on" data-s="Failed" onclick="tglStat(this)"><span class="cb">✓</span> Failed</div>
+      </div>
+      <div class="combnote" id="combnote"></div>
+
+      <!-- fields -->
+      <div class="card" style="margin-top:18px">
+        <div class="cardh"><span class="ic">▤</span> Select columns <span class="cnt" id="fcnt"></span></div>
+        <div class="fsearch"><span class="mag">⌕</span><input id="fq" placeholder="Search a column…" oninput="renderFields()"></div>
+        <div id="fields"></div>
+        <div class="chipsprev" id="chips"></div>
+      </div>
+
+      <!-- filters -->
+      <div class="filterbox">
+        <div class="cardh"><span class="ic">≡</span> Filter this Report</div>
+        <div class="fgrid2">
+          <div><div class="lbl">Class</div><select id="fltClass" class="inp" style="width:100%"><option>All</option><option>Nursery</option><option>Grade 1</option><option>Grade 5</option><option>Grade 10</option></select></div>
+          <div><div class="lbl">Location</div><select id="fltLoc" class="inp" style="width:100%"><option>All</option><option>Marathahalli</option><option>Hennur</option><option>HSR Layout</option><option>Jakkur</option><option>Yelahanka</option></select></div>
+          <div><div class="lbl">Paid Start Date</div><input id="fltStart" class="inp" style="width:100%" placeholder="Select Start Date" onfocus="(this.type='date')"></div>
+          <div><div class="lbl">Paid End Date</div><input id="fltEnd" class="inp" style="width:100%" placeholder="Select End Date" onfocus="(this.type='date')"></div>
+        </div>
+      </div>
+
+      <div class="emailbar"><input type="checkbox"> Also send the report to <b>accounts@vibgyorhigh.com</b></div>
+    </div>
+    <div class="pfoot">
+      <button class="reset" onclick="location.reload()">Reset</button>
+      <button class="gen" onclick="generate()">Generate Report</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+const GROUPS=[
+  {g:'Identity', f:['REFERENCE ID','PRIMARY STUDENT IDENTIFIER','SECONDARY STUDENT IDENTIFIER','ADDITIONAL IDENTIFIER','STUDENT NAME','STUDENT STATUS','student_id']},
+  {g:'GILE', f:['INSTITUTE','LOCATION','BOARD','CLASS']},
+  {g:'Contact', f:['PARENT NAME','MOBILE','EMAIL','customer_mobile']},
+  {g:'Payment', f:['PAYMENT ID','PAYMENT ATTEMPT ID','GATEWAY REF CODE','PAYMENT STATUS','AMOUNT','PAYMENT AMOUNT','SERVICE CHARGE','SERVICE TAX','PAYMENT METHOD','PAID ON','TRANSACTION MSG','payment_page_slug']},
+  {g:'Settlement', f:['SETTLEMENT UTR','SETTLED ON','BANK REFERENCE ID']},
+];
+const PRESEL=new Set(['REFERENCE ID','PRIMARY STUDENT IDENTIFIER','STUDENT NAME','CLASS','MOBILE','EMAIL','PAYMENT STATUS','AMOUNT','PAYMENT AMOUNT','PAID ON','PAYMENT METHOD','SETTLEMENT UTR','SETTLED ON','BANK REFERENCE ID','PAYMENT ID','PAYMENT ATTEMPT ID','GATEWAY REF CODE']);
+let sel=new Set(PRESEL), stats=new Set(['Paid','Settled','Failed']);
+const ALL=GROUPS.flatMap(g=>g.f);
+
+function tglStat(el){const s=el.dataset.s;stats.has(s)?stats.delete(s):stats.add(s);el.classList.toggle('on');el.querySelector('.cb').textContent=stats.has(s)?'✓':'';note();}
+function tglField(f){sel.has(f)?sel.delete(f):sel.add(f);renderFields();}
+function groupAll(g,on){GROUPS.find(x=>x.g===g).f.forEach(f=>on?sel.add(f):sel.delete(f));renderFields();}
+function note(){document.getElementById('combnote').innerHTML = stats.size>1
+  ? `✓ ${stats.size} statuses merged into a <b>single sheet</b> (today they come as ${stats.size} separate sheets).`
+  : (stats.size===1?'Single status — one sheet.':'Pick at least one status.');}
+function renderFields(){
+  const q=document.getElementById('fq').value.trim().toLowerCase();
+  document.getElementById('fields').innerHTML=GROUPS.map(grp=>{
+    const ff=grp.f.filter(f=>!q||f.toLowerCase().includes(q));if(!ff.length)return'';
+    const allon=grp.f.every(f=>sel.has(f));
+    return `<div class="fgroup"><div class="fgname">${grp.g}<span class="sa" onclick="groupAll('${grp.g}',${!allon})">${allon?'clear':'select all'}</span></div>
+      <div class="fgrid">${ff.map(f=>`<div class="fchk ${sel.has(f)?'on':''}" onclick="tglField('${f.replace(/'/g,"\\'")}')"><span class="cb">${sel.has(f)?'✓':''}</span>${f}</div>`).join('')}</div></div>`;
+  }).join('');
+  document.getElementById('fcnt').textContent=`${sel.size} of ${ALL.length}`;
+  const cols=ALL.filter(f=>sel.has(f));
+  document.getElementById('chips').innerHTML=cols.map(c=>`<span class="colchip">${c}</span>`).join('');
+}
+let tT;function toast(m){const t=document.getElementById('toast');t.textContent='✓ '+m;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),3000);}
+
+/* ===== Wire filters + Generate to the ARCDB store (single source of truth) ===== */
+const INSTITUTE='Vibgyor High';                 // demo is single-institute; no per-record institute field in store
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const tail=id=>String(id).replace(/^GQDT-/,'');
+const txnMsg=p=> p.status==='Failed'?'TRANSACTION FAILED':(p.status==='Registered'?'EMI REGISTERED':'PAYMENT SUCCESSFUL');
+
+/* per-student ledger cache (only STUDENT STATUS needs it) */
+const _ledCache={};
+function ledgerOf(id){ if(!(id in _ledCache)) _ledCache[id]=(window.ARCDB?ARCDB.studentLedger(id):null); return _ledCache[id]; }
+
+/* display column name -> value(payment, student). Blank/derived where the store has no field. */
+const COLVAL={
+  'REFERENCE ID':(p)=>p.id,                                   // store's single GQDT ref id
+  'PRIMARY STUDENT IDENTIFIER':(p,st)=>st.id,
+  'SECONDARY STUDENT IDENTIFIER':()=> '',                     // no store field
+  'ADDITIONAL IDENTIFIER':()=> '',                           // no store field
+  'STUDENT NAME':(p,st)=>st.name,
+  'STUDENT STATUS':(p,st)=>{const l=ledgerOf(st.id);return l&&l.totals.pending>0?'Dues Pending':'Cleared';}, // derived from ledger
+  'student_id':(p,st)=>st.id,
+  'INSTITUTE':()=> INSTITUTE,                                // derived constant (single-institute demo)
+  'LOCATION':(p,st)=>st.campus,
+  'BOARD':(p,st)=>st.board,
+  'CLASS':(p,st)=>st.cls,
+  'PARENT NAME':(p,st)=> 'Parent of '+st.name,               // derived; no parent field
+  'MOBILE':(p,st)=>st.mobile,
+  'EMAIL':(p,st)=> slug(st.name)+'@parent.vibgyorhigh.com',  // derived; no email field
+  'customer_mobile':(p,st)=>st.mobile,
+  'PAYMENT ID':(p)=>p.id,                                    // same store id as REFERENCE ID
+  'PAYMENT ATTEMPT ID':(p)=> p.id+'-A1',                     // derived
+  'GATEWAY REF CODE':(p)=> p.mode==='PG'?'PG'+tail(p.id):'', // derived; PG only
+  'PAYMENT STATUS':(p)=>p.status,
+  'AMOUNT':(p)=> p.amount,
+  'PAYMENT AMOUNT':(p)=> p.amount,                           // dup of AMOUNT in store
+  'SERVICE CHARGE':()=> '',                                  // no store field
+  'SERVICE TAX':()=> '',                                     // no store field
+  'PAYMENT METHOD':(p)=>p.method,
+  'PAID ON':(p)=> ARCDB.fmtDate(p.date),
+  'TRANSACTION MSG':(p)=> txnMsg(p),                         // derived from status
+  'payment_page_slug':()=> slug(INSTITUTE),                 // derived
+  'SETTLEMENT UTR':(p)=> p.settledOn?'UTR'+tail(p.id):'',    // derived; settled only
+  'SETTLED ON':(p)=> p.settledOn?ARCDB.fmtDate(p.settledOn):'',
+  'BANK REFERENCE ID':(p)=> p.settledOn?'BRN'+tail(p.id):'', // derived; settled only
+};
+
+/* build filtered, status-merged rows using the selected columns in GROUPS order */
+function buildReport(){
+  const cols=ALL.filter(f=>sel.has(f));
+  if(!window.ARCDB) return {cols,rows:[]};
+  const cls=(document.getElementById('fltClass')||{}).value||'All';
+  const loc=(document.getElementById('fltLoc')||{}).value||'All';
+  const d1=(document.getElementById('fltStart')||{}).value||'';
+  const d2=(document.getElementById('fltEnd')||{}).value||'';
+  const rows=[];
+  ARCDB.payments().forEach(p=>{
+    if(!stats.has(p.status)) return;                          // selected statuses, merged into one sheet
+    const st=ARCDB.student(p.studentId); if(!st) return;
+    if(cls!=='All' && st.cls!==cls) return;                   // Class filter
+    if(loc!=='All' && st.campus!==loc) return;                // Location/campus filter
+    if(d1 && p.date<d1) return;                               // Paid date range (payment.date)
+    if(d2 && p.date>d2) return;
+    const row={};
+    cols.forEach(c=>{ const fn=COLVAL[c]; row[c]= fn?fn(p,st):''; });
+    rows.push(row);
+  });
+  return {cols,rows};
+}
+
+/* hand-rolled CSV (RFC-4180 escaping) + Blob download */
+function csvEsc(v){ v=(v==null?'':String(v)); return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function toCSV(cols,rows){
+  const head=cols.map(csvEsc).join(',');
+  const body=rows.map(r=>cols.map(c=>csvEsc(r[c])).join(',')).join('\r\n');
+  return body?head+'\r\n'+body:head;
+}
+function downloadCSV(csv){
+  const name='ARC-Custom-Report-'+(window.ARCDB?ARCDB.today():'demo')+'.csv';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function generate(){
+  if(!window.ARCDB){ toast('Data store not loaded — cannot generate.'); return; }
+  if(!stats.size){ toast('Pick at least one status.'); return; }
+  const {cols,rows}=buildReport();
+  if(!cols.length){ toast('Pick at least one column.'); return; }
+  downloadCSV(toCSV(cols,rows));
+  toast('Generated combined report — '+cols.length+' columns, '+rows.length+' rows, '+[...stats].join('+')+'. CSV downloaded.');
+}
+
+/* populate Class + Location options from the store (falls back to hardcoded if store absent) */
+function populateFilters(){
+  if(!window.ARCDB) return;
+  const students=ARCDB.students();
+  const uniq=a=>[...new Set(a)];
+  const cs=document.getElementById('fltClass'), ls=document.getElementById('fltLoc');
+  const keep=el=>el&&el.value;
+  if(cs){ const v=keep(cs); cs.innerHTML='<option>All</option>'+uniq(students.map(s=>s.cls)).map(c=>`<option>${c}</option>`).join(''); if(v)cs.value=v; }
+  if(ls){ const v=keep(ls); ls.innerHTML='<option>All</option>'+uniq(students.map(s=>s.campus)).map(c=>`<option>${c}</option>`).join(''); if(v)ls.value=v; }
+}
+
+populateFilters();
+renderFields();note();
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+========================================================
+ ARC-FMS · STATS/COMMS Concept #3
+ SCHEDULE REMINDER — MULTI-CLASS (inside Payment Links)
+========================================================
+
+FILE
+----
+Payment-Reminder.html  — open in any browser (dummy data)
+
+
+THE PROBLEM
+-----------
+Today the "Schedule Reminder" panel (Communications › Payment Links) is
+tied to ONE payment page / form (see "Form Name / Payment Page" in the
+header). Since a payment page maps to a single class, an admin has to
+repeat the whole reminder setup once PER class. Tedious for a college
+with many classes.
+
+
+THE CHANGE (single addition to the live UI)
+-------------------------------------------
+Keep the exact live Schedule Reminder panel, and add ONE control:
+a custom **multi-select "Select Class" dropdown**.
+
+  - Matches the app UI (not the ugly native OS dropdown): a trigger box
+    with blue chips + a rounded panel of checkbox options.
+  - "All Classes" option at top = select/deselect everything in one tap
+    (auto-ticks when all classes are individually selected).
+  - Multi-select: pick several classes at once (e.g. MBA + Management + MSc);
+    each shows as a removable chip.
+  - Helper line makes scope explicit:
+      "✓ One reminder will go to all classes in a single shot."
+      "✓ One reminder will go to 3 classes at once."
+  - Header Form Name / Payment Page reflect the selection (All Forms /
+    All Payment Pages when All Classes is chosen).
+
+So one reminder can now cover ALL classes (or any subset) in a single
+shot, instead of one-payment-page-at-a-time.
+
+
+KEPT EXACTLY AS LIVE
+--------------------
+  - Slide-in panel over Payment Links (cream header, close ✕).
+  - Schedule Name field.
+  - "All Students" / "Only student with Pending fees" radio cards.
+  - Set Date & time: DD/MM/YYYY + HH + MM + AM/PM, "+ Add Another Time",
+    capped at 3 (same 10 AM–4 PM, 30-min framework).
+  - "Send this message via": Email / SMS / Whatsapp cards with checkboxes
+    (brand icons; no odd green dot).
+  - Back / Set Reminder footer.
+  - Same colours & font (Poppins).
+
+
+NOTE / OPEN POINT
+-----------------
+Mapping: when "All Classes" (or multiple) is chosen, the reminder is no
+longer bound to a single payment page — it must fan out across each
+selected class's payment page/form. That mapping is the one backend
+piece to confirm before build.
+No documented per-day/week/month send cap exists today (only max 3 per
+schedule) — consider a per-student cooldown before enabling broad sends.

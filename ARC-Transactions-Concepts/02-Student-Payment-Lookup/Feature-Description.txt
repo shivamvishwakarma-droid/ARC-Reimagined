@@ -1,0 +1,49 @@
+========================================================
+ ARC-FMS · Transactions Concept #2
+ STUDENT PAYMENT LOOKUP  (unified, all modes)
+========================================================
+
+FILE
+----
+Student-Payment-Lookup.html  — open in any browser (VIBGYOR sample data)
+
+THE PROBLEM
+-----------
+A single student's payments are scattered:
+  - PG payments live in Transactions › PG
+  - EMI shows as a registered loan (not a plain payment row)
+  - Auto-Debit in Auto-Debit, Offline in Offline Collection
+  - the student profile aggregates the balance but shows EMI separately
+    and does NOT show the payment METHOD (UPI/card/NACH/etc.)
+So to answer "what did this student pay, how, and by which method?" you
+hop across 4 transaction tabs + the profile and stitch it together.
+
+THE FEATURE
+-----------
+A single page: enter a Student ID -> one unified PAYMENT TIMELINE across
+ALL modes, with method:
+  - Student header (name, ID, class, campus, board, status).
+  - KPIs: Total Assigned · Paid (direct) · Registered via EMI · Pending.
+  - Mode split chips (PG / EMI / Auto-Debit / Offline totals).
+  - Timeline table: Date · Fee Header · Amount · Payment Mode (colour chip)
+    · Method (UPI / Card / Netbanking / NACH / Cash / Cheque / EMI loan)
+    · Reference · Status (Paid / Failed / Registered).
+Handles the split-payment case too (e.g. Term 1 attempted via PG twice —
+1 failed + 1 paid; other fees via EMI / Offline / Auto-Debit).
+
+WHY IT MATTERS
+--------------
+  - Answers "how did this student pay?" in one screen — mode AND method.
+  - Surfaces EMI alongside direct payments (today it's split off).
+  - Makes split-mode payments legible (currently invisible except as a
+    ledger balance).
+
+DEMO
+----
+Type/enter 108370 (Riona Joel) or 342529 (Omari Schwarz) -> see all their
+payments across modes/methods in one list.
+
+WHAT STAYED THE SAME
+--------------------
+Faithful ARC institute UI — lavender sticky sidebar, AY pill, Vibgyor
+Bangalore M account, same colours & font (Poppins). New page only.

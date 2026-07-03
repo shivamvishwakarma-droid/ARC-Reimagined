@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Pending Fees & Follow-ups (Defaulter Worklist)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#8a8f9c; --line:#eceaf1;
+    --indigo:#2f57ff; --indigo-soft:#eef1ff;
+    --sideA:#efe9f6; --sideB:#f4eff9; --active:#16181d;
+    --good:#1a9d63; --warn:#d9822b; --bad:#d1425a;
+    --wa:#25a56a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+  /* SIDEBAR */
+  .side{width:252px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column;position:relative}
+  .side::before{content:"";position:absolute;left:0;top:170px;height:44px;width:4px;background:var(--indigo);border-radius:0 3px 3px 0}
+  .instbox{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(80,50,90,.06)}
+  .instbox .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center;font-size:15px;flex:none}
+  .instbox .nm{font-size:13px;font-weight:600;line-height:1.25}
+  .instbox .ch{margin-left:auto;color:var(--muted)}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:18px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;cursor:pointer;font-size:14px;font-weight:500;color:#3a3340;margin-bottom:2px}
+  .nav:hover{background:rgba(255,255,255,.5)}
+  .nav.on{background:var(--active);color:#fff;font-weight:600}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:13px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+
+  /* MAIN */
+  .main{flex:1;min-width:0}
+  .head{padding:20px 30px 0}
+  .headtop{display:flex;align-items:center;gap:16px}
+  .h1{font-size:26px;font-weight:700;margin:0}
+  .sub{font-size:13px;color:var(--muted);margin-top:2px}
+  .headright{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .ay{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px;color:#444}
+  .ay .x{color:var(--muted);font-size:12px}.ay .cv{color:var(--muted);font-size:11px}
+  .userpill{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:14px;font-weight:500}
+  .userpill .av{width:22px;height:22px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:12px;color:var(--indigo)}
+  .divider{height:1px;background:var(--line);margin:16px 0 0}
+  .body{padding:20px 30px 30px}
+
+  /* summary + bucket filters */
+  .kpis{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .kpi{border:1px solid var(--line);border-radius:14px;padding:12px 18px;min-width:150px}
+  .kpi .k{font-size:12px;color:var(--muted)}
+  .kpi .v{font-size:20px;font-weight:700;margin-top:2px}
+  .buckets{display:flex;gap:8px;margin-left:auto;align-items:center}
+  .bchip{border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:12.5px;cursor:pointer;font-weight:500}
+  .bchip:hover{border-color:var(--indigo)}
+  .bchip.on{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+  .bchip .c{opacity:.7;margin-left:4px}
+
+  .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .search{flex:1;max-width:360px;position:relative}
+  .search .mag{position:absolute;left:12px;top:10px;color:var(--muted)}
+  .search input{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:13.5px;outline:none}
+  .search input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-soft)}
+  .remindall{margin-left:auto;background:var(--indigo);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer}
+  .remindall:hover{filter:brightness(.95)}
+
+  /* selection bar */
+  .selbar{display:none;align-items:center;gap:12px;background:var(--indigo-soft);border:1px solid #dfe2ff;border-radius:12px;padding:10px 16px;margin-bottom:14px}
+  .selbar.on{display:flex}
+  .selbar .n{font-weight:700;color:var(--indigo)}
+  .selbar .via{margin-left:auto;font-size:12.5px;color:#555}
+  .ch-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+  .ch-btn.wa:hover{border-color:var(--wa);color:var(--wa)}
+  .ch-btn.sms:hover,.ch-btn.em:hover{border-color:var(--indigo);color:var(--indigo)}
+  .selclear{color:var(--muted);cursor:pointer;text-decoration:underline;font-size:12.5px}
+
+  /* table */
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 16px;background:#faf9fc}
+  td{padding:13px 16px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+  tr.sel td{background:#f7f8ff}
+  .cbx{width:17px;height:17px;accent-color:var(--indigo);cursor:pointer}
+  .stu{font-weight:600}.stu .id{font-weight:400;color:var(--muted);font-size:12px}
+  .amt{font-weight:700;color:var(--bad)}
+  .od{display:inline-block;font-size:11.5px;border-radius:6px;padding:3px 9px;font-weight:600}
+  .od.b1{background:#fef3e4;color:var(--warn)} .od.b2{background:#fdeaea;color:var(--bad)} .od.b0{background:#eef7f1;color:var(--good)}
+  .last{font-size:12.5px;color:var(--muted)}
+  .send{border:1.4px solid var(--wa);color:var(--wa);background:#fff;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .send:hover{background:var(--wa);color:#fff}
+  .send.done{border-color:var(--good);color:var(--good)}
+  .norows td{text-align:center;color:var(--muted);padding:24px}
+  .hint{font-size:12px;color:var(--muted);margin-top:18px;line-height:1.7}
+
+  /* toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:#16181d;color:#fff;
+    padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;transition:.25s;z-index:80;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="instbox"><span class="ic">🏛️</span><span class="nm">Vibgyor High<br>Bangalore</span><span class="ch">›</span></div>
+    <div class="mm">MAIN MENU</div>
+    <div class="nav">▦ <span>Dashboard</span></div>
+    <div class="nav">🏢 <span>Institute Management</span><span class="ch">▾</span></div>
+    <div class="nav on">👤 <span>Pending &amp; Follow-ups</span></div>
+    <div class="nav">💳 <span>Transactions</span><span class="ch">▾</span></div>
+    <div class="nav">📡 <span>Communications</span><span class="ch">▾</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="head">
+      <div class="headtop">
+        <div>
+          <h1 class="h1">Pending Fees &amp; Follow-ups</h1>
+          <div class="sub">Marathahalli campus · Students with outstanding fees — chase them right here.</div>
+        </div>
+        <div class="headright">
+          <div class="ay">2025-2026 <span class="x">✕</span><span class="cv">▾</span></div>
+          <div class="userpill"><span class="av">V</span> Vibgyor High</div>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="body">
+      <div class="kpis">
+        <div class="kpi"><div class="k">Total Pending</div><div class="v" id="kTotal">—</div></div>
+        <div class="kpi"><div class="k">Students Owing</div><div class="v" id="kCount">—</div></div>
+        <div class="buckets">
+          <span class="bchip on" data-b="all" onclick="setBucket('all')">All <span class="c" id="bAll"></span></span>
+          <span class="bchip" data-b="0" onclick="setBucket('0')">0–30d <span class="c" id="b0"></span></span>
+          <span class="bchip" data-b="1" onclick="setBucket('1')">31–60d <span class="c" id="b1"></span></span>
+          <span class="bchip" data-b="2" onclick="setBucket('2')">60d+ <span class="c" id="b2"></span></span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search"><span class="mag">⌕</span><input id="q" placeholder="Search student / ID / fee header…" oninput="render()"></div>
+        <button class="remindall" onclick="remindAllOverdue()">⚡ Remind all overdue</button>
+      </div>
+
+      <div class="selbar" id="selbar">
+        <span class="n" id="seln"></span>
+        <span class="via">Send reminder via:</span>
+        <span class="ch-btn wa" onclick="bulkSend('WhatsApp')">🟢 WhatsApp</span>
+        <span class="ch-btn sms" onclick="bulkSend('SMS')">✉️ SMS</span>
+        <span class="ch-btn em" onclick="bulkSend('Email')">📧 Email</span>
+        <span class="selclear" onclick="clearSel()">clear</span>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead><tr>
+            <th style="width:34px"><input type="checkbox" class="cbx" id="all" onclick="toggleAll(this)"></th>
+            <th>Student</th><th>Class</th><th>Fee Header</th><th>Pending</th><th>Overdue</th><th>Last reminder</th><th></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <div class="hint">
+        <b>Feature — Defaulter Worklist (not a report).</b> The Pending number becomes a live, actionable list: per-row <b>Send reminder</b>,
+        multi-select for bulk, overdue buckets, and “Remind all overdue” — all wired to the Communications channels (WhatsApp / SMS / Email).
+        See → chase → collect, without downloading anything. Faithful ARC UI · dummy data.
+      </div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+let ROWS=(window.ARCDB?ARCDB.defaulters('all').map(r=>({id:r.id,name:r.name,cls:r.cls,fh:r.feeHeader,amt:r.pending,od:r.overdue,last:r.lastReminder})):[]);
+const inr=n=>'₹'+n.toLocaleString('en-IN');
+const bucket=od=> od<=30?'0': od<=60?'1':'2';
+let selected=new Set(), curBucket='all';
+
+function visible(){
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  return ROWS.filter(r=>{
+    const bOk = curBucket==='all' || bucket(r.od)===curBucket;
+    const qOk = !q || (r.name+' '+r.id+' '+r.fh).toLowerCase().includes(q);
+    return bOk && qOk;
+  });
+}
+function setBucket(b){curBucket=b;document.querySelectorAll('.bchip').forEach(c=>c.classList.toggle('on',c.dataset.b===b));render();}
+function toggleSel(id){selected.has(id)?selected.delete(id):selected.add(id);render();}
+function toggleAll(cb){visible().forEach(r=>cb.checked?selected.add(r.id):selected.delete(r.id));render();}
+function clearSel(){selected.clear();render();}
+
+function markSent(ids,ch){ ids.forEach(id=>{const r=ROWS.find(x=>x.id===id); if(r)r.last='just now · '+ch; if(window.ARCDB)ARCDB.sendReminder(id,ch);}); }
+function sendOne(id,ch){ markSent([id],ch); toast('Reminder sent to '+ROWS.find(r=>r.id===id).name+' via '+ch); render(); }
+function bulkSend(ch){ if(!selected.size)return; markSent([...selected],ch); toast(selected.size+' reminders sent via '+ch); selected.clear(); render(); }
+function remindAllOverdue(){ const ids=ROWS.filter(r=>r.od>0).map(r=>r.id); markSent(ids,'WhatsApp'); toast(ids.length+' overdue students reminded via WhatsApp'); render(); }
+
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200);}
+
+function render(){
+  const total=ROWS.reduce((s,r)=>s+r.amt,0);
+  document.getElementById('kTotal').textContent=inr(total);
+  document.getElementById('kCount').textContent=ROWS.length;
+  document.getElementById('bAll').textContent=ROWS.length;
+  document.getElementById('b0').textContent=ROWS.filter(r=>bucket(r.od)==='0').length;
+  document.getElementById('b1').textContent=ROWS.filter(r=>bucket(r.od)==='1').length;
+  document.getElementById('b2').textContent=ROWS.filter(r=>bucket(r.od)==='2').length;
+
+  const rows=visible();
+  const sb=document.getElementById('selbar');
+  if(selected.size){sb.classList.add('on');document.getElementById('seln').textContent=selected.size+' selected';}
+  else sb.classList.remove('on');
+
+  const tb=document.getElementById('rows');
+  if(!rows.length){tb.innerHTML='<tr class="norows"><td colspan="8">No pending students match</td></tr>';document.getElementById('all').checked=false;return;}
+  tb.innerHTML=rows.map(r=>{
+    const b=bucket(r.od), sel=selected.has(r.id);
+    const odcls=b==='0'?'b0':b==='1'?'b1':'b2';
+    return `<tr class="${sel?'sel':''}">
+      <td><input type="checkbox" class="cbx" ${sel?'checked':''} onclick="toggleSel('${r.id}')"></td>
+      <td class="stu">${r.name}<br><span class="id">${r.id}</span></td>
+      <td>${r.cls}</td>
+      <td>${r.fh}</td>
+      <td class="amt">${inr(r.amt)}</td>
+      <td><span class="od ${odcls}">${r.od} days</span></td>
+      <td class="last">${r.last?('⏱ '+r.last):'—'}</td>
+      <td style="text-align:right"><button class="send ${r.last&&r.last.startsWith('just now')?'done':''}" onclick="sendOne('${r.id}','WhatsApp')">${r.last&&r.last.startsWith('just now')?'✓ Sent':'🟢 Send reminder'}</button></td>
+    </tr>`;}).join('');
+  document.getElementById('all').checked = rows.every(r=>selected.has(r.id));
+}
+render();
+</script>
+</body>
+</html>

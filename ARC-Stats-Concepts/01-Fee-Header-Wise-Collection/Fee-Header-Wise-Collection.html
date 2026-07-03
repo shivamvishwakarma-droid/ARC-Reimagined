@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Dashboard — Fee Header wise collection</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#8a8f9c; --line:#eceaf1;
+    --indigo:#2f57ff; --indigo-soft:#eef1ff;
+    --sideA:#efe9f6; --sideB:#f4eff9; --active:#16181d;
+    --good:#1a9d63; --warn:#d9822b; --bad:#d1425a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+
+  /* SIDEBAR */
+  .side{width:252px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column;position:relative}
+  .side::before{content:"";position:absolute;left:0;top:78px;height:44px;width:4px;background:var(--indigo);border-radius:0 3px 3px 0}
+  .instbox{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(80,50,90,.06);cursor:pointer}
+  .instbox .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center;font-size:15px;flex:none}
+  .instbox .nm{font-size:13px;font-weight:600;line-height:1.25;overflow:hidden}
+  .instbox .ch{margin-left:auto;color:var(--muted)}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:18px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;cursor:pointer;font-size:14px;font-weight:500;color:#3a3340;margin-bottom:2px}
+  .nav:hover{background:rgba(255,255,255,.5)}
+  .nav.on{background:var(--active);color:#fff;font-weight:600}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:13px;font-weight:600;font-size:13.5px;cursor:pointer;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+
+  /* MAIN */
+  .main{flex:1;min-width:0}
+  .head{padding:20px 30px 0}
+  .headtop{display:flex;align-items:center;gap:16px}
+  .h1{font-size:26px;font-weight:700;margin:0}
+  .headright{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .ay{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px;color:#444}
+  .ay .x{color:var(--muted);font-size:12px}.ay .cv{color:var(--muted);font-size:11px}
+  .userpill{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:14px;font-weight:500}
+  .userpill .av{width:22px;height:22px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:12px;color:var(--indigo)}
+  .divider{height:1px;background:var(--line);margin:16px 0 0}
+
+  .body{padding:20px 30px 30px}
+  .secrow{display:flex;align-items:flex-end;margin-bottom:16px}
+  .sec-h{font-size:20px;font-weight:600}
+  .sec-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .detail{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--indigo);font-weight:600;font-size:14px;cursor:pointer}
+  .detail .rf{width:30px;height:30px;border-radius:8px;background:#eef0f6;display:grid;place-items:center}
+
+  .bigrow{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
+  .big{border-radius:16px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between}
+  .big.fees{background:linear-gradient(100deg,#f3ecfb,#fdeef4)}
+  .big.stud{background:linear-gradient(100deg,#fdf6e6,#fefaf0)}
+  .big .t{font-size:19px;font-weight:600}.big .s{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .big .n{font-size:30px;font-weight:700;white-space:nowrap}
+
+  .pms{font-size:20px;font-weight:600}
+  .pmline{height:1px;background:var(--line);margin:12px 0 18px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
+  .pc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 2px 10px rgba(30,20,50,.03)}
+  .pc .top2{display:flex;align-items:center;gap:12px}
+  .pc .pic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:15px}
+  .pc .pt{font-size:16px;font-weight:600}.pc .pa{font-size:20px;font-weight:700;margin-top:2px}
+  .pc.emi .pic{background:#e6f7ee}.pc.emi .pt{color:#1a9d63}
+  .pc.auto .pic{background:#efe9fb}.pc.auto .pt{color:#6b48c9}
+  .pc.pg .pic{background:#fdeaea}.pc.pg .pt{color:#d1425a}
+  .pc.off .pic{background:#fdf3e0}.pc.off .pt{color:#d9822b}
+  .pc .rule{height:2px;border-radius:2px;margin:14px 0 12px;opacity:.5}
+  .pc.emi .rule{background:#1a9d63}.pc.auto .rule{background:#6b48c9}.pc.pg .rule{background:#d1425a}.pc.off .rule{background:#d9822b}
+  .pc .desc{font-size:12.5px;color:var(--muted)}
+  .pc .vd{color:var(--indigo);font-weight:600;font-size:13.5px;text-align:right;margin-top:10px;cursor:pointer}
+
+  /* ============ NEW: Fee Header wise collection ============ */
+  .fhwrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(30,20,50,.03)}
+  .fhhead{display:flex;align-items:center;padding:16px 22px}
+  .fhhead .newtag{font-size:9px;background:var(--indigo);color:#fff;border-radius:5px;padding:2px 7px;letter-spacing:.4px;margin-left:8px}
+  .fhhead .dl{margin-left:auto;font-size:13px;color:var(--indigo);font-weight:600;cursor:pointer}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 22px;background:#faf9fc}
+  th.r,td.r{text-align:right}
+  td{padding:14px 22px;border-top:1px solid var(--line);font-size:14px}
+  td.hd{font-weight:600}
+  td.paid{color:var(--good);font-weight:600}
+  td.pend{color:var(--bad);font-weight:600}
+  .bar{height:6px;border-radius:4px;background:#f0eef6;margin-top:7px;overflow:hidden;width:150px}
+  .bar > span{display:block;height:100%;background:var(--good);border-radius:4px}
+  .pcttxt{font-size:11px;color:var(--muted);margin-top:3px}
+  tr.tot td{border-top:2px solid #e6e4ee;background:#faf9fc;font-weight:700}
+  .hint{font-size:12px;color:var(--muted);margin-top:22px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="instbox"><span class="ic">🏛️</span><span class="nm">Vibgyor High<br>Bangalore</span><span class="ch">›</span></div>
+    <div class="mm">MAIN MENU</div>
+    <div class="nav on">▦ <span>Dashboard</span></div>
+    <div class="nav">🏢 <span>Institute Management</span><span class="ch">▾</span></div>
+    <div class="nav">👤 <span>Student Management</span></div>
+    <div class="nav">💳 <span>Transactions</span><span class="ch">▾</span></div>
+    <div class="nav">📡 <span>Communications</span><span class="ch">▾</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="head">
+      <div class="headtop">
+        <h1 class="h1">Dashboard</h1>
+        <div class="headright">
+          <div class="ay">2025-2026 <span class="x">✕</span><span class="cv">▾</span></div>
+          <div class="userpill"><span class="av">V</span> Vibgyor High</div>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="body">
+      <div class="secrow">
+        <div><div class="sec-h">Realtime Stats Overview</div><div class="sec-sub">Last Refreshed at 03-Jul-2026, 2:09 PM</div></div>
+        <div class="detail"><span class="rf">⟳</span> View Detailed Stats →</div>
+      </div>
+
+      <div class="bigrow">
+        <div class="big fees"><div><div class="t">Total Fees Received</div><div class="s">Amount received via all of the payment options</div></div><div class="n" id="kFees">Rs. 0</div></div>
+        <div class="big stud"><div><div class="t">Total Student</div><div class="s">Number of students enrolled</div></div><div class="n" id="kStud">0 ↗</div></div>
+      </div>
+
+      <div class="pms">Payment Mode Stats</div>
+      <div class="pmline"></div>
+      <div class="cards">
+        <div class="pc emi"><div class="top2"><span class="pic">📅</span><div><div class="pt">EMI Payments</div><div class="pa" id="kEmi">Rs. 0</div></div></div><div class="rule"></div><div class="desc">Amount received to the institute via EMI payment option</div><div class="vd">View details →</div></div>
+        <div class="pc auto"><div class="top2"><span class="pic">🔁</span><div><div class="pt">Auto Payments</div><div class="pa" id="kAuto">Rs. 0</div></div></div><div class="rule"></div><div class="desc">Amount received to the institute via Auto Debit payment option</div><div class="vd">View details →</div></div>
+        <div class="pc pg"><div class="top2"><span class="pic">₹</span><div><div class="pt">Payment Gateway</div><div class="pa" id="kPg">Rs. 0</div></div></div><div class="rule"></div><div class="desc">Amount received to the institute via Online Payments option</div><div class="vd">View details →</div></div>
+        <div class="pc off"><div class="top2"><span class="pic">🤲</span><div><div class="pt">Offline Payments</div><div class="pa" id="kOff">Rs. 0</div></div></div><div class="rule"></div><div class="desc">Amount received to the institute via Offline transactions</div><div class="vd">View details →</div></div>
+      </div>
+
+      <!-- ============ NEW: Fee Header wise collection ============ -->
+      <div class="pms">Fee Header wise Collection</div>
+      <div class="pmline"></div>
+      <div class="fhwrap">
+        <div class="fhhead">
+          <span style="font-weight:600">Collection by Fee Header</span><span class="newtag">NEW</span>
+          <span class="dl">⭳ Download</span>
+        </div>
+        <table>
+          <thead><tr><th>Fee Header</th><th class="r">Total Fee</th><th class="r">Discount</th><th class="r">Paid</th><th class="r">Pending</th></tr></thead>
+          <tbody id="fhrows"></tbody>
+        </table>
+      </div>
+
+      <div class="hint">
+        <b>NEW — Fee Header wise Collection.</b> Live on the dashboard: for each fee header → Total Fee, Discount (e.g. early-payment
+        rebates), Paid and Pending — where <b>Pending = Total − Discount − Paid</b>. So accountants see it instantly without downloading
+        the Fee Header Report. Faithful ARC UI · dummy data.
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+const FH=(window.ARCDB?ARCDB.feeHeaderCollection():[]);
+const inr=n=>'₹'+n.toLocaleString('en-IN');
+let T=0,Disc=0,P=0,Pend=0;
+document.getElementById('fhrows').innerHTML = FH.map(f=>{
+  const pend=(f.pending!==undefined?f.pending:f.total-f.discount-f.paid);
+  T+=f.total;Disc+=f.discount;P+=f.paid;Pend+=pend;
+  return `<tr>
+    <td class="hd">${f.name}</td>
+    <td class="r">${inr(f.total)}</td>
+    <td class="r">${f.discount?('− '+inr(f.discount)):'—'}</td>
+    <td class="r paid">${inr(f.paid)}</td>
+    <td class="r pend">${inr(pend)}</td>
+  </tr>`;
+}).join('') + `<tr class="tot">
+    <td>Total</td><td class="r">${inr(T)}</td><td class="r">− ${inr(Disc)}</td><td class="r">${inr(P)}</td><td class="r">${inr(Pend)}</td>
+  </tr>`;
+</script>
+<script>if(window.ARCDB){var m=ARCDB.byMode();var S=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};S("kFees","Rs. "+ARCDB.collectionTotal().toLocaleString("en-IN"));S("kStud",ARCDB.students().length+" \u2197");S("kEmi","Rs. "+(m.EMI||0).toLocaleString("en-IN"));S("kAuto","Rs. "+(m["Auto-Debit"]||0).toLocaleString("en-IN"));S("kPg","Rs. "+(m.PG||0).toLocaleString("en-IN"));S("kOff","Rs. "+(m.Offline||0).toLocaleString("en-IN"));}</script>
+</body>
+</html>

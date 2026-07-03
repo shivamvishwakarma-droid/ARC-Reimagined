@@ -1,0 +1,84 @@
+========================================================
+ ARC-FMS · BUG REPORT
+ Fee Header Report — phantom PENDING = late fine
+========================================================
+
+SEVERITY : Medium-High (finance data / reconciliation)
+MODULE   : Reports → Fee Header Report
+AFFECTS  : "Fee Header Due Amount" sheet + "Fee Header Summary" sheet
+STATUS   : Report is wrong. Dashboard is correct.
+SOURCE   : Fee-header-report_2026-07-03_10-57-08.xlsx (Management,
+           2025-2026 Even Semester Fee, GRD / G R Damodaran, Coimbatore)
+
+
+ONE-LINE (for the ticket)
+-------------------------
+Fee Header Report shows a phantom pending equal to the late fine for
+students who paid *with* the fine — the "Due Amount" sheet counts only
+the base fee as PAID while TOTAL PAYABLE includes the fine, so
+PENDING = the fine. This also inflates the Summary sheet's Total Pending.
+The dashboard is correct; only the report is wrong.
+
+
+FULL STATEMENT
+--------------
+In the Fee Header Report, the "Fee Header Due Amount" sheet calculates
+PAID AMOUNT using only the BASE fee (excluding the late fine that was
+actually collected), while TOTAL PAYABLE INCLUDES the late fee. As a
+result, every student who paid *with* a late fine shows a false PENDING
+equal to the fine amount — which also inflates the Summary sheet's
+Total Pending.
+
+
+PROOF (same student, same file, two sheets disagree)
+----------------------------------------------------
+Student: BHAVADHINI S  (ID 2535S0003)
+
+  "Fee Header Paid" sheet   -> Base 62,500 | PAID AMOUNT = 62,750
+                               (paid full incl. ₹250 late fee, 24-Feb-2026)  ✅
+
+  "Fee Header Due Amount"   -> Amount 62,500 | Late Fee 250 |
+                               Total Payable 62,750 | PAID = 62,500 |
+                               PENDING = 250                                  ❌
+
+Same again for ELAKKIYAA R T (2535S0004):
+  Paid sheet = 68,750  vs  Due sheet = 68,500 paid + 250 pending.
+
+
+THE MATH
+--------
+PENDING = Total Payable (incl. late fee) − Paid (base only, excl. late fee)
+        = 62,750 − 62,500 = 250   = exactly the late fee  (phantom)
+
+Tell: in every late-fee row, PENDING == LATE FEE and PAID == TOTAL − LATE FEE.
+
+
+ROOT CAUSE
+----------
+The "Fee Header Due Amount" sheet's PAID AMOUNT column pulls the BASE fee
+amount instead of the ACTUAL collected amount. The "Fee Header Paid"
+sheet already stores the correct collected amount (62,750). So the join
+in the due-amount sheet reads the wrong field whenever a late fee exists.
+
+
+SUMMARY SHEET IMPACT
+--------------------
+Summary: Late Fee 750 (= 3 students × 250), Total Pending 1,65,750.
+Those 3 late fees were paid, so true pending = 1,65,000. The report
+over-reports pending by 750 (the paid-but-uncounted late fees).
+
+
+IMPACT
+------
+- Any student who paid WITH a late fine shows a false pending = the fine.
+- Pending / Overdue over-reported in the due-amount sheet AND the summary.
+- Leads to wrong follow-ups & wrong reconciliation for anyone working off
+  the report (dashboard is unaffected).
+
+
+FIX
+---
+In the "Fee Header Due Amount" sheet, set PAID AMOUNT = actual collected
+amount (the value the "Fee Header Paid" sheet already holds), NOT the base
+fee. Then PENDING = 0 for these rows, and the Summary Total Pending
+corrects automatically.

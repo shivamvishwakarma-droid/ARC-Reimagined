@@ -1,0 +1,71 @@
+========================================================
+ ARC-FMS · Reports Concept #1
+ CUSTOM REPORT BUILDER  (combine statuses + pick columns)
+========================================================
+
+FILE
+----
+Custom-Report-Builder.html  — open in any browser (dummy data)
+
+THE REAL-WORLD TRIGGER
+----------------------
+Source: the user's own file "PG Transaction List (16) (1).xlsx".
+  - System generates 3 SEPARATE sheets — Paid / Settled / Failed —
+    each with the SAME 30 columns.
+  - The user manually built a "Combination of PAID/SETTLED/FAILED" sheet:
+    all three statuses MERGED into one, trimmed to 17 chosen columns:
+      Ref ID, Student ID, Student Name, Class, Mobile, Email,
+      Payment Status, Amount, Payment Amount, Paid On, Payment Method,
+      Settlement UTR, Settled On, Bank Ref ID, Payment ID,
+      Payment Attempt ID, Gateway Ref Code.
+  => The manual "combined + trimmed" sheet IS the custom report they want.
+
+THE FEATURE
+-----------
+A Custom Report builder that produces exactly that, no manual work:
+  1. Report name + Source (PG Transactions / EMI / Offline) + Format.
+  2. Include statuses: Paid / Settled / Failed (multi-select) ->
+     MERGED INTO ONE SHEET (vs today's 3 separate sheets).
+  3. Select fields: full 30-column list, grouped (Identity / GILE /
+     Contact / Payment / Settlement), searchable, per-group select-all.
+     Pre-selected = the user's 17 combined columns.
+  4. Filters (optional): Class, Location, Board, Paid-on date range.
+  5. Live preview: the exact chosen columns, rows across all selected
+     statuses (Paid/Settled/Failed) in one table.
+  6. Generate  +  "Save as preset" (reuse / schedule later).
+
+WHY IT MATTERS (PM)
+-------------------
+  - Kills the manual copy-merge-trim that users do in Excel today.
+  - One combined sheet instead of 3; only the columns they need.
+  - Scoped as GUIDED customization (column-picker + status merge +
+    filters) — NOT a raw query builder (wrong tool for accountants).
+  - Composes with the other Reports ideas: save as preset, schedule,
+    auto-email.
+
+FIELD SOURCE (real, from the file)
+----------------------------------
+Full 30 columns available: REFERENCE ID, PRIMARY/SECONDARY/ADDITIONAL
+STUDENT IDENTIFIER, INSTITUTE, LOCATION, BOARD, CLASS, STUDENT NAME,
+STUDENT STATUS, PARENT NAME, MOBILE, EMAIL, PAYMENT ID, PAYMENT ATTEMPT
+ID, GATEWAY REF CODE, PAYMENT STATUS, AMOUNT, PAYMENT AMOUNT, SERVICE
+CHARGE, SERVICE TAX, SETTLEMENT UTR, PAID ON, SETTLED ON, PAYMENT METHOD,
+BANK REFERENCE ID, TRANSACTION MSG, payment_page_slug, student_id,
+customer_mobile.
+
+UI FORMAT (final)
+-----------------
+Built as a HALF slide-in panel over the Report Templates list — matching
+the existing "Generate <X> Report" pattern:
+  - Left (dimmed): Master Dashboard maroon sidebar, "Hello, GRD!",
+    My Reports / Report Templates, the template list with "Custom Report"
+    highlighted.
+  - Right panel "Generate Custom Report": cream header + close ✕,
+    breadcrumb (Reports › Custom Report), the yellow "may take up to 30
+    mins / view in My Reports" info bar, Report Name + .XLSX format,
+    Include-statuses chips (merge note), Select-columns card (grouped,
+    searchable, per-group select-all, chosen columns shown as chips),
+    "Filter this Report" box (Class / Location / date range), the
+    "Also send the report to accounts@grd.edu.in" bar, and Reset /
+    Generate Report footer.
+Same colours & font (Poppins) as the live Reports UI.

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Create Payment Link</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#26262e;--muted:#8a8f9c;--line:#e6e6ee;--blue:#2f5bff;--blue-soft:#eef2ff;
+    --sideA:#efe9f6;--sideB:#f4eff9;--active:#16181d;--cream:#fdf9f1;--wa:#25a56a;--good:#1a9d5a;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#f7f7fb;color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh;position:relative}
+  .side{width:250px;flex:none;background:linear-gradient(180deg,var(--sideA),var(--sideB));padding:16px 14px;display:flex;flex-direction:column}
+  .instbox{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(80,50,90,.06)}
+  .instbox .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center;font-size:15px;flex:none}
+  .instbox .nm{font-size:13px;font-weight:600;line-height:1.25}
+  .instbox .ch{margin-left:auto;color:var(--muted)}
+  .mm{font-size:10.5px;letter-spacing:1px;color:#9a90a6;margin:16px 8px 8px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:11px;font-size:14px;font-weight:500;color:#3a3340;margin-bottom:2px}
+  .nav .ch{margin-left:auto;font-size:11px;opacity:.6}
+  .subnav{margin:0 0 6px 8px}
+  .snav{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:11px;font-size:14px;color:#4a4450;position:relative}
+  .snav.on{background:var(--active);color:#fff;font-weight:600}
+  .snav.on::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:4px;background:var(--blue);border-radius:3px}
+  .side-foot{margin-top:auto}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:13px;font-weight:600;font-size:13.5px;box-shadow:0 2px 8px rgba(80,50,90,.08)}
+
+  .main{flex:1;min-width:0;padding:24px 30px}
+  .main::after{content:"";position:fixed;inset:0 0 0 250px;background:rgba(30,25,45,.30);z-index:5}
+  .h1{font-size:26px;font-weight:700;margin:0 0 14px}
+  .tabs{display:flex;gap:26px;border-bottom:1px solid var(--line)}
+  .tab{padding-bottom:12px;font-size:15px;color:var(--muted)}
+  .tab.on{color:var(--blue);font-weight:600;border-bottom:2px solid var(--blue)}
+
+  .panel{position:fixed;top:0;right:0;bottom:0;width:58%;max-width:1000px;background:#fff;z-index:10;box-shadow:-12px 0 40px rgba(0,0,0,.16);display:flex;flex-direction:column;border-radius:20px 0 0 20px;overflow:hidden}
+  .phead{background:var(--cream);padding:22px 30px;display:flex;align-items:center;position:relative}
+  .pclose{position:absolute;right:18px;top:18px;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e6e6ef;box-shadow:0 2px 10px rgba(0,0,0,.12);display:grid;place-items:center;cursor:pointer;font-size:16px;color:#26262e;z-index:5}
+  .pclose:hover{background:#f4f4f8;color:#000}
+  .ptitle{font-size:23px;font-weight:700}
+  .pbody{padding:22px 30px;overflow:auto;flex:1}
+
+  .scard{display:flex;align-items:center;gap:14px;background:#faf9fe;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:20px}
+  .savatar{width:46px;height:46px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-size:18px;font-weight:700}
+  .sname{font-size:17px;font-weight:700} .smeta{font-size:13px;color:var(--muted);margin-top:2px}
+  .preftag{margin-left:auto;font-size:11px;font-weight:600;background:var(--blue-soft);color:var(--blue);border-radius:8px;padding:5px 10px}
+
+  .lbl{font-size:14px;color:#3a3a44;margin:0 0 8px;font-weight:500}
+  .inp{width:100%;padding:13px 15px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;outline:none;background:#fff;margin-bottom:18px}
+  .inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .chk{display:flex;align-items:center;gap:10px;font-size:13.5px;color:#444;margin-bottom:18px;cursor:pointer}
+  .chk input{width:17px;height:17px;accent-color:var(--blue)}
+  .share{display:flex;gap:12px;margin-bottom:8px}
+  .schip{border:1.6px solid var(--line);border-radius:10px;padding:11px 16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:13.5px}
+  .schip.on{border-color:var(--blue);background:var(--blue-soft);color:var(--blue)}
+  .schip .cb{width:17px;height:17px;border-radius:5px;border:2px solid #cfd3e0;display:grid;place-items:center;color:#fff;font-size:10px}
+  .schip.on .cb{background:var(--blue);border-color:var(--blue)}
+
+  .genbox{display:none;background:#eaf7ef;border:1px solid #bfe6cf;border-radius:12px;padding:16px 18px;margin-top:18px}
+  .genbox.on{display:block}
+  .genbox .lk{font-family:ui-monospace,monospace;font-size:12.5px;color:var(--blue);word-break:break-all;background:#fff;border:1px solid #cfe6d8;border-radius:8px;padding:10px;margin-top:8px}
+
+  .pfoot{border-top:1px solid var(--line);padding:16px 30px;display:flex;gap:14px}
+  .cancel{border:1.6px solid var(--line);color:#555;background:#fff;border-radius:11px;padding:13px 28px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer}
+  .gen{margin-left:auto;background:var(--blue);color:#fff;border:none;border-radius:11px;padding:13px 26px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;display:flex;gap:8px;align-items:center}
+  .note{font-size:12px;color:var(--muted);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="instbox"><span class="ic">🏛️</span><span class="nm">Vibgyor High<br>Bangalore</span><span class="ch">›</span></div>
+    <div class="mm">MAIN MENU</div>
+    <div class="nav">▦ <span>Dashboard</span></div>
+    <div class="nav">🏢 <span>Institute Management</span><span class="ch">▾</span></div>
+    <div class="nav">👤 <span>Student Management</span></div>
+    <div class="nav">🧾 <span>Transactions</span><span class="ch">▾</span></div>
+    <div class="nav">📡 <span>Communications</span><span class="ch">▴</span></div>
+    <div class="subnav"><div class="snav on">Payment Links</div></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+  <main class="main">
+    <h1 class="h1">Payment Links</h1>
+    <div class="tabs"><div class="tab on">Payment Links</div><div class="tab">Scheduled Links</div><div class="tab">Payment Link History</div></div>
+  </main>
+
+  <div class="panel">
+    <div class="phead"><span class="pclose" onclick="history.back()">✕</span><div class="ptitle">Create Payment Link</div></div>
+    <div class="pbody">
+      <div class="scard">
+        <div class="savatar" id="av">S</div>
+        <div><div class="sname" id="sname">Student</div><div class="smeta" id="smeta">—</div></div>
+        <div class="preftag">✓ Prefilled by ARC Assistant</div>
+      </div>
+
+      <div class="lbl">Fee Header</div>
+      <select class="inp" id="fh" onchange="onFee()">
+        <option data-a="37325">Term 1 Fee — ₹37,325</option>
+        <option data-a="28225">Term 2 Fee — ₹28,225</option>
+        <option data-a="15000">Tuition Fees — ₹15,000</option>
+        <option data-a="15000">Transport — ₹15,000</option>
+        <option data-a="68080">Annual Fees — ₹68,080</option>
+        <option data-a="16000">Admission Fee — ₹16,000</option>
+      </select>
+
+      <div class="two">
+        <div><div class="lbl">Payable Amount</div><input class="inp" id="amt" value="₹37,325"></div>
+        <div><div class="lbl">Link Expiry</div><input class="inp" id="exp" value="7 days"></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="partial"> Allow partial payment</label>
+
+      <div class="lbl">Share via</div>
+      <div class="share">
+        <div class="schip on" data-c="WhatsApp" onclick="tgl(this)"><span class="cb">✓</span> WhatsApp</div>
+        <div class="schip" data-c="SMS" onclick="tgl(this)"><span class="cb"></span> SMS</div>
+        <div class="schip" data-c="Email" onclick="tgl(this)"><span class="cb"></span> Email</div>
+      </div>
+      <div class="note">Nothing is sent until you click <b>Generate &amp; Share</b>.</div>
+
+      <div class="genbox" id="genbox">
+        ✓ <b>Payment link generated &amp; shared</b> with <span id="gname"></span> via <span id="gvia"></span>.
+        <div class="lk" id="glink"></div>
+      </div>
+    </div>
+    <div class="pfoot">
+      <button class="cancel" onclick="history.back()">Cancel</button>
+      <button class="gen" onclick="generate()">🔗 Generate &amp; Share</button>
+    </div>
+  </div>
+</div>
+<!-- shared client-side demo store: single source of truth (window.ARCDB) -->
+<script src="../../ARC-Data/store.js"></script>
+<script>
+  // shared state for the inline on* handlers (tgl/onFee/generate) — set inside DOMContentLoaded
+  let chans = new Set(['WhatsApp']);
+  function tgl(el){const c=el.dataset.c;chans.has(c)?chans.delete(c):chans.add(c);el.classList.toggle('on');el.querySelector('.cb').textContent=chans.has(c)?'✓':'';}
+  function onFee(){}      // wired up once ARCDB is ready
+  function generate(){}   // wired up once ARCDB is ready
+
+  document.addEventListener('DOMContentLoaded', function(){
+    if(!window.ARCDB){ console.warn('ARCDB store not loaded — check ../../ARC-Data/store.js'); return; }
+    const DB = window.ARCDB;
+    const qp = new URLSearchParams(location.search);
+
+    // --- resolve the student from ARCDB (single source of truth) ---
+    // prefer ?id=, then ?name= via findStudent, else first ARCDB student
+    let s = null;
+    const qid = qp.get('id');
+    if(qid) s = DB.student(qid);
+    if(!s && qp.get('name')) s = DB.findStudent(qp.get('name'))[0];
+    if(!s) s = DB.students()[0];
+
+    const name = s.name, id = s.id, cls = s.cls, campus = s.campus, board = s.board;
+
+    document.getElementById('sname').textContent = name;
+    document.getElementById('smeta').textContent = `ID ${id} · ${cls} · ${campus} · ${board}`;
+    document.getElementById('av').textContent = name.split(' ').map(x=>x[0]).slice(0,2).join('');
+    // the "Prefilled by ARC Assistant" tag only applies when launched from the bot (URL has params)
+    if(!qp.get('name')) document.querySelector('.preftag').style.display='none';
+
+    // --- populate fee headers + outstanding amounts from the student's ledger ---
+    const fhSel = document.getElementById('fh');
+    const ledger = DB.studentLedger(id);
+    const rows = (ledger && ledger.rows) ? ledger.rows : [];
+    // show outstanding (pending) headers; if the student is fully paid, fall back to all assigned headers
+    let opts = rows.filter(r => r.pending > 0);
+    if(!opts.length) opts = rows;
+    if(opts.length){
+      fhSel.innerHTML = opts.map(r => {
+        const amt = r.pending > 0 ? r.pending : r.net;
+        return `<option data-a="${amt}">${r.feeHeader} — ${DB.inr(amt)}</option>`;
+      }).join('');
+    }
+    // (if the student has no assigned fee headers at all, the file's static <option>s remain as a safe fallback)
+
+    function syncAmount(){
+      const o = fhSel.selectedOptions[0];
+      if(o) document.getElementById('amt').value = DB.inr(+o.dataset.a);
+    }
+    onFee = syncAmount;   // used by the select's inline onchange="onFee()"
+    syncAmount();
+
+    // --- generate a link/summary that references the real student + fee header + amount ---
+    generate = function(){
+      if(!chans.size){ alert('Pick at least one channel to share.'); return; }
+      const o = fhSel.selectedOptions[0];
+      const feeHeader = o ? o.textContent.split(' — ')[0] : '';
+      const amount = o ? +o.dataset.a : 0;
+      const slug = feeHeader.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+      document.getElementById('gname').textContent = name;
+      document.getElementById('gvia').textContent = [...chans].join(', ');
+      document.getElementById('glink').textContent =
+        'https://rapid.grayquest.com/vibgyor-' + campus.toLowerCase().replace(/\s+/g,'') + '-' + id +
+        (slug ? '-' + slug : '') + '-' + Math.round(amount) + '-' + Math.random().toString(36).slice(2,8);
+      document.getElementById('genbox').classList.add('on');
+    };
+
+    // NOTE: this page's DOM has no "recent links" list element, so there is nothing to populate.
+    // Real pending students are available via DB.defaulters('all') if such a list is added later.
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+========================================================
+ ARC-FMS · STATS Concept #1
+ FEE HEADER WISE COLLECTION (on the Dashboard)
+========================================================
+
+FILE
+----
+Fee-Header-Wise-Collection.html  — open in any browser (dummy data)
+
+AUDIENCE
+--------
+Institute accountants who view student details & fee collection.
+
+THE PROBLEM
+-----------
+Fee-header-wise collection exists today only inside the async Fee Header
+Report (download, ~10-15 min, Excel). An accountant can't see, at a
+glance, how each fee head is tracking.
+
+THE ADD
+-------
+A "Fee Header wise Collection" table placed on the Dashboard, below
+Payment Mode Stats:
+
+  Fee Header | Total Fee | Discount | Paid | Pending
+
+  - Discount = rebates (e.g. early-payment before a cut-off date).
+  - Pending  = Total − Discount − Paid  (so discounts are NOT counted
+    as still-owed).
+  - Totals row; Paid total ties to the dashboard "Total Fees Received".
+  - Download link retained for the full report.
+  - (Collection % column intentionally removed.)
+
+WHAT STAYED THE SAME
+--------------------
+Faithful copy of the live institute Dashboard — lavender sidebar, AY
+pill, "GRD Institutions" pill, Realtime Stats, Total Fees / Total
+Student cards, Payment Mode Stats (EMI/Auto/PG/Offline). Same colours &
+font (Poppins). Only the fee-header table added.
+
+NOTE
+----
+This is a SURFACING improvement, not new data — the numbers already
+exist in the Fee Header Report; this just shows them live on screen.

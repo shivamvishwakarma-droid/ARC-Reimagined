@@ -1,0 +1,55 @@
+========================================================
+ ARC-FMS  ·  Concept #5  (Option A)
+ "YOU ARE HERE" — GILE HEADER BREADCRUMB
+========================================================
+
+FILE
+----
+You-Are-Here-Breadcrumb.html  — open in any browser (dummy data)
+
+
+THE PROBLEM
+-----------
+When you're inside an institute dashboard, nothing tells you WHICH GILE
+you're looking at. The numbers (Rs. 8.03 Cr, 1538 students) are scoped to
+a Group > Institute > Location > Education combo, but that combo is never
+shown. Today the only way to confirm it is to download a report and read
+the GILE column off a student row. That is an orientation failure and a
+trust risk in a finance tool.
+
+
+THE FIX (Option A)
+------------------
+Print the full path the app already knows, right under the Dashboard
+title, always visible:
+
+   You are viewing
+   [🏢 GRD Education Trust] › [🏛️ Dr. G.R. Damodaran College] › [📍 Coimbatore] › [🎓 BSc]   Change ⇄
+
+  - All four GILE levels (G · I · L · E) shown as segments.
+  - Persistent — on every screen, zero clicks to read your context.
+  - Clicking any segment (or "Change") opens the navigator PRE-FILLED
+    with the current selection (fixes the blank-modal bug) so switching
+    is a one-field change, not a cold 4-dropdown restart.
+
+
+WHY (PM rationale)
+------------------
+  - Visibility of system status ("you are here") — the most basic UX
+    heuristic; today it's violated.
+  - Error prevention: stops people acting on numbers thinking it's the
+    wrong campus.
+  - Near-zero effort: the value is already in app state (it's filtering
+    every number). This is a display omission, not a new feature.
+
+
+WHAT STAYED THE SAME
+--------------------
+Faithful copy of the live institute dashboard:
+  - Light-lavender sidebar, institute box, MAIN MENU nav, "View Master
+    Dashboard".
+  - Header with AY (2025-2026) + "GRD Institutions" pill.
+  - Realtime Stats Overview, Total Fees / Total Student cards, Payment
+    Mode Stats (EMI / Auto / PG / Offline).
+  - Same colours & font (Poppins). Added ONLY the breadcrumb + prefilled
+    navigator.

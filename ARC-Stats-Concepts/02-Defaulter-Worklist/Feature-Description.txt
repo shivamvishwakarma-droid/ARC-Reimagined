@@ -1,0 +1,52 @@
+========================================================
+ ARC-FMS · STATS Concept #2
+ DEFAULTER WORKLIST  (Pending Fees & Follow-ups)
+========================================================
+
+FILE
+----
+Defaulter-Worklist.html  — open in any browser (dummy data)
+
+AUDIENCE
+--------
+Institute accountants / fee-collection staff.
+
+THE PROBLEM
+-----------
+"Pending / Overdue" is a dead number today, and the list of who-owes-what
+is buried in an async report (download → Excel). A report is read-and-close;
+the actual chasing happens elsewhere (or never). Result: money left
+uncollected.
+
+THE IDEA — a worklist, NOT a report
+------------------------------------
+Turn the pending number into a live, actionable list where you chase from
+the same screen:
+  - KPIs: Total Pending, Students Owing.
+  - Overdue BUCKETS as filters: All / 0-30d / 31-60d / 60d+.
+  - Per-row "Send reminder" -> fires instantly; row flips to "Sent" and
+    "last reminder" updates.
+  - Multi-select -> bulk "Send via WhatsApp / SMS / Email".
+  - "Remind all overdue" -> one click.
+  - Search, colour-coded overdue chips, last-reminder timestamps.
+
+Report vs Worklist:
+  Report  = a list you download and read.
+  Worklist = the same list WITH a "chase" button next to each name.
+
+REUSES WHAT EXISTS
+------------------
+Not new infra — it points the existing Communications reminder engine
+(WhatsApp/SMS/Email) at a specific student/segment, on demand.
+
+GUARDRAIL TO ADD (open point)
+-----------------------------
+There is NO documented per-day/week/month send cap today (only max 3 per
+schedule). Before enabling one-click bulk reminders, add a per-student
+COOLDOWN (e.g. max 1 / 24-48h) + the visible "last reminded" timestamp
+(already shown) to avoid spamming parents / hurting WhatsApp quality.
+
+WHAT STAYED THE SAME
+--------------------
+Faithful institute-dashboard UI — lavender sidebar, AY pill, user pill,
+same colours & font (Poppins). New screen under the nav.

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-FMS · Master Dashboard — Tree Drill-down</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b2f3a; --muted:#8a8f9c; --line:#ececf3; --page:#f7f7fb;
+    --indigo:#3b3f9e; --indigo-soft:#eef0ff;
+    --side1:#c98f9c; --side2:#b79ac2; --side3:#cfd0e8;
+    --rose:#f4e7ea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--page);color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+
+  /* SIDEBAR (unchanged) */
+  .side{width:240px;flex:none;background:linear-gradient(180deg,var(--side1) 0%,var(--side2) 52%,var(--side3) 100%);
+    padding:18px 14px;display:flex;flex-direction:column;color:#3a2f38}
+  .brand{display:flex;align-items:center;gap:10px;background:var(--rose);border-radius:14px;padding:12px 14px;margin-bottom:6px}
+  .brand .ic{width:34px;height:34px;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:17px}
+  .brand .t b{display:block;font-size:15px;line-height:1.1}
+  .brand .t span{font-size:11px;color:#6b5560}
+  .nav-h{font-size:10.5px;letter-spacing:1px;color:#6b5560;margin:14px 8px 6px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;font-weight:500;color:#3a2f38}
+  .nav:hover{background:rgba(255,255,255,.35)}
+  .nav.on{background:#fff;font-weight:600;box-shadow:0 2px 6px rgba(80,40,60,.12)}
+  .nav .chev{margin-left:auto;font-size:11px;opacity:.6}
+  .side-foot{margin-top:auto}
+  .viewall{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:12px;padding:12px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(80,40,60,.12)}
+
+  /* MAIN */
+  .main{flex:1;padding:22px 28px;min-width:0}
+  .top{display:flex;align-items:center;margin-bottom:18px}
+  .hello{font-size:24px;font-weight:600}
+  .userpill{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500}
+  .userpill .av{width:20px;height:20px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:11px;color:var(--indigo)}
+
+  .summary{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:14px}
+  .sumitem{display:flex;align-items:center;gap:10px;font-size:13.5px}
+  .sumitem .ic{width:30px;height:30px;border-radius:8px;background:#f2edf5;display:grid;place-items:center}
+  .sumitem b{font-weight:600}
+  .sumitem .lnk{color:var(--indigo);cursor:pointer;text-decoration:underline}
+  .vdiv{width:1px;height:26px;background:var(--line)}
+
+  /* two-column: tree + table */
+  .cols{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+
+  /* ============ NEW: TREE PANEL ============ */
+  .tree{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 8px;position:sticky;top:14px}
+  .tree-h{display:flex;align-items:center;gap:8px;padding:6px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+  .cap{font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:600}
+  .newtag{font-size:9px;background:var(--indigo);color:#fff;border-radius:5px;padding:2px 6px;letter-spacing:.4px}
+  .tree-tools{margin-left:auto;font-size:11px;color:var(--indigo);cursor:pointer}
+  .tree-tools:hover{text-decoration:underline}
+
+  .trow{display:flex;align-items:center;gap:7px;padding:8px 8px;border-radius:9px;cursor:pointer;font-size:13px;position:relative}
+  .trow:hover{background:#f5f6fc}
+  .trow.on{background:var(--indigo-soft);color:var(--indigo);font-weight:600}
+  .caret{width:16px;height:16px;flex:none;display:grid;place-items:center;color:var(--muted);font-size:10px;
+    border-radius:5px;transition:transform .15s ease}
+  .caret:hover{background:#e9eaf5;color:var(--indigo)}
+  .caret.open{transform:rotate(90deg)}
+  .caret.leaf{visibility:hidden}
+  .tico{font-size:13px;flex:none}
+  .tlabel{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tcount{font-size:11px;color:var(--muted);background:#f2f2f8;border-radius:999px;padding:1px 8px;flex:none}
+  .trow.on .tcount{background:#fff;color:var(--indigo)}
+  /* indentation guide */
+  .children{margin-left:15px;padding-left:9px;border-left:1.5px solid #edeef4;display:none}
+  .children.open{display:block}
+  .lvl-Group>.trow{font-weight:600}
+  .lvl-Board .tico{opacity:.85}
+  .empty{padding:14px;color:var(--muted);font-size:12px;text-align:center}
+
+  /* table */
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .pathbar{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:11px 18px;background:var(--indigo-soft);color:var(--indigo)}
+  .pathbar .crumbs b{font-weight:700}
+  .pathbar .clr{margin-left:auto;color:var(--muted);cursor:pointer;text-decoration:underline}
+  .pathbar .clr:hover{color:var(--indigo)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:13px 18px;background:#faf9fc}
+  td{padding:13px 18px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+  .vd{border:1.4px solid var(--indigo);color:var(--indigo);background:#fff;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .vd:hover{background:var(--indigo);color:#fff}
+  .btag{display:inline-block;font-size:11.5px;background:#f2edf5;color:#5a4b63;border-radius:6px;padding:3px 9px}
+  .hint{font-size:12px;color:var(--muted);margin-top:16px;text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="ic">🏠</div><div class="t"><b>Master</b><span>Dashboard</span></div></div>
+    <div class="nav on" style="margin-top:8px">📊 <span>Statistics</span></div>
+    <div class="nav-h">TRANSACTIONS</div>
+    <div class="nav">📅 <span>Emi Applications</span></div>
+    <div class="nav">₹ <span>PG</span><span class="chev">›</span></div>
+    <div class="nav">🔁 <span>Auto Debit</span><span class="chev">›</span></div>
+    <div class="nav">📄 <span>Reports</span></div>
+    <div class="side-foot"><div class="viewall">View All Institutes ›</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div class="hello">Hello, Vibgyor!</div>
+      <div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div>
+    </div>
+
+    <!-- NOTE: static chrome. ARCDB has no Group/Institute entity, so these header figures
+         are left as-is (no store equivalent to derive from — see rule 6). -->
+    <div class="summary">
+      <div class="sumitem"><span class="ic">👥</span><span>Total Groups : <b>VIBGYOR</b> &amp; <span class="lnk">1 others</span></span></div>
+      <div class="vdiv"></div>
+      <div class="sumitem"><span class="ic">🏛️</span><span>Total Institute Count : <b>2</b></span></div>
+    </div>
+
+    <div class="cols">
+      <!-- ============ NEW: tree drill-down ============ -->
+      <div class="tree">
+        <div class="tree-h">
+          <span class="cap">GILE NAVIGATOR</span><span class="newtag">NEW</span>
+          <span class="tree-tools" id="tools" onclick="toggleAllTree()">Collapse all</span>
+        </div>
+        <div id="treeRoot"></div>
+      </div>
+
+      <!-- table -->
+      <div class="card">
+        <div class="pathbar" id="pathbar" style="display:none">
+          <span class="crumbs" id="crumbs"></span>
+          <span class="clr" onclick="clearSel()">show all</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Sr.No</th><th>Student</th><th>Campus</th><th>Board</th><th></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="hint">
+      <b>Suggestion #4 — Tree / Drill-down navigator.</b> Click the ▸ caret to expand/collapse a branch (siblings tidy up
+      automatically); click a node's label to filter the table to it. Collapsing a parent hides everything under it.<br>
+      Faithful ARC colours, font &amp; layout — sequence Institute › Location › Board. Dummy data.
+    </div>
+  </main>
+</div>
+
+<script src="../../ARC-Data/store.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+/* ---- SINGLE SOURCE OF TRUTH: everything below is built from window.ARCDB ---- */
+if(!window.ARCDB){ document.getElementById('treeRoot').innerHTML='<div class="empty">Data store (ARCDB) not loaded</div>'; return; }
+
+/* Tree hierarchy = Campus › Class › Student, built live from ARCDB.students() */
+const DATA = ARCDB.students().map(s=>({ campus:s.campus, cls:s.cls, name:s.name, id:s.id, board:s.board, mobile:s.mobile }));
+const LEVELS=['campus','cls','name'];
+const LVLNAME=['Campus','Class','Student'];
+const ICON={Campus:'📍',Class:'🎓',Student:'👤'};
+
+/* ---- build a FLAT node list with numeric ids (no string escaping) ---- */
+const NODES=[];                 // NODES[id] = {path:[...], children:[ids]}
+function addNodes(obj, path){
+  const ids=[];
+  Object.keys(obj).forEach(name=>{
+    const node={path:[...path,name], children:[]};
+    const myId=NODES.length; NODES.push(node);
+    node.children=addNodes(obj[name], node.path);
+    ids.push(myId);
+  });
+  return ids;
+}
+const TREE={};
+DATA.forEach(r=>{ let n=TREE; LEVELS.forEach(l=>{ const v=r[l]; n[v]=n[v]||{}; n=n[v]; }); });
+const ROOT_IDS=addNodes(TREE,[]);
+
+const nName = id => NODES[id].path[NODES[id].path.length-1];
+const nLevel= id => NODES[id].path.length;                       // 1..4
+const hasKids=id => NODES[id].children.length>0;
+function leaves(id){ const c=NODES[id].children; return c.length? c.reduce((s,k)=>s+leaves(k),0) : 1; }
+function isDesc(anc, x){ const a=NODES[anc].path, p=NODES[x].path; return p.length>a.length && a.every((v,i)=>p[i]===v); }
+function sameParent(a,b){ const pa=NODES[a].path.slice(0,-1), pb=NODES[b].path.slice(0,-1);
+  return pa.length===pb.length && pa.every((v,i)=>v===pb[i]); }
+
+let expanded=new Set([ROOT_IDS[1]]);   // seed: open the 2nd campus if present
+if(ROOT_IDS[1]===undefined) expanded=new Set([ROOT_IDS[0]]);
+let activeId=null;
+
+/* expand/collapse — PARENT managed (sibling accordion) */
+function collapseSubtree(id){ [...expanded].forEach(e=>{ if(e===id || isDesc(id,e)) expanded.delete(e); }); }
+function openNode(id){
+  const lvl=nLevel(id);
+  // collapse expanded siblings (same parent, same level) and their descendants
+  [...expanded].forEach(e=>{
+    if(e!==id && nLevel(e)===lvl && sameParent(e,id)) collapseSubtree(e);
+  });
+  expanded.add(id);
+}
+function toggleExpand(id){ expanded.has(id)? collapseSubtree(id) : openNode(id); render(); }
+function selectNode(id){ activeId=id; if(hasKids(id) && !expanded.has(id)) openNode(id); render(); }
+function clearSel(){ activeId=null; render(); }
+function toggleAllTree(){
+  if(expanded.size){ expanded.clear(); }
+  else { ROOT_IDS.forEach(id=>expanded.add(id)); }
+  render();
+}
+
+/* render */
+function renderNodes(ids){
+  return ids.map(id=>{
+    const lvl=LVLNAME[nLevel(id)-1], name=nName(id), kids=hasKids(id);
+    const isOpen=expanded.has(id), active=activeId===id;
+    const caret = kids ? `<span class="caret ${isOpen?'open':''}" data-caret="${id}">▶</span>`
+                       : `<span class="caret leaf">▶</span>`;
+    const cnt = kids ? `<span class="tcount">${leaves(id)}</span>` : '';
+    let html=`<div class="tnode lvl-${lvl}">
+      <div class="trow ${active?'on':''}" data-row="${id}">${caret}<span class="tico">${ICON[lvl]}</span><span class="tlabel">${name}</span>${cnt}</div>`;
+    if(kids) html+=`<div class="children ${isOpen?'open':''}">${renderNodes(NODES[id].children)}</div>`;
+    html+=`</div>`;
+    return html;
+  }).join('');
+}
+function renderTree(){
+  document.getElementById('treeRoot').innerHTML = renderNodes(ROOT_IDS) || `<div class="empty">No data</div>`;
+  document.getElementById('tools').textContent = expanded.size? 'Collapse all':'Expand groups';
+}
+function renderTable(){
+  const p = activeId!=null ? NODES[activeId].path : null;
+  const sel = {}; if(p) p.forEach((v,i)=>sel[LEVELS[i]]=v);
+  const rows = DATA.filter(r=>LEVELS.every(l=>!sel[l]||r[l]===sel[l]));
+  const pb=document.getElementById('pathbar');
+  if(p){
+    pb.style.display='flex';
+    const crumb = p.join(' › ');
+    /* money reconciled from the store: sum each visible student's ledger.
+       (collected here === ARCDB.collectionTotal({campus[,cls]}) for campus/class nodes) */
+    let collected=0, pending=0;
+    rows.forEach(r=>{ const L=ARCDB.studentLedger(r.id); if(L){ collected+=L.totals.paid; pending+=L.totals.pending; } });
+    document.getElementById('crumbs').innerHTML='Showing: <b>'+crumb+'</b> · '+rows.length
+      +' student(s) · Collected <b>'+ARCDB.inr(collected)+'</b> · Pending <b>'+ARCDB.inr(pending)+'</b>';
+  } else pb.style.display='none';
+  document.getElementById('rows').innerHTML = rows.map((r,i)=>`<tr>
+    <td>${String(i+1).padStart(2,'0')}</td>
+    <td>${r.name} <span style="color:var(--muted)">· #${r.id}</span></td><td>${r.campus}</td>
+    <td><span class="btag">${r.board}</span></td>
+    <td style="text-align:right"><button class="vd">View Dashboard ›</button></td>
+  </tr>`).join('');
+}
+function render(){ renderTree(); renderTable(); }
+
+/* one delegated click handler — robust, no inline JS */
+document.getElementById('treeRoot').addEventListener('click',e=>{
+  const c=e.target.closest('[data-caret]');
+  if(c){ e.stopPropagation(); toggleExpand(+c.dataset.caret); return; }
+  const r=e.target.closest('[data-row]');
+  if(r){ selectNode(+r.dataset.row); }
+});
+/* expose the two functions referenced by inline onclick= handlers in the HTML */
+window.toggleAllTree=toggleAllTree; window.clearSel=clearSel;
+render();
+}); /* DOMContentLoaded */
+</script>
+</body>
+</html>

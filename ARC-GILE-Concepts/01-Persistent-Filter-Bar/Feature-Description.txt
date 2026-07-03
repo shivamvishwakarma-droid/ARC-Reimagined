@@ -1,0 +1,65 @@
+========================================================
+ ARC-FMS  ·  GILE Selector Concept #1
+ PERSISTENT FILTER BAR
+========================================================
+
+FILE
+----
+Persistent-Filter-Bar.html  — open in any browser (dummy data, no DB connection)
+
+
+THE PROBLEM IT SOLVES
+---------------------
+Today, selecting a GILE (Group > Institute > Location > Education-type)
+happens inside a pop-up "Search & Filter" modal:
+  - It covers the whole screen.
+  - It needs ~5 clicks (open modal > 4 dropdowns > Search).
+  - The choice is NOT remembered — it resets when you move to
+    Statistics, Transactions or Reports, so you re-pick every time.
+
+
+THE IDEA
+--------
+Replace the modal with an ALWAYS-VISIBLE inline bar of 4 connected chips:
+
+    FILTER   [Group ▾] › [Institute ▾] › [Location ▾] › [Education ▾]   Reset
+
+  - No modal. The selectors are permanently on screen.
+  - Click a single chip to change just ONE level (not all four).
+  - Dependent / cascading: picking a Group narrows the Institute list,
+    Institute narrows Location, and so on. Each option shows a live count.
+  - The table filters INSTANTLY — no "Search" button to press.
+  - Designed to be STICKY: the same selection carries across every tab
+    (Statistics / Transactions / Reports) instead of resetting.
+
+
+WHY IT FITS USER BEHAVIOUR
+--------------------------
+  - People revisit the same 2-3 campuses daily; keeping the filter
+    visible + sticky removes repeated modal work.
+  - A breadcrumb (VIBGYOR > Powai > CBSE) always tells the user
+    "where am I looking?" — the current UI loses that context once
+    the modal closes.
+  - Changing one level (e.g. just the board) is 1 click, not a full
+    re-filter.
+
+
+WHAT STAYED THE SAME
+--------------------
+Everything else is a faithful copy of the live ARC screen:
+  - Maroon-to-lavender sidebar, "Master Dashboard" logo box, and the
+    Statistics / Transactions / PG / Auto Debit / Reports navigation.
+  - "Hello, GRD!" header + "GRD Institutions" user pill.
+  - "Total Groups / Total Institute Count" summary bar.
+  - The same table columns: Sr.No, Group Name, Institute Name,
+    Locations, Education Type, View Dashboard.
+  - Same colours and font (Poppins).
+Only the FILTER MECHANISM changed.
+
+
+HOW TO DEMO
+-----------
+  1. Click [Group] > choose "GRD Education Trust".
+  2. Click [Education] > choose "BSc".
+  3. Watch the table filter live and the "X of 9 rows" counter update.
+  4. Hit "Reset" to clear.

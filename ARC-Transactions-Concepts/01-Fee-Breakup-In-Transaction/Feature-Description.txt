@@ -1,0 +1,73 @@
+========================================================
+ ARC-FMS · Transactions Concept #1
+ FEE BREAKUP IN A TRANSACTION (PG More Details)
+========================================================
+
+FILE
+----
+Fee-Breakup-In-Transaction.html  — open in any browser (dummy data)
+
+THE GAP
+-------
+In Transactions (PG / EMI / Auto-Debit / Offline) you see HOW MUCH a
+student paid, but not WHAT FOR — i.e. which fee header(s) the payment
+covered. Per-fee-header paid amounts are only visible in Student
+Management, not at the transaction level. So an accountant looking at a
+₹33,450 PG payment can't tell if it's tuition, exam, lab, etc.
+
+Note: this is a SURFACING / JOIN gap, not missing data — the
+payment→fee-header allocation already exists (it's what powers the
+per-student fee ledger). It just isn't shown on the transaction.
+
+WHY NOT INLINE IN THE ROW
+-------------------------
+A single payment can cover MULTIPLE fee headers. Putting them in the
+main transaction row clusters/clutters it. At most show "Even Sem +2"
+in the row.
+
+THE FIX (placement)
+-------------------
+Add a "Fee Breakup" section inside the existing More Details → Details
+tab (opened via the eye icon), right below the Amount fields:
+
+  Fee Header            Amount Paid
+  Even Semester Fee     ₹28,000
+  Lab Fee               ₹ 4,000
+  Library Fee           ₹ 1,450
+  ------------------------------
+  Total                 ₹33,450   ✓ reconciles with "Amount"
+
+  - Handles multiple headers cleanly (mini-table).
+  - Sits in context next to Amount / Payment Amount / Service Charge.
+  - Reconciliation line confirms the split == the Amount.
+  - Alternative: a separate "Fee Type" tab — works, but adds a click and
+    hides it; keeping it in Details is preferred.
+
+THE PROTOTYPE IS A FULL FLOW
+----------------------------
+  - Exact PG "Payment Gateway" Transactions screen: header + AY pill +
+    GRD Institutions pill, Transactions/Settlement tabs, the two KPI cards
+    (Total fee collected / Number of transactions), Last-Refreshed + Refresh,
+    Search & Filter + Download Report.
+  - 18 dummy transactions (SETTLED / FAILED chips, Active status), as the
+    exact table: S.No · Reference ID · Primary Student Identifier ·
+    Student Name · Amount Paid · Payment Attempted (date+time) ·
+    Student Status · Debit Status · eye.
+  - LEFT SIDEBAR is sticky (stays in place; only the list scrolls).
+  - PAGINATION: 10 rows per page (‹ Prev · 1 2 … · Next ›), page 1 = 01-10.
+  - Click the eye ("View Transaction Details") -> the exact "More Details"
+    modal opens for THAT transaction.
+
+WHAT STAYED THE SAME
+--------------------
+Faithful copy of the PG list + "More Details" modal — cream header,
+Details / Transactions / Other Notes tabs, the 3-column detail grid
+(Reference ID, Student, identifiers, parent, Amount, Payment Amount,
+Service Charge, Service Tax). Same colours & font (Poppins). Only the
+Fee Breakup section was added. Each transaction has its own breakup
+(single or multiple headers) and reconciles to its Amount.
+
+APPLIES TO
+----------
+Same pattern should be added to EMI / Auto-Debit / Offline transaction
+detail modals — any transaction that maps to fee headers.
