@@ -135,7 +135,7 @@
         </div>
         <table>
           <thead><tr>
-            <th>Sr.No</th><th>Student</th><th>Campus</th><th>Board</th><th></th>
+            <th>Sr.No</th><th>Group</th><th>Institute</th><th>Location</th><th>Education</th><th></th>
           </tr></thead>
           <tbody id="rows"></tbody>
         </table>
@@ -156,11 +156,17 @@ document.addEventListener('DOMContentLoaded', function(){
 /* ---- SINGLE SOURCE OF TRUTH: everything below is built from window.ARCDB ---- */
 if(!window.ARCDB){ document.getElementById('treeRoot').innerHTML='<div class="empty">Data store (ARCDB) not loaded</div>'; return; }
 
-/* Tree hierarchy = Campus › Class › Student, built live from ARCDB.students() */
-const DATA = ARCDB.students().map(s=>({ campus:s.campus, cls:s.cls, name:s.name, id:s.id, board:s.board, mobile:s.mobile }));
-const LEVELS=['campus','cls','name'];
-const LVLNAME=['Campus','Class','Student'];
-const ICON={Campus:'📍',Class:'🎓',Student:'👤'};
+/* Tree hierarchy = GILE: Group › Institute › Location › Education. No students are shown here —
+   student data belongs on Student-Management / receipt screens. Built from ARCDB. */
+const GROUP='VIBGYOR', INSTITUTE='Vibgyor High';   // page context (no store Group/Institute entity)
+const combos={};
+ARCDB.students().forEach(s=>{ const k=s.campus+'|'+s.board;
+  if(!combos[k]) combos[k]={group:GROUP, inst:INSTITUTE, loc:s.campus, edu:s.board, students:0};
+  combos[k].students++; });
+const DATA = Object.values(combos);                // distinct GILE rows (Location × Education)
+const LEVELS=['group','inst','loc','edu'];
+const LVLNAME=['Group','Institute','Location','Education'];
+const ICON={Group:'🏢',Institute:'🏫',Location:'📍',Education:'🎓'};
 
 /* ---- build a FLAT node list with numeric ids (no string escaping) ---- */
 const NODES=[];                 // NODES[id] = {path:[...], children:[ids]}
@@ -182,12 +188,14 @@ const nName = id => NODES[id].path[NODES[id].path.length-1];
 const nLevel= id => NODES[id].path.length;                       // 1..4
 const hasKids=id => NODES[id].children.length>0;
 function leaves(id){ const c=NODES[id].children; return c.length? c.reduce((s,k)=>s+leaves(k),0) : 1; }
+function nodeStudents(id){ const p=NODES[id].path;
+  return DATA.filter(r=>p.every((v,i)=>r[LEVELS[i]]===v)).reduce((a,r)=>a+r.students,0); }
 function isDesc(anc, x){ const a=NODES[anc].path, p=NODES[x].path; return p.length>a.length && a.every((v,i)=>p[i]===v); }
 function sameParent(a,b){ const pa=NODES[a].path.slice(0,-1), pb=NODES[b].path.slice(0,-1);
   return pa.length===pb.length && pa.every((v,i)=>v===pb[i]); }
 
-let expanded=new Set([ROOT_IDS[1]]);   // seed: open the 2nd campus if present
-if(ROOT_IDS[1]===undefined) expanded=new Set([ROOT_IDS[0]]);
+let expanded=new Set();                 // open Group + Institute by default (Locations visible)
+NODES.forEach((n,i)=>{ if(n.path.length<=2) expanded.add(i); });
 let activeId=null;
 
 /* expand/collapse — PARENT managed (sibling accordion) */
@@ -216,7 +224,7 @@ function renderNodes(ids){
     const isOpen=expanded.has(id), active=activeId===id;
     const caret = kids ? `<span class="caret ${isOpen?'open':''}" data-caret="${id}">▶</span>`
                        : `<span class="caret leaf">▶</span>`;
-    const cnt = kids ? `<span class="tcount">${leaves(id)}</span>` : '';
+    const cnt = `<span class="tcount">${nodeStudents(id)}</span>`;
     let html=`<div class="tnode lvl-${lvl}">
       <div class="trow ${active?'on':''}" data-row="${id}">${caret}<span class="tico">${ICON[lvl]}</span><span class="tlabel">${name}</span>${cnt}</div>`;
     if(kids) html+=`<div class="children ${isOpen?'open':''}">${renderNodes(NODES[id].children)}</div>`;
@@ -236,17 +244,13 @@ function renderTable(){
   if(p){
     pb.style.display='flex';
     const crumb = p.join(' › ');
-    /* money reconciled from the store: sum each visible student's ledger.
-       (collected here === ARCDB.collectionTotal({campus[,cls]}) for campus/class nodes) */
-    let collected=0, pending=0;
-    rows.forEach(r=>{ const L=ARCDB.studentLedger(r.id); if(L){ collected+=L.totals.paid; pending+=L.totals.pending; } });
-    document.getElementById('crumbs').innerHTML='Showing: <b>'+crumb+'</b> · '+rows.length
-      +' student(s) · Collected <b>'+ARCDB.inr(collected)+'</b> · Pending <b>'+ARCDB.inr(pending)+'</b>';
+    const nstu = rows.reduce((a,r)=>a+r.students,0);
+    document.getElementById('crumbs').innerHTML='Showing: <b>'+crumb+'</b> · '+rows.length+' GILE · '+nstu+' students';
   } else pb.style.display='none';
   document.getElementById('rows').innerHTML = rows.map((r,i)=>`<tr>
     <td>${String(i+1).padStart(2,'0')}</td>
-    <td>${r.name} <span style="color:var(--muted)">· #${r.id}</span></td><td>${r.campus}</td>
-    <td><span class="btag">${r.board}</span></td>
+    <td>${r.group}</td><td>${r.inst}</td><td>${r.loc}</td>
+    <td><span class="btag">${r.edu}</span></td>
     <td style="text-align:right"><button class="vd">View Dashboard ›</button></td>
   </tr>`).join('');
 }

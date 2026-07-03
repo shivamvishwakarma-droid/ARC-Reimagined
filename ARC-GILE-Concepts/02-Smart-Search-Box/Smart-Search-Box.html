@@ -152,13 +152,10 @@
 
 <script src="../../ARC-Data/store.js"></script>
 <script>
-/* Smart Search Box — all data now comes from window.ARCDB (single source of truth).
-   ARCDB is student-centric and has no Group/Institute level, so:
-     • Group + Institute are the page's fixed context (see userpill / summary header).
-     • Location = student.campus, Education = student.board — derived per student.
-   Search uses ARCDB.findStudent(q) (name-contains / id-exact) plus an ARCDB-field
-   token match so multi-word queries like "Marathahalli CBSE" still resolve.
-   Picking a student resolves their Group › Institute › Location › Education path. */
+/* Smart GILE Search — resolves a GILE (Group › Institute › Location › Education), NOT students.
+   Student data is intentionally excluded here; it belongs on Student-Management / receipt screens.
+   Group + Institute = page's fixed context; Location = student.campus, Education = student.board.
+   Distinct Location × Education combos form the GILE list; search matches "Marathahalli CBSE" etc. */
 const GROUP='VIBGYOR', INSTITUTE='Vibgyor High';   // page context — no store equivalent
 let DATA=[], filtered=[], hiIndex=-1, current=[];
 
@@ -170,19 +167,12 @@ function mark(text,q){
   parts.forEach(p=>{out=out.replace(new RegExp('('+p+')','ig'),'<mark>$1</mark>');});
   return out;
 }
-/* pending context for a student, computed live from the store's ledger */
-function pendingLabel(id){
-  const L=window.ARCDB&&ARCDB.studentLedger(id);
-  return (L&&L.totals.pending>0) ? ' · '+ARCDB.inr(L.totals.pending)+' due' : '';
-}
-/* query the real store: name/id via findStudent, plus token match over ARCDB fields */
-function searchStudents(q){
+/* match a GILE row over Group / Institute / Location / Education (e.g. "Marathahalli CBSE") */
+function searchGile(q){
   if(!q) return DATA.slice();
-  const hits=new Set(ARCDB.findStudent(q).map(s=>s.id));   // name-contains / id-exact
   const toks=q.toLowerCase().split(/\s+/).filter(Boolean);
   return DATA.filter(r=>{
-    if(hits.has(r.id)) return true;
-    const hay=(r.name+' '+r.id+' '+r.cls+' '+r.loc+' '+r.edu).toLowerCase();
+    const hay=(r.group+' '+r.inst+' '+r.loc+' '+r.edu).toLowerCase();
     return toks.every(t=>hay.includes(t));
   });
 }
@@ -190,10 +180,10 @@ function run(){
   if(!window.ARCDB)return;
   const q=document.getElementById('s').value.trim();
   const drop=document.getElementById('drop');
-  current = searchStudents(q);
+  current = searchGile(q);
   hiIndex=-1;
   if(!current.length){
-    drop.innerHTML=`<div class="di"><span class="path">No student matches “${q}”</span></div>`;
+    drop.innerHTML=`<div class="di"><span class="path">No GILE matches “${q}”</span></div>`;
     drop.classList.add('on');return;
   }
   const showAllRow = q && current.length>1
@@ -205,10 +195,10 @@ function run(){
   drop.innerHTML=showAllRow+`<div class="dh">${q?'Or jump to one':'Suggestions'}</div>`+
     current.map((r,i)=>`
       <div class="di" data-i="${i}" onclick="choose(${i})" onmouseenter="hover(${i})">
-        <span class="ico">🎓</span>
+        <span class="ico">📍</span>
         <span>
-          <div class="lab">${mark(r.name,q)}</div>
-          <div class="path">${mark(r.id+' · '+r.cls+' · '+r.loc+' · '+r.edu+' · '+r.mobile,q)}${pendingLabel(r.id)}</div>
+          <div class="lab">${mark(r.loc+' · '+r.edu,q)}</div>
+          <div class="path">${mark(r.group+' › '+r.inst+' › '+r.loc+' › '+r.edu,q)}</div>
         </span>
         <span class="go">Open ›</span>
       </div>`).join('');
@@ -236,7 +226,7 @@ function choose(i){
   document.getElementById('s').value='';
   document.getElementById('drop').classList.remove('on');
   document.getElementById('scope').classList.add('on');
-  document.getElementById('crumb').textContent=`${r.name} · ${r.loc} › ${r.edu}`;
+  document.getElementById('crumb').textContent=`${r.inst} · ${r.loc} › ${r.edu}`;
   render();
 }
 function showAll(){
@@ -253,11 +243,11 @@ function quick(text){document.getElementById('s').value=text;run();}
 function clearScope(){filtered=DATA.slice();document.getElementById('scope').classList.remove('on');render();}
 document.addEventListener('click',e=>{if(!e.target.closest('.sbox'))document.getElementById('drop').classList.remove('on');});
 
-/* "Recent" chips = real ARCDB students (single source of truth) */
+/* "Recent" chips = recent GILE selections (Location · Education) — no student data */
 function renderChips(){
-  const box=document.getElementById('chips'); if(!box||!window.ARCDB)return;
-  box.innerHTML='<span>Recent:</span>'+ARCDB.students().slice(0,3)
-    .map(s=>`<span class="rec" onclick="quick('${s.name}')">${s.name} · ${s.campus}</span>`).join('');
+  const box=document.getElementById('chips'); if(!box)return;
+  box.innerHTML='<span>Recent:</span>'+DATA.slice(0,3)
+    .map(r=>`<span class="rec" onclick="quick('${r.loc} ${r.edu}')">${r.loc} · ${r.edu}</span>`).join('');
 }
 
 function render(){
@@ -274,11 +264,10 @@ function render(){
 /* build everything from ARCDB on load */
 document.addEventListener('DOMContentLoaded',()=>{
   if(!window.ARCDB)return;                       // guard: store not loaded
-  DATA = ARCDB.students().map(s=>({
-    group:GROUP, inst:INSTITUTE,                 // page context (no store equivalent)
-    loc:s.campus, edu:s.board,                   // Location = campus, Education = board
-    id:s.id, name:s.name, cls:s.cls, mobile:s.mobile
-  }));
+  const combos={};
+  ARCDB.students().forEach(s=>{ const k=s.campus+'|'+s.board;
+    if(!combos[k]) combos[k]={group:GROUP, inst:INSTITUTE, loc:s.campus, edu:s.board}; });
+  DATA = Object.values(combos);                  // distinct GILE rows (Location × Education)
   filtered = DATA.slice();
   renderChips();
   render();
