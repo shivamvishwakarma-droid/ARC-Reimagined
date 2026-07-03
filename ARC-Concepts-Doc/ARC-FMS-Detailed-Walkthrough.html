@@ -150,9 +150,7 @@
     <a class="open" href="../ARC-Stats-Concepts/01-Fee-Header-Wise-Collection/Fee-Header-Wise-Collection.html" target="_blank">▶ Open prototype</a>
 
     <h3 class="step" id="s-worklist">2.2 Defaulter Worklist <span class="tag ux">Enhancement</span></h3>
-    <p class="lead"><span class="lbl">What we have today:</span> the pending amount shows as a <b>number</b> on the dashboard; the actual who-owes list lives in a <b>downloadable async report</b> (Fee Header Due / Student report). Reminders exist too — but as a <b>scheduled broadcast</b> in Communications, aimed at “All students” or “All with pending fees”, set up on a separate screen. So the pieces exist; they just aren't in one place.</p>
-    <p class="lead"><span class="lbl">The gap:</span> to actually chase a defaulter you: read the aggregate number → download &amp; open a report to see who owes → switch to Communications → schedule a reminder for the whole pending group. You <b>can't see a live list and remind one student — or one overdue bucket — on the spot.</b></p>
-    <p class="lead"><span class="lbl">How this helps:</span> it stitches the data you already have + the reminder channels you already have into <b>one live, actionable screen</b>. See each defaulter (amount · class · fee header · days overdue), then <b>Send reminder</b> per student, multi-select for bulk, filter by overdue bucket (0–30 / 31–60 / 60d+), or “remind all overdue”. See → chase → collect — <b>no report download, no separate scheduler.</b> It doesn't invent reminders; it makes the existing pending data actionable in one place, which is what actually lifts collections.</p>
+    <p class="lead"><span class="lbl">The problem:</span> the pending total is a <b>number</b> on the dashboard; the who-owes list is a <b>downloadable report</b>; reminders are a separate <b>scheduled broadcast</b> in Communications — the pieces exist but aren't in one place, so you can't see a live list and remind one student (or one overdue bucket) on the spot. <span class="lbl">Fix:</span> one live, actionable screen — each defaulter (amount · class · fee header · days overdue) with <b>Send reminder</b> per student, bulk multi-select, filter by overdue bucket (0–30 / 31–60 / 60d+), or “remind all overdue”. No report download, no separate scheduler.</p>
     <div class="single"><div class="box a"><div class="h">After — actionable pending list</div><img src="assets/a_worklist.png"></div></div>
     <a class="open" href="../ARC-Stats-Concepts/02-Defaulter-Worklist/Defaulter-Worklist.html" target="_blank">▶ Open prototype</a>
 
@@ -168,7 +166,9 @@
     <h2 class="sec" id="s-clone">3 · Institute Setup</h2>
     <p class="secd">Kill the yearly rebuild of classes / fee headers / financing modes / payment pages.</p>
     <h3 class="step">3.1 Clone Previous Year Setup <span class="tag new">Full flow</span></h3>
-    <p class="lead"><span class="lbl">The problem:</span> every academic year the institute rebuilds config from scratch. <span class="lbl">Fix:</span> a “Clone Setup” action on Payment Links → pick last year's classes/pages → clone into the new AY (new URLs, reset expiry, amounts flagged to review). Copies config, never student data.</p>
+    <p class="lead"><span class="lbl">What we have today:</span> every new academic year the institute rebuilds all config from scratch — classes, fee headers, financing modes, payment pages — even though last year's is almost identical.</p>
+    <p class="lead"><span class="lbl">The gap:</span> there's no "carry forward" — weeks of manual re-entry each July, with a real chance of a fee or a page being missed or mistyped.</p>
+    <p class="lead"><span class="lbl">How this helps:</span> a <b>"Clone Setup"</b> action copies last year's classes/pages into the new AY (fresh URLs, reset expiry, amounts flagged to review) — config only, never student data.</p>
     <div class="ba">
       <div class="box b"><div class="h">Before — empty Payment Links for the new year</div><img src="assets/b_paylinks.png"></div>
       <div class="box a"><div class="h">After — Clone Setup (pick classes → cloned)</div><img src="assets/a_clone.png"></div>
@@ -188,7 +188,9 @@
     <a class="open" href="../ARC-Transactions-Concepts/01-Fee-Breakup-In-Transaction/Fee-Breakup-In-Transaction.html" target="_blank">▶ Open prototype (click the eye on any row)</a>
 
     <h3 class="step" id="s-lookup">4.2 Student Payment Lookup + Receipts <span class="tag new">Concept</span></h3>
-    <p class="lead"><span class="lbl">The problem:</span> a student's payments are scattered across EMI / PG / Auto-Debit / Offline tabs; EMI shows separately; method (UPI/NACH…) isn't shown. <span class="lbl">Fix:</span> one Student ID → a unified timeline (mode + method), plus <b>single &amp; combined (year) fee receipts</b> in the exact GrayQuest format.</p>
+    <p class="lead"><span class="lbl">What we have today:</span> a student's payments are split across EMI / PG / Auto-Debit / Offline tabs, EMI shows separately, and the method (UPI / NACH…) isn't surfaced — no single view of one student.</p>
+    <p class="lead"><span class="lbl">The gap:</span> answering "what has this student paid — and give me a receipt" means hopping tabs and stitching it by hand; combined-year receipts aren't readily available.</p>
+    <p class="lead"><span class="lbl">How this helps:</span> one Student ID → a <b>unified timeline</b> (mode + method) plus <b>single &amp; combined (year) receipts</b> in the exact GrayQuest format.</p>
     <div class="single"><div class="box a"><div class="h">After — unified payment timeline + receipts</div><img src="assets/a_lookup.png"></div></div>
     <a class="open" href="../ARC-Transactions-Concepts/02-Student-Payment-Lookup/Student-Payment-Lookup.html" target="_blank">▶ Open prototype</a>
 
@@ -205,7 +207,7 @@
     <!-- ============ 6. AI ============ -->
     <h2 class="sec" id="s-bot">6 · AI Assistant</h2>
     <h3 class="step">6.1 Dashboard + Floating Assistant <span class="tag ai">AI</span></h3>
-    <p class="lead">A grounded, scoped launcher on the live dashboard: keyword-matched predefined questions → <b>answers inline</b> (fixed queries) or <b>opens the real screen prefilled</b>. Handles class-parameter parsing and the “payment link for Shivam” disambiguation. Numbers from data, never invented.</p>
+    <p class="lead"><span class="lbl">The problem:</span> the dashboard shows numbers, but acting on them means navigating to the right screen and setting it up yourself — insight and action sit apart. <span class="lbl">Fix:</span> a grounded, scoped assistant that answers fixed queries inline (numbers from data, never invented) or opens the real screen prefilled — ending in an action.</p>
     <div class="single"><div class="box n"><div class="h">Prototype — floating assistant over the dashboard</div><img src="assets/a_bot.png"></div></div>
     <a class="open" href="../ARC-Bot-Concept/ARC-Dashboard-With-Assistant.html" target="_blank">▶ Open prototype</a>
     <div class="callout"><b>Honest note:</b> a standalone insights panel would likely be ignored (accountants act, not analyse). The assistant works because it <b>ends in an action</b> — and only if it stays grounded (fixed queries), scoped (predefined set), and confirms before sending.</div>
@@ -216,11 +218,9 @@
     <a class="open" href="../ARC-Communications-Concepts/01-Create-Payment-Link/Create-Payment-Link.html?name=Riona%20Joel&id=108370&cls=Grade%205&campus=Marathahalli" target="_blank">▶ Open the example</a>
 
     <h3 class="step" id="s-assist">6.2 Financial Assistance Recommendation <span class="tag ai">AI</span></h3>
-    <p class="lead"><span class="lbl">The idea:</span> flag parents with a <b>strong on-time history who are now slipping</b> — a bounced auto-debit or a fee gone overdue — a <i>temporary cash crunch</i>, not a chronic defaulter. The institute can then privately offer an <b>EMI / split plan</b>, turning a collections signal into retention + financing. Every offer stays a human decision.</p>
-    <ul class="tight">
-      <li><b>Signal (explainable, no black box):</b> on-time payment rate + current arrears, with extra weight on a failed/bounced attempt.</li>
-      <li><b>Action:</b> one click opens an <b>editable, private offer</b> — split the outstanding into 2–4 monthly instalments — sent on the institute's behalf.</li>
-    </ul>
+    <p class="lead"><span class="lbl">What we have today:</span> a parent who stops paying is just a row in the pending report — a reliable, long-time payer looks identical to a chronic defaulter, and both get the same generic reminder.</p>
+    <p class="lead"><span class="lbl">The gap:</span> nothing separates <b>“won't pay”</b> from <b>“can't pay right now”</b> — the parent who paid on time for years and just bounced this term slips into a hard default, or a dropout, when a plan would have kept them.</p>
+    <p class="lead"><span class="lbl">How this helps:</span> it flags exactly the <b>reliable-but-now-slipping</b> parents (strong on-time history + current arrears, extra weight on a bounce) and lets the institute privately offer an <b>editable EMI / split plan in one click</b> — the decision, and the offer, stay with the institute.</p>
     <div class="single"><div class="box a"><div class="h">Prototype — reliable payers now slipping, with a one-click plan offer</div><img src="assets/a_financial_assistance.png"></div></div>
     <a class="open" href="../ARC-Assistance-Concepts/01-Financial-Assistance-Recommendation/Financial-Assistance-Recommendation.html" target="_blank">▶ Open prototype</a>
 
