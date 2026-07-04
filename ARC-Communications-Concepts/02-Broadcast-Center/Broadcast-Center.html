@@ -82,6 +82,13 @@
   .fldlbl{font-size:12.5px;font-weight:600;color:#555;margin:14px 0 7px}
   .attach{display:flex;align-items:center;gap:10px;border:1.4px dashed var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;color:#555;font-size:13px}
   .attach.has{border-style:solid;color:var(--good);border-color:#bfe6cf;background:var(--good-soft)}
+  .ttcard{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .tt-inst{background:#fafafd;text-align:center;font-weight:700;font-size:14.5px;padding:12px 10px 2px}
+  .tt-sub{background:#fafafd;text-align:center;font-size:12px;color:var(--muted);padding:0 10px 12px}
+  .tt{width:100%;border-collapse:collapse;font-size:12px}
+  .tt th{background:#4b48d6;color:#fff;padding:9px 8px;font-weight:600;text-align:left}
+  .tt td{padding:8px;border-top:1px solid #eee}
+  .tt tr.alt td{background:#f6f6fa}
 
   /* right panel */
   .panel{position:sticky;top:16px}
@@ -163,7 +170,8 @@
           <div class="tok" id="tokbar"></div>
           <textarea class="ta" id="msg" oninput="S.msg=this.value"></textarea>
           <div class="fldlbl">Attachment</div>
-          <div class="attach" id="att" onclick="S.att=S.att?null:'Fee-Circular-2026.pdf';renderAtt()"><span>📎</span> <span id="attxt">Attach a file (PDF / image)</span></div>
+          <div class="attach" id="att" onclick="S.att=S.att?null:'Exam_Timetable_Class_1_to_10.pdf';renderAtt()"><span>📎</span> <span id="attxt">Attach a file (PDF / image)</span></div>
+          <div id="ttprev"></div>
         </div>
       </div>
 
@@ -195,7 +203,19 @@ const CHANNELS=[
   {k:'sms', label:'SMS',      cls:'sms', icon:'✉',  cost:0.20},
   {k:'mail',label:'Email',    cls:'mail',icon:'@',  cost:0},
 ];
-let S={ segs:new Set(['pend']), cls:'', channels:new Set(['wa','sms']), fallback:true, msg:'', att:null, sent:false };
+let S={ segs:new Set(['all']), cls:'', channels:new Set(['wa','sms']), fallback:true,
+  msg:`The examination timetable for {student} (Class {class}) is now available. Please find the schedule below and ensure your child is well prepared for the exams. We wish all students the very best!\n\nExam Time Table\n📅 Start Date: 15 Sept 2026`,
+  att:'Exam_Timetable_Class_1_to_10.pdf', sent:false };
+const INSTITUTE='Vibgyor High, Marathahalli';
+const TIMETABLE=[
+  ['15 Sept 2026','Tuesday','English','9:00 AM – 11:00 AM'],
+  ['16 Sept 2026','Wednesday','Mathematics','9:00 AM – 11:00 AM'],
+  ['17 Sept 2026','Thursday','Science','9:00 AM – 11:00 AM'],
+  ['18 Sept 2026','Friday','Social Science','9:00 AM – 11:00 AM'],
+  ['21 Sept 2026','Monday','Hindi','9:00 AM – 11:00 AM'],
+  ['22 Sept 2026','Tuesday','Computer Science','9:00 AM – 10:30 AM'],
+  ['23 Sept 2026','Wednesday','General Knowledge / EVS','9:00 AM – 10:30 AM'],
+];
 
 const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
 const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2600);};
@@ -258,7 +278,13 @@ function renderChans(){
     <span class="i">${c.icon}</span><div><b>${c.label}</b></div><span class="tick">✓</span></div>`).join('');
 }
 function toggleChan(k){ S.channels.has(k)?S.channels.delete(k):S.channels.add(k); if(S.channels.size===0)S.channels.add('wa'); renderChans(); recompute(); }
-function renderAtt(){ const el=document.getElementById('att'); el.classList.toggle('has',!!S.att); document.getElementById('attxt').textContent=S.att?('📄 '+S.att+' · attached'):'Attach a file (PDF / image)'; }
+function renderAtt(){ const el=document.getElementById('att'); el.classList.toggle('has',!!S.att); document.getElementById('attxt').textContent=S.att?('📄 '+S.att+' · attached'):'Attach a file (PDF / image)'; renderTT(); }
+function renderTT(){ const el=document.getElementById('ttprev'); if(!el)return;
+  if(S.att!=='Exam_Timetable_Class_1_to_10.pdf'){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="ttcard"><div class="tt-inst">${INSTITUTE}</div><div class="tt-sub">Examination Time Table</div>
+    <table class="tt"><tr class="tt-h"><th>Date</th><th>Day</th><th>Subject</th><th>Time</th></tr>
+    ${TIMETABLE.map((r,i)=>`<tr class="${i%2?'alt':''}">${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
+}
 function applyTpl(v){
   const T={fee:'Dear Parent, the fee for {student} ({class}) of {pending} is due by {due}. Please pay at your earliest convenience.',
     notice:'Dear Parent, please note: {notice text}. — {institute}',
@@ -315,7 +341,7 @@ document.addEventListener('click',e=>{ if(!e.target.closest('#clsdd')){const d=d
 function initTokens(){ document.getElementById('tokbar').innerHTML=['{student}','{class}','{pending}','{due}','{pay link}','{institute}'].map(t=>`<span onclick="tok('${t}')">${t}</span>`).join(''); }
 
 document.addEventListener('DOMContentLoaded',()=>{
-  renderSegs(); renderChans(); renderAtt(); initClasses(); initTokens(); recompute();
+  document.getElementById('msg').value=S.msg; renderSegs(); renderChans(); renderAtt(); initClasses(); initTokens(); recompute();
 });
 </script>
 </body>
