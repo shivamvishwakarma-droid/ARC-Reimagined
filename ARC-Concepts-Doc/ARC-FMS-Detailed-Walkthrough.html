@@ -87,8 +87,10 @@
       <div class="kids" id="n5"><a href="#s-report">Custom report</a></div></div>
     <div class="node"><div class="par" data-tgt="n6"><span class="cr">▶</span>6 · AI Assistant</div>
       <div class="kids" id="n6"><a href="#s-bot">Assistant</a><a href="#s-paylink">↳ action example</a><a href="#s-assist">Financial Assistance</a></div></div>
-    <div class="node"><div class="par" data-tgt="n7"><span class="cr">▶</span>7 · Bug</div>
-      <div class="kids" id="n7"><a href="#s-bug">Phantom pending</a></div></div>
+    <div class="node"><div class="par" data-tgt="n7"><span class="cr">▶</span>7 · Communications</div>
+      <div class="kids" id="n7"><a href="#s-broadcast">Broadcast Center</a></div></div>
+    <div class="node"><div class="par" data-tgt="n8"><span class="cr">▶</span>8 · Bug</div>
+      <div class="kids" id="n8"><a href="#s-bug">Phantom pending</a></div></div>
     <div class="home"><a href="#cover">↑ Back to top</a></div>
   </nav>
 
@@ -224,8 +226,16 @@
     <div class="single"><div class="box a"><div class="h">Prototype — reliable payers now slipping, with a one-click plan offer</div><img src="assets/a_financial_assistance.png"></div></div>
     <a class="open" href="../ARC-Assistance-Concepts/01-Financial-Assistance-Recommendation/Financial-Assistance-Recommendation.html" target="_blank">▶ Open prototype</a>
 
-    <!-- ============ 7. BUG ============ -->
-    <h2 class="sec" id="s-bug">7 · Verified Data Bug</h2>
+    <!-- ============ 7. COMMUNICATIONS ============ -->
+    <h2 class="sec" id="s-comms">7 · Communications</h2>
+    <p class="secd">Reach parents at scale — the right segment, on the right channel, without dropping anyone.</p>
+    <h3 class="step" id="s-broadcast">7.1 Broadcast Center <span class="tag new">Concept</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> notices &amp; reminders go out as a scheduled broadcast to “All students” from a separate screen — you can't finely segment the audience, can't see who's actually reachable, and parents with no phone/email quietly fall through. <span class="lbl">Fix:</span> a Broadcast Center (from the Master dashboard / Communications) — pick a segment (All · Pending Fee · EMI · PG · Auto-Debit, with live counts across ~2,500 parents) + class, send on WhatsApp / SMS / Email with <b>smart fallback</b>, compose with merge tokens &amp; an attachment, and a <b>reachability panel</b> that surfaces every unreachable parent — including <b>Student-ID-only</b> ones — with a page-notice + QR fallback so no one is dropped.</p>
+    <div class="single"><div class="box a"><div class="h">Prototype — segmented broadcast with a live reachability panel</div><img src="assets/a_broadcast.png"></div></div>
+    <a class="open" href="../ARC-Communications-Concepts/02-Broadcast-Center/Broadcast-Center.html" target="_blank">▶ Open prototype</a>
+
+    <!-- ============ 8. BUG ============ -->
+    <h2 class="sec" id="s-bug">8 · Verified Data Bug</h2>
     <p class="secd">Not a mockup — confirmed against the production database.</p>
     <h3 class="step">Fee Header Report — phantom pending = late fine <span class="tag bug">Bug</span></h3>
     <p class="lead">The “Fee Header Due Amount” sheet computes <b>Paid Amount from the base fee (excludes the collected late fine)</b>, while Total Payable includes the fine — so every student who paid <i>with</i> a fine shows a <b>false Pending = the fine</b>.</p>

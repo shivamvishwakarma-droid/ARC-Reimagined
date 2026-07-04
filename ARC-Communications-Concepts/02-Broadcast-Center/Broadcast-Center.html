@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>ARC-FMS · Broadcast Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26262e; --muted:#8a8f9c; --line:#ececf3; --page:#f7f7fb;
+    --indigo:#3b3f9e; --indigo-soft:#eef0ff; --cream:#faf7f0;
+    --good:#1a9d5a; --good-soft:#e7f7ee; --bad:#d1425a; --bad-soft:#fdeaea; --warn:#d9822b; --warn-soft:#fdf3df;
+    --wa:#25a366; --sms:#3b82f6; --mail:#7c5cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--page);color:var(--ink);font-size:14px}
+  .app{display:flex;min-height:100vh}
+  /* sidebar (ARC institute) */
+  .side{width:246px;flex:none;background:#f3f0fb;padding:16px 14px;display:flex;flex-direction:column}
+  .inst{display:flex;align-items:center;gap:11px;background:#fff;border-radius:14px;padding:11px 13px;box-shadow:0 2px 8px rgba(60,40,90,.06);margin-bottom:16px}
+  .inst .ic{width:30px;height:30px;flex:none;display:grid;place-items:center;color:#16181d}
+  .inst .nm{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:#16181d;line-height:1.25}
+  .inst .cx{color:#8a8a97;font-size:16px}
+  .mm{font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:#9a9aa8;font-weight:600;margin:6px 10px 10px}
+  .nav{position:relative;display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:#3d3d46;margin-bottom:3px}
+  .nav .ic{width:20px;height:20px;flex:none;display:grid;place-items:center;color:#7a7a86}
+  .nav .chev{margin-left:auto;font-size:11px;color:#9a9aa8}
+  .nav:hover{background:rgba(255,255,255,.55)}
+  .nav.on{color:#16181d;font-weight:700}.nav.on .ic{color:#16181d}
+  .nav.on::before{content:'';position:absolute;left:-14px;top:6px;bottom:6px;width:4px;border-radius:0 3px 3px 0;background:#2f5bff}
+  .side-foot{margin-top:auto;padding-top:12px}
+  .master{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border-radius:14px;padding:13px;font-weight:600;font-size:13.5px;color:#2b2f3a;box-shadow:0 2px 8px rgba(60,40,90,.06);cursor:pointer}
+
+  .main{flex:1;min-width:0;padding:22px 28px 60px;max-width:1180px}
+  .top{display:flex;align-items:center;margin-bottom:6px}
+  .hello{font-size:24px;font-weight:600}
+  .userpill{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500}
+  .userpill .av{width:20px;height:20px;border-radius:50%;background:var(--indigo-soft);display:grid;place-items:center;font-size:11px;color:var(--indigo)}
+  .h1{font-size:19px;font-weight:700;display:flex;align-items:center;gap:9px}
+  .aitag{font-size:9px;background:#efe9fb;color:#5b3df5;border-radius:5px;padding:3px 7px;letter-spacing:.4px;font-weight:700}
+  .sub{font-size:13px;color:var(--muted);margin:2px 0 18px}
+
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+  .sec{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .sec .n{width:20px;height:20px;border-radius:6px;background:var(--indigo-soft);color:var(--indigo);display:grid;place-items:center;font-size:11px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-size:13px;border:1.4px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;background:#fff;font-weight:500;display:flex;align-items:center;gap:7px}
+  .chip .c{font-size:11px;color:var(--muted)}
+  .chip.on{border-color:var(--indigo);background:var(--indigo-soft);color:var(--indigo);font-weight:600}
+  .chip.on .c{color:var(--indigo)}
+  .row{display:flex;gap:12px;align-items:center;margin-top:12px}
+  .row label{font-size:13px;color:#555;font-weight:500}
+  .sel{padding:9px 12px;border:1.4px solid var(--line);border-radius:10px;font-family:inherit;font-size:13.5px;background:#fff}
+  /* custom themed dropdown */
+  .cdd{position:relative}
+  .cbtn{border:1.4px solid var(--line);border-radius:10px;padding:9px 32px 9px 13px;font-size:13.5px;background:#fff;cursor:pointer;position:relative;min-width:150px;font-weight:500}
+  .cbtn::after{content:'⌄';position:absolute;right:13px;top:7px;color:var(--muted)}
+  .cdd.open .cbtn{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-soft)}
+  .cpanel{position:absolute;top:44px;left:0;min-width:190px;max-height:300px;overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(40,30,80,.16);z-index:30;display:none;padding:6px}
+  .cdd.open .cpanel{display:block}
+  .copt{padding:9px 12px;border-radius:8px;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:8px;color:#3a3a46}
+  .copt:hover{background:#f4f4fb}
+  .copt.on{color:var(--indigo);font-weight:600;background:var(--indigo-soft)}
+  .copt .ck{width:12px;color:var(--indigo)}
+  .chan{display:flex;gap:10px;flex-wrap:wrap}
+  .chanbtn{flex:1;min-width:130px;border:1.6px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:11px;background:#fff}
+  .chanbtn .i{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:#fff;font-size:15px;flex:none}
+  .chanbtn.wa .i{background:var(--wa)} .chanbtn.sms .i{background:var(--sms)} .chanbtn.mail .i{background:var(--mail)}
+  .chanbtn b{font-size:14px} .chanbtn small{display:block;color:var(--muted);font-size:11.5px}
+  .chanbtn.on{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-soft)}
+  .chanbtn .tick{margin-left:auto;color:var(--indigo);font-weight:700;opacity:0}
+  .chanbtn.on .tick{opacity:1}
+  .tglrow{display:flex;align-items:center;gap:11px;font-size:13.5px;font-weight:500;margin-top:14px}
+  .tgl{width:42px;height:24px;border-radius:99px;background:#d7d7e2;position:relative;cursor:pointer;flex:none;transition:.15s}
+  .tgl.on{background:var(--indigo)}.tgl::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}.tgl.on::after{left:21px}
+  .ta{width:100%;min-height:110px;border:1.4px solid var(--line);border-radius:12px;padding:13px 15px;font-family:inherit;font-size:13.5px;resize:vertical;outline:none;line-height:1.6}
+  .ta:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-soft)}
+  .tok{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px}
+  .tok span{font-size:11.5px;background:#f2f0fb;color:#5b3df5;border-radius:6px;padding:4px 9px;cursor:pointer;font-weight:600}
+  .fldlbl{font-size:12.5px;font-weight:600;color:#555;margin:14px 0 7px}
+  .attach{display:flex;align-items:center;gap:10px;border:1.4px dashed var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;color:#555;font-size:13px}
+  .attach.has{border-style:solid;color:var(--good);border-color:#bfe6cf;background:var(--good-soft)}
+
+  /* right panel */
+  .panel{position:sticky;top:16px}
+  .rc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+  .rc .big{font-size:30px;font-weight:700}
+  .rc .lab{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px}
+  .reachbar{height:10px;border-radius:99px;background:var(--bad-soft);overflow:hidden;margin:12px 0 8px;display:flex}
+  .reachbar .r{background:var(--good)} .reachbar .u{background:var(--warn)}
+  .legend{display:flex;gap:14px;font-size:12px;color:#555}
+  .legend b{font-weight:600}.dotg{color:var(--good)}.dotw{color:var(--warn)}.dotr{color:var(--bad)}
+  .chanline{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-top:1px solid #f2f2f7}
+  .chanline .k{display:flex;align-items:center;gap:8px} .chanline .badge{width:9px;height:9px;border-radius:50%}
+  .miss{background:var(--warn-soft);border:1px solid #f2dca8;border-radius:12px;padding:14px 15px;margin-bottom:14px}
+  .miss .t{font-weight:700;color:#8a5a1c;font-size:13.5px;display:flex;align-items:center;gap:8px}
+  .miss p{font-size:12.5px;color:#7a5a2a;margin:8px 0;line-height:1.55}
+  .miss .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .miss .btn2{font-size:12px;font-weight:600;border:1px solid #e2c887;background:#fff;color:#8a5a1c;border-radius:8px;padding:7px 11px;cursor:pointer}
+  .qr{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:12px}
+  .qr .q{width:46px;height:46px;flex:none;border-radius:8px;background:conic-gradient(#111 0 25%,#fff 0 50%,#111 0 75%,#fff 0);background-size:12px 12px;border:3px solid #111}
+  .costline{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;padding-top:8px}
+  .send{width:100%;margin-top:14px;background:var(--indigo);color:#fff;border:none;border-radius:12px;padding:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  .send:disabled{background:#c3c6e4;cursor:not-allowed}
+  .sub2{font-size:11.5px;color:var(--muted);text-align:center;margin-top:8px}
+  .sent{background:var(--good-soft);border:1px solid #bfe6cf;border-radius:12px;padding:16px;text-align:center}
+  .sent .k{font-weight:700;color:var(--good);font-size:15px}
+  .sent .stats{display:flex;justify-content:space-around;margin-top:12px}
+  .sent .stats b{display:block;font-size:19px} .sent .stats span{font-size:11px;color:#555}
+  .toast{position:fixed;bottom:22px;left:52%;transform:translateX(-50%) translateY(20px);background:#26262e;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;opacity:0;transition:.25s;z-index:40}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="inst"><span class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5H3z"/><path d="M5 8v9M9.5 8v9M14.5 8v9M19 8v9M3 20h18"/></svg></span><span class="nm">Vibgyor High, Marathahalli</span><span class="cx">›</span></div>
+    <div class="mm">Main Menu</div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="3" y="3" width="7.5" height="18" rx="1.6"/><rect x="12.5" y="3" width="8.5" height="7.5" rx="1.6"/><rect x="12.5" y="12" width="8.5" height="9" rx="1.6"/></svg></span> Dashboard</div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/></svg></span> Institute Management <span class="chev">▾</span></div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0113 0"/></svg></span> Student Management</div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10.5h18" stroke-linecap="round"/></svg></span> Transactions <span class="chev">▾</span></div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.6"/><path d="M8.5 8.5a5 5 0 000 7M15.5 8.5a5 5 0 010 7M6 6.2a8.5 8.5 0 000 11.6M18 6.2a8.5 8.5 0 010 11.6"/></svg></span> Communications <span class="chev">▾</span></div>
+    <div class="nav on"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h3l5 4V6L7 10H4a1 1 0 00-1 1z"/><path d="M16.5 9a4.5 4.5 0 010 6"/><path d="M19.5 6a8 8 0 010 12"/></svg></span> Broadcast Center</div>
+    <div class="nav"><span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg></span> Reports</div>
+    <div class="side-foot"><div class="master">‹ View Master Dashboard</div></div>
+  </aside>
+
+  <main class="main">
+    <div class="top"><div class="hello">Broadcast Center</div><div class="userpill"><span class="av">V</span> Vibgyor Bangalore M</div></div>
+    <div class="h1">Notice &amp; Reminder Broadcast <span class="aitag">NEW</span></div>
+    <div class="sub">Send a notice, reminder or attachment to many parents at once — by segment, on WhatsApp / SMS / Email. Every fee message can carry a pay link.</div>
+
+    <div class="grid">
+      <div>
+        <!-- 1 audience -->
+        <div class="card">
+          <div class="sec"><span class="n">1</span> Audience</div>
+          <div class="chips" id="segs"></div>
+          <div class="row"><label>Class</label>
+            <div class="cdd" id="clsdd"><div class="cbtn" id="clsbtn" onclick="toggleCls()">All classes</div><div class="cpanel" id="clspanel"></div></div>
+            <span style="color:var(--muted);font-size:12.5px">Combine a segment with a class to narrow it.</span></div>
+        </div>
+        <!-- 2 channels -->
+        <div class="card">
+          <div class="sec"><span class="n">2</span> Channels</div>
+          <div class="chan" id="chans"></div>
+          <div class="tglrow"><span class="tgl on" id="fbTgl" onclick="S.fallback=!S.fallback;this.classList.toggle('on',S.fallback);recompute()"></span>
+            Smart fallback — if a parent isn't on WhatsApp, try SMS, then Email (one message per parent, whichever channel reaches them).</div>
+        </div>
+        <!-- 3 message -->
+        <div class="card">
+          <div class="sec"><span class="n">3</span> Message</div>
+          <div class="row" style="margin-top:0"><label>Template</label>
+            <select class="sel" id="tpl" onchange="applyTpl(this.value)">
+              <option value="">— Start blank —</option>
+              <option value="fee">Fee reminder</option>
+              <option value="notice">General notice</option>
+              <option value="emi">EMI available</option>
+            </select></div>
+          <div class="tok" id="tokbar"></div>
+          <textarea class="ta" id="msg" oninput="S.msg=this.value"></textarea>
+          <div class="fldlbl">Attachment</div>
+          <div class="attach" id="att" onclick="S.att=S.att?null:'Fee-Circular-2026.pdf';renderAtt()"><span>📎</span> <span id="attxt">Attach a file (PDF / image)</span></div>
+        </div>
+      </div>
+
+      <!-- right: reach & send -->
+      <div class="panel">
+        <div class="rc" id="reach"></div>
+        <div id="missWrap"></div>
+        <div class="rc" id="sendbox"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* Broadcast Center — segmented notice/reminder to parents on WhatsApp/SMS/Email.
+   Reachability is first-class: we compute who's reachable per channel, fall back across
+   channels, and NEVER silently drop — parents with no contact are surfaced with an
+   exportable list + a shareable link/QR the institute can hand out. Data from ARCDB. */
+const SEGMENTS=[
+  {k:'all',   label:'All Students'},
+  {k:'pend',  label:'Pending Fee'},
+  {k:'emi',   label:'EMI opted'},
+  {k:'pg',    label:'PG opted'},
+  {k:'ad',    label:'Auto-Debit opted'},
+];
+const CHANNELS=[
+  {k:'wa',  label:'WhatsApp', cls:'wa',  icon:'🟢', cost:0.75},
+  {k:'sms', label:'SMS',      cls:'sms', icon:'✉',  cost:0.20},
+  {k:'mail',label:'Email',    cls:'mail',icon:'@',  cost:0},
+];
+let S={ segs:new Set(['pend']), cls:'', channels:new Set(['wa','sms']), fallback:true, msg:'', att:null, sent:false };
+
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2600);};
+/* ---- 2,500 dummy parents (deterministic seed) — the broadcast audience ----
+   Each carries its segments (pending / emi / pg / ad) and a contact profile
+   (mobile / whatsapp / email), some with no contact at all (ID-only). */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const CLASSES2=['Nursery','LKG','UKG','Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'];
+const POP=(function(){const r=mulberry32(20260704),out=[];
+  for(let i=0;i<2500;i++){
+    const cls=CLASSES2[Math.floor(r()*CLASSES2.length)];
+    const pend=r()<0.30, emi=r()<0.22, pg=r()<0.58, ad=r()<0.27;
+    const hasMobile=r()<0.90, hasWA=hasMobile&&r()<0.80, hasEmail=r()<0.68;
+    out.push({id:'S'+(100000+i),cls,pend,emi,pg,ad,hasMobile,hasWA,hasEmail});
+  } return out;})();
+
+function segMembers(){
+  let set=(S.segs.has('all')||S.segs.size===0)?POP.slice()
+    :POP.filter(s=>(S.segs.has('pend')&&s.pend)||(S.segs.has('emi')&&s.emi)||(S.segs.has('pg')&&s.pg)||(S.segs.has('ad')&&s.ad));
+  if(S.cls) set=set.filter(s=>s.cls===S.cls);
+  return set;
+}
+function segCount(k){
+  if(k==='all') return POP.length;
+  return POP.filter(s=> k==='pend'?s.pend : k==='emi'?s.emi : k==='pg'?s.pg : s.ad).length;
+}
+
+/* ---- reachability against the selected channels ---- */
+function analyse(){
+  const members=segMembers();
+  const chSel=[...S.channels];
+  const perCh={wa:0,sms:0,mail:0};
+  let reached=0, noContact=0, otherChannel=0, cost=0;
+  members.forEach(s=>{
+    const avail={wa:s.hasWA, sms:s.hasMobile, mail:s.hasEmail};
+    CHANNELS.forEach(c=>{ if(avail[c.k]) perCh[c.k]++; });
+    // will we reach them on a SELECTED channel?
+    const order=['wa','sms','mail'].filter(c=>chSel.includes(c));
+    const via=order.find(c=>avail[c]);
+    if(via){ reached++; cost+=CHANNELS.find(c=>c.k===via).cost; }
+    else {
+      if(!s.hasMobile && !s.hasEmail) noContact++;         // truly unreachable (ID only)
+      else otherChannel++;                                  // has contact, but not on a selected channel
+    }
+  });
+  return {total:members.length, reached, noContact, otherChannel, perCh, cost, members};
+}
+
+/* ---- renders ---- */
+function renderSegs(){
+  document.getElementById('segs').innerHTML=SEGMENTS.map(s=>`<span class="chip ${S.segs.has(s.k)?'on':''}" onclick="toggleSeg('${s.k}')">${s.label} <span class="c">${segCount(s.k)}</span></span>`).join('');
+}
+function toggleSeg(k){
+  if(k==='all'){ S.segs=new Set(['all']); }
+  else { S.segs.delete('all'); S.segs.has(k)?S.segs.delete(k):S.segs.add(k); if(S.segs.size===0)S.segs.add('all'); }
+  renderSegs(); recompute();
+}
+function renderChans(){
+  document.getElementById('chans').innerHTML=CHANNELS.map(c=>`<div class="chanbtn ${c.cls} ${S.channels.has(c.k)?'on':''}" onclick="toggleChan('${c.k}')">
+    <span class="i">${c.icon}</span><div><b>${c.label}</b></div><span class="tick">✓</span></div>`).join('');
+}
+function toggleChan(k){ S.channels.has(k)?S.channels.delete(k):S.channels.add(k); if(S.channels.size===0)S.channels.add('wa'); renderChans(); recompute(); }
+function renderAtt(){ const el=document.getElementById('att'); el.classList.toggle('has',!!S.att); document.getElementById('attxt').textContent=S.att?('📄 '+S.att+' · attached'):'Attach a file (PDF / image)'; }
+function applyTpl(v){
+  const T={fee:'Dear Parent, the fee for {student} ({class}) of {pending} is due by {due}. Please pay at your earliest convenience.',
+    notice:'Dear Parent, please note: {notice text}. — {institute}',
+    emi:'Dear Parent, you can now split the pending fee of {pending} for {student} into easy monthly instalments. Tap to apply.'};
+  if(T[v]){ S.msg=T[v]; document.getElementById('msg').value=T[v]; }
+}
+function tok(t){ const el=document.getElementById('msg'); el.value+=' '+t; S.msg=el.value; el.focus(); }
+
+function recompute(){
+  const a=analyse();
+  const rPct=a.total?Math.round(a.reached/a.total*100):0;
+  const uPct=100-rPct;
+  document.getElementById('reach').innerHTML=`
+    <div class="lab">RECIPIENTS SELECTED</div><div class="big">${a.total}</div>
+    <div class="reachbar"><div class="r" style="width:${rPct}%"></div><div class="u" style="width:${uPct}%"></div></div>
+    <div class="legend"><span><b class="dotg">●</b> Will reach <b>${a.reached}</b></span><span><b class="dotw">●</b> Won't reach <b>${a.total-a.reached}</b></span></div>
+    <div style="margin-top:12px">
+      ${CHANNELS.map(c=>`<div class="chanline"><span class="k"><span class="badge" style="background:var(--${c.k==='mail'?'mail':c.k})"></span>${c.label} on file</span><b>${a.perCh[c.k]}</b></div>`).join('')}
+    </div>`;
+  // missing-contact handling
+  const miss=document.getElementById('missWrap');
+  if(a.total-a.reached>0){
+    miss.innerHTML=`<div class="miss">
+      <div class="t">⚠ ${a.total-a.reached} parent(s) won't be reached</div>
+      ${a.otherChannel>0?`<p><b>${a.otherChannel}</b> have contact details but not on a <b>selected</b> channel — enable another channel above to reach them.</p>`:''}
+      ${a.noContact>0?`<p><b>${a.noContact}</b> have <b>no phone or email on file</b> (only a Student ID) — they can't be messaged directly. Reach them where they already go:</p>
+        <div class="acts">
+          <span class="btn2" onclick="toast('Contact-capture prompt enabled on ${a.noContact} pages')">Collect contact on next visit</span>
+          <span class="btn2" onclick="toast('Downloaded ${a.noContact} parents for front-office follow-up')">⭳ Download for front office</span>
+        </div>
+        <div class="qr"><div class="q"></div><div><b>Shareable link / QR</b><br>rapid.grayquest.com/notice/vib-mth-2026 — print &amp; hand out, or put on the board.</div></div>`:''}
+    </div>`;
+  } else miss.innerHTML='';
+  // send box
+  const canSend=a.reached>0 && S.msg.trim() && !S.sent;
+  document.getElementById('sendbox').innerHTML = S.sent
+    ? `<div class="sent"><div class="k">✓ Notice Sent Successfully</div>
+        <div class="sub2" style="margin-top:10px"><a href="#" onclick="S.sent=false;recompute();return false">Send another →</a></div></div>`
+    : `<button class="send" ${canSend?'':'disabled'} onclick="doSend(${a.reached})">Send to ${a.reached} parent${a.reached===1?'':'s'}</button>
+       <div class="sub2">Utility templates only · opt-outs honoured · test-send &amp; confirm before blast</div>`;
+}
+function doSend(n){ S.sent=true; recompute(); toast('Broadcast sent to '+n+' parents'); }
+
+/* init */
+function renderCls(){
+  document.getElementById('clspanel').innerHTML=['',...CLASSES2].map(o=>{const on=S.cls===o;
+    return `<div class="copt ${on?'on':''}" onclick="pickCls('${o}')"><span class="ck">${on?'✓':''}</span>${o||'All classes'}</div>`;}).join('');
+  document.getElementById('clsbtn').textContent=S.cls||'All classes';
+}
+function toggleCls(){ document.getElementById('clsdd').classList.toggle('open'); }
+function pickCls(v){ S.cls=v; document.getElementById('clsdd').classList.remove('open'); renderCls(); recompute(); }
+function initClasses(){ renderCls(); }
+document.addEventListener('click',e=>{ if(!e.target.closest('#clsdd')){const d=document.getElementById('clsdd'); if(d) d.classList.remove('open');} });
+function initTokens(){ document.getElementById('tokbar').innerHTML=['{student}','{class}','{pending}','{due}','{pay link}','{institute}'].map(t=>`<span onclick="tok('${t}')">${t}</span>`).join(''); }
+
+document.addEventListener('DOMContentLoaded',()=>{
+  renderSegs(); renderChans(); renderAtt(); initClasses(); initTokens(); recompute();
+});
+</script>
+</body>
+</html>
