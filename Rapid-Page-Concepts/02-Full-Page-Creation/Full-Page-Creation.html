@@ -1027,7 +1027,7 @@ function publish(){
     ${isERP?`<div class="pub-row" style="border-color:var(--purple);background:var(--purple-soft)">
         <div class="pr-t">🔗 Integration credentials</div>
         <div class="hint" style="margin:6px 0 12px;color:#5a3ed8">Client ID, API Key & Secret for your ERP team to integrate the GrayQuest SDK. Download and share securely — they aren't shown here.</div>
-        <button class="dlbtn" onclick="downloadCreds()">⬇ Download credentials (.json)</button>
+        <button class="dlbtn" onclick="downloadCreds()">⬇ Download ERP credentials sheet (.csv)</button>
         <div class="pub-row" style="margin:12px 0 0;background:#fff"><div class="pr-t" style="font-size:14px">Webhook connected</div><div class="pr-u">${esc(S.webhookUrl)}</div><div class="hint" style="margin-top:6px">Events: ${esc(S.events.join(', '))}</div></div>
       </div>`:`<div class="hint" style="margin:6px 2px 0">FMS pages — just share the links with parents. No integration credentials needed.</div>`}
     <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:18px">
@@ -1067,13 +1067,14 @@ function downloadMasterJson(){
   toast('content_blocks JSON downloaded');
 }
 function downloadCreds(){
-  const payload={institute:S.institute,location:S.location,board:S.board,type:S.pageType,
-    webhook:{url:S.webhookUrl,events:S.events},
-    pages:PUBLISHED.map(r=>({page:r.label,url:r.url,client_id:r.client_id,api_key:r.api_key,secret:r.secret}))};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const q=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const header=['Institute','Board','Page','Page URL','Client ID','Client Secret','API Key','Webhook URL'];
+  const rows=PUBLISHED.map(r=>[S.institute,S.board,r.label,r.url,r.client_id,r.secret,r.api_key,S.webhookUrl]);
+  const csv=[header,...rows].map(row=>row.map(q).join(',')).join('\r\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download=slugify(S.institute+' '+S.location)+'-credentials.json';a.click();
-  toast('Credentials downloaded — share with the ERP team');
+  a.download='GQ-'+slugify(S.institute+' '+S.location)+'-credentials.csv';a.click();
+  toast('ERP credentials sheet downloaded — share with the ERP team');
 }
 
 renderWizard(); paintLeft();
