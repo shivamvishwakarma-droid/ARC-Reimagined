@@ -88,7 +88,7 @@
     <div class="node"><div class="par" data-tgt="n6"><span class="cr">▶</span>6 · AI Assistant</div>
       <div class="kids" id="n6"><a href="#s-bot">Assistant</a><a href="#s-paylink">↳ action example</a><a href="#s-assist">Financial Assistance</a></div></div>
     <div class="node"><div class="par" data-tgt="n7"><span class="cr">▶</span>7 · Communications</div>
-      <div class="kids" id="n7"><a href="#s-broadcast">Broadcast Center</a></div></div>
+      <div class="kids" id="n7"><a href="#s-broadcast">Broadcast Center</a><a href="#s-rapidpage">Rapid Payment Pages</a></div></div>
     <div class="node"><div class="par" data-tgt="n8"><span class="cr">▶</span>8 · Bug</div>
       <div class="kids" id="n8"><a href="#s-bug">Phantom pending</a></div></div>
     <div class="home"><a href="#cover">↑ Back to top</a></div>
@@ -233,6 +233,17 @@
     <p class="lead"><span class="lbl">The problem:</span> notices &amp; reminders go out as a scheduled broadcast to “All students” from a separate screen — you can't finely segment the audience, can't see who's actually reachable, and parents with no phone/email quietly fall through. <span class="lbl">Fix:</span> a Broadcast Center (from the Master dashboard / Communications) — pick a segment (All · Pending Fee · EMI · PG · Auto-Debit, with live counts across ~2,500 parents) + class, send on WhatsApp / SMS / Email with <b>smart fallback</b>, compose with merge tokens &amp; an attachment, and a <b>reachability panel</b> that surfaces every unreachable parent — including <b>Student-ID-only</b> ones — with a page-notice + QR fallback so no one is dropped.</p>
     <div class="single"><div class="box a"><div class="h">Prototype — segmented broadcast with a live reachability panel</div><img src="ARC-Concepts-Doc/assets/a_broadcast.png"></div></div>
     <a class="open" href="ARC-Communications-Concepts/02-Broadcast-Center/Broadcast-Center.html" target="_blank">▶ Open prototype</a>
+
+    <h3 class="step" id="s-rapidpage">7.2 Rapid Payment Pages — self-serve page creation <span class="tag new">Concept</span></h3>
+    <p class="lead"><span class="lbl">The problem:</span> creating a GrayQuest payment page today means hand-writing INSERTs across ~9 config tables in DBeaver — generating UUIDs, crafting each SDK / fee-group JSON block by hand, one page at a time. Slow, error-prone, engineer-only. <span class="lbl">Fix:</span> a plain-English, split-screen studio where the Configuration team builds pages by clicking — the <b>live payment page (exactly as a parent sees it)</b> renders on the left as the wizard drives it on the right, and every choice quietly maps to the right table underneath.</p>
+    <ul class="tight">
+      <li><b>Three page types:</b> <b>FMS</b> (per class, batch across Class 1–12), <b>ERP</b> (institute-wide, webhook + downloadable integration credentials), and <b>Master link</b> (a cascading dropdown that routes each student to the right page).</li>
+      <li><b>Fees</b> fixed or parent-entered; <b>payment options</b> (EMI · Card &amp; UPI · Auto-Debit) built by ticking fee headers — the fee-group expression is generated silently; form, look, expiry &amp; <b>fee receipt</b> (single or per-class).</li>
+      <li><b>Multiple pages per class</b> (e.g. an EMI-only + a PG-only page) sharing one credential, with every slug editable — and a one-click <b>“Create Master link for these links”</b>.</li>
+      <li><b>Master link from Excel:</b> upload a sheet (columns → link) and it builds the dependent-dropdown JSON — <b>byte-identical</b> to the team's existing Python script.</li>
+    </ul>
+    <a class="open" href="Rapid-Page-Concepts/02-Full-Page-Creation/Full-Page-Creation.html" target="_blank">▶ Open prototype — end-to-end studio</a>
+    <a class="open" href="Rapid-Page-Concepts/01-Rapid-Page-Creation/Rapid-Page-Creation.html" target="_blank">▶ Earlier “Create Payment forms” mock</a>
 
     <!-- ============ 8. BUG ============ -->
     <h2 class="sec" id="s-bug">8 · Verified Data Bug</h2>
