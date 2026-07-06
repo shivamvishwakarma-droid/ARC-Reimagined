@@ -863,10 +863,10 @@ function sReview(){
     <div style="font-size:16px;font-weight:700;margin:20px 0 4px">Links & slugs</div>
     <div class="wz-desc" style="margin-bottom:10px">Edit any slug before publishing — each can differ.</div>
     <div class="fh-tbl"><div class="fh-r h" style="grid-template-columns:1fr 1.4fr"><div>Page</div><div>Slug</div></div>${slugRows}</div>
-    <div class="cta-master">
+    ${S.pageType==='FMS'?`<div class="cta-master">
       <div class="t">🧭 Want to create a <b>Master link</b> for the ${nLinks} link${nLinks===1?'':'s'} above?<div class="hint" style="margin-top:4px;color:#a1873a">One landing URL with a dropdown that routes students to the right page.</div></div>
       <button onclick="createMasterFromLinks()">Create Master link →</button>
-    </div>`;}
+    </div>`:''}`;}
 function createMasterFromLinks(){
   const multiPage = S.pages.length>1;
   if(S.pageType==='FMS'){
