@@ -138,7 +138,15 @@
 
   /* pages layer */
   .pagebar{display:flex;align-items:center;gap:10px;background:var(--blue-soft);border:1px solid #d7e0ff;border-radius:11px;padding:10px 14px;margin-bottom:18px;font-size:13px;font-weight:600;color:var(--blueink)}
-  .pagebar select{flex:1;padding:8px 10px;border:1px solid #cdd8ff;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;color:var(--blueink);background:#fff}
+  .pgsel{position:relative;min-width:180px}
+  .pgsel-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;border:1px solid #cdd8ff;border-radius:9px;background:#fff;color:var(--blueink);font-weight:600;font-size:13px;cursor:pointer}
+  .pgsel-btn .cr{font-size:10px;transition:transform .15s}
+  .pgsel.open .pgsel-btn .cr{transform:rotate(180deg)}
+  .pgsel-panel{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(40,30,80,.16);overflow:hidden;z-index:30;display:none}
+  .pgsel.open .pgsel-panel{display:block}
+  .pgsel-opt{padding:10px 13px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between}
+  .pgsel-opt:hover{background:var(--soft)}
+  .pgsel-opt.on{color:var(--blue);font-weight:600;background:var(--blue-soft)}
   .pagerow{border:1.5px solid #e6e6ef;border-radius:14px;padding:14px 16px;margin-bottom:12px}
   .pagerow.active{border-color:var(--blue);background:var(--blue-soft)}
   .pagerow .pr-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -275,7 +283,14 @@
    One setup can spawn several pages (e.g. an EMI-only page and a PG-only page). */
 
 const GRADES=['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'];
+let CLASS_OPTS=[...GRADES];   // mutable — user can add new classes
 const BOARDS=['CBSE','ICSE','State Board','IB','IGCSE'];
+// Product ID = institute_id → auto-fills GILE (demo lookup; production queries the config DB)
+const PRODUCTS={
+  '90490':{group:'G R Damodaran',institute:'GRD Academy of Management',location:'Coimbatore',board:'Management'},
+  '75559':{group:'Shrewsbury',institute:'Shrewsbury International',location:'Bhopal',board:'IGCSE'},
+  '10234':{group:'Delhi Public School',institute:'DPS',location:'Faridabad',board:'CBSE'},
+};
 let AYS=['2025-26','2026-27','2024-25'];
 const EMI_PLANS=[
   {id:128129,name:'10-Month Zero-Cost EMI',active:true},
@@ -322,6 +337,7 @@ let S={
     ]),
   ],
   activePage:0, previewPage:'details', rev:'', previewOpen:false,
+  productId:'', classSearch:'', pageMenuOpen:false,
   slugOverrides:{},
   receipt:{ mode:'single', files:{} },   // mode: single | perClass ; files: {__all__|className : filename}
   master:{
@@ -530,9 +546,12 @@ function cardHTML(pg,c,ci){
 function opts(arr,val){return arr.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('');}
 function pageBar(){
   if(S.pages.length<2) return '';
-  return `<div class="pagebar">Editing page:
-    <select onchange="S.activePage=+this.value;S.rev='';paintLeft();renderWizard()">${S.pages.map((p,i)=>`<option value="${i}" ${i===S.activePage?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
-    (${S.activePage+1} of ${S.pages.length})</div>`;
+  return `<div class="pagebar"><span>Editing page:</span>
+    <div class="pgsel ${S.pageMenuOpen?'open':''}">
+      <div class="pgsel-btn" onclick="S.pageMenuOpen=!S.pageMenuOpen;renderWizard()">${esc(P().name)}<span class="cr">▾</span></div>
+      <div class="pgsel-panel">${S.pages.map((p,i)=>`<div class="pgsel-opt ${i===S.activePage?'on':''}" onclick="S.activePage=${i};S.pageMenuOpen=false;S.rev='';paintLeft();renderWizard()">${esc(p.name)}${i===S.activePage?' ✓':''}</div>`).join('')}</div>
+    </div>
+    <span style="margin-left:auto;white-space:nowrap">(${S.activePage+1} of ${S.pages.length})</span></div>`;
 }
 function renderWizard(){
   document.getElementById('wzsub').textContent = S.pageType==='ERP'?'ERP page · GILE level · webhook':'FMS page · per class';
@@ -566,6 +585,8 @@ function sInst(){
     return `
     <div class="wz-h">Which institute is this master for?</div>
     <div class="wz-desc">A master link routes students to existing payment pages. It sits at <b>GILE</b> or <b>GILE-AY</b> level (not tied to any ERP).</div>
+    <div class="fld"><label>Product ID <span class="hint" style="display:inline">(= institute_id — auto-fills the GILE)</span></label>
+      <div style="display:flex;gap:10px"><input class="in" value="${esc(S.productId)}" placeholder="e.g. 90490" oninput="S.productId=this.value"><button class="btn o" style="white-space:nowrap;padding:11px 16px" onclick="fetchGile()">Fetch GILE</button></div></div>
     <div class="row2">
       <div class="fld"><label>Group</label><input class="in" value="${esc(S.group)}" oninput="S.group=this.value;paintLeft()"></div>
       <div class="fld"><label>Institute <span class="rq">*</span></label><input class="in" value="${esc(S.institute)}" oninput="S.institute=this.value;paintLeft();gate()"></div>
@@ -589,12 +610,19 @@ function sInst(){
         <div style="display:flex;gap:10px"><select class="sel" onchange="S.ay=this.value;paintLeft()">${opts(AYS,S.ay)}</select>
         <button class="btn o" style="padding:11px 16px;white-space:nowrap" onclick="addAY()">+ New</button></div></div>
       <div class="fld"><label>Classes <span class="rq">*</span> <span class="hint" style="display:inline">(each page is made per class)</span></label>
-        <div class="chk ${S.classes.length===GRADES.length?'on':''}" onclick="toggleAllClasses()" style="margin-bottom:6px"><span class="box">${S.classes.length===GRADES.length?'✓':''}</span> Select all classes</div>
-        <div class="chips">${GRADES.map(g=>`<div class="chip ${S.classes.includes(g)?'on':''}" onclick="toggleClass('${g}')">${g}</div>`).join('')}</div></div>`
+        <input class="in" placeholder="Search a class… or type a new one" value="${esc(S.classSearch)}" oninput="S.classSearch=this.value;renderWizard()">
+        <div class="chk ${S.classes.length===CLASS_OPTS.length?'on':''}" onclick="toggleAllClasses()" style="margin:10px 0 6px"><span class="box">${S.classes.length===CLASS_OPTS.length?'✓':''}</span> Select all classes</div>
+        <div class="chips">
+          ${CLASS_OPTS.filter(g=>g.toLowerCase().includes(S.classSearch.trim().toLowerCase())).map(g=>`<div class="chip ${S.classes.includes(g)?'on':''}" onclick="toggleClass('${esc(g)}')">${esc(g)}</div>`).join('')}
+          ${(S.classSearch.trim() && !CLASS_OPTS.some(c=>c.toLowerCase()===S.classSearch.trim().toLowerCase()))?`<div class="chip" style="border-style:dashed;border-color:var(--blue);color:var(--blue)" onclick="addClass()">+ Add "${esc(S.classSearch.trim())}"</div>`:''}
+        </div>
+        <div class="hint">Creating <b>${S.classes.length}</b> page${S.classes.length===1?'':'s'} — one per selected class.</div></div>`
     : `<div class="fld"><label>Scope</label><input class="in" value="Institute-wide (GILE level)" readonly><div class="hint">ERP pages sit at institute level — no academic year or per-class selection.</div></div>`;
   return `
   <div class="wz-h">Who is this page for?</div>
-  <div class="wz-desc">Search the school. IDs are handled for you behind the scenes. This — plus the credentials — is shared by every page you create.</div>
+  <div class="wz-desc">Search the school, or fetch the whole GILE from a Product ID. This — plus the credentials — is shared by every page you create.</div>
+  <div class="fld"><label>Product ID <span class="hint" style="display:inline">(= institute_id — auto-fills the GILE)</span></label>
+    <div style="display:flex;gap:10px"><input class="in" value="${esc(S.productId)}" placeholder="e.g. 90490" oninput="S.productId=this.value"><button class="btn o" style="white-space:nowrap;padding:11px 16px" onclick="fetchGile()">Fetch GILE</button></div></div>
   <div class="row2">
     <div class="fld"><label>Group</label><input class="in" value="${esc(S.group)}" oninput="S.group=this.value;paintLeft()"></div>
     <div class="fld"><label>Institute <span class="rq">*</span></label><input class="in" value="${esc(S.institute)}" oninput="S.institute=this.value;paintLeft();gate()"></div>
@@ -604,6 +632,14 @@ function sInst(){
     <div class="fld"><label>Board</label><select class="sel" onchange="S.board=this.value;paintLeft()">${opts(BOARDS,S.board)}</select></div>
   </div>
   ${fmsBlock}`;}
+function fetchGile(){
+  const id=(S.productId||'').trim();
+  const p=PRODUCTS[id];
+  if(!id){ toast('Enter a Product ID'); return; }
+  if(!p){ toast('Product #'+id+' not found (demo)'); return; }
+  S.group=p.group; S.institute=p.institute; S.location=p.location; S.board=p.board;
+  paintLeft(); renderWizard(); gate(); toast('GILE fetched for product #'+id);
+}
 function addAY(){
   const v=prompt('New Academic Year (format 2027-28):','');
   if(!v)return; const t=v.trim();
@@ -725,7 +761,6 @@ function cardEditor(pg,c,ci){
       ${c.advOpen?`<div style="margin-top:10px">
         <div class="chk ${c.recommended?'on':''}" onclick="P().cards[${ci}].recommended=!P().cards[${ci}].recommended;paintLeft();renderWizard()"><span class="box">${c.recommended?'✓':''}</span> ⭐ Mark as recommended (highlight)</div>
         <div class="chk ${c.showBreakup?'on':''}" onclick="P().cards[${ci}].showBreakup=!P().cards[${ci}].showBreakup;paintLeft();renderWizard()"><span class="box">${c.showBreakup?'✓':''}</span> 👁 Show fee breakup on card</div>
-        <div class="chk ${c.editable?'on':''}" onclick="P().cards[${ci}].editable=!P().cards[${ci}].editable;renderWizard()"><span class="box">${c.editable?'✓':''}</span> ✏️ Let parent edit the amount</div>
         <div class="chk ${c.verifyMobile?'on':''}" onclick="P().cards[${ci}].verifyMobile=!P().cards[${ci}].verifyMobile;renderWizard()"><span class="box">${c.verifyMobile?'✓':''}</span> 📱 Verify mobile (OTP)</div>
         <div class="fld" style="margin-top:10px"><label>Ribbon text</label><input class="in" value="${esc(c.ribbon)}" placeholder="e.g. Pay Rs. 0 Today" oninput="P().cards[${ci}].ribbon=this.value;paintLeft()"></div>
         <div class="fld"><label>Info text</label><input class="in" value="${esc(c.info)}" oninput="P().cards[${ci}].info=this.value;paintLeft()"></div>
@@ -755,19 +790,41 @@ function formSection(){const pg=P();return `
   <div class="tglrow"><span class="tgl ${pg.otp?'on':''}" onclick="P().otp=!P().otp;paintLeft();renderWizard()"></span> Verify parent's mobile with OTP</div>
   <div class="tglrow"><span class="tgl ${pg.blockUnverified?'on':''}" onclick="P().blockUnverified=!P().blockUnverified;renderWizard()"></span> Block payment if student ID not verified</div>`;}
 
+function logoUploadBlock(isMaster){
+  const o=isMaster?S.master:P(); const fn=o.logoName;
+  return `<div class="fld"><label>Logo</label>
+    <div class="upl">
+      <span class="ic">🖼️</span>
+      <div style="flex:1">${fn?`<b>${esc(fn)}</b><small style="color:var(--green)">Uploaded</small>`:`<b>Upload logo</b><small style="color:var(--muted)">PDF, JPEG or PNG · max 5 MB</small>`}</div>
+      ${fn?`<span class="del" style="color:var(--red);cursor:pointer" onclick="clearLogo(${isMaster})">🗑</span>`:`<button class="btnmini p" onclick="logoPick(${isMaster})">Upload</button>`}
+    </div></div>`;
+}
+function logoPick(isMaster){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.pdf,.jpg,.jpeg,.png';
+  inp.onchange=()=>{ const f=inp.files[0]; if(!f)return;
+    if(!/\.(pdf|jpe?g|png)$/i.test(f.name)){ toast('Only PDF, JPEG or PNG'); return; }
+    if(f.size>5*1024*1024){ toast('File too large — max 5 MB'); return; }
+    const o=isMaster?S.master:P(); o.logoName=f.name;
+    if(/\.(jpe?g|png)$/i.test(f.name)){ const r=new FileReader(); r.onload=e=>{o.logoUrl=e.target.result;paintLeft();renderWizard();}; r.readAsDataURL(f); }
+    else { o.logoUrl=''; paintLeft(); renderWizard(); }
+    toast('Logo uploaded');
+  };
+  inp.click();
+}
+function clearLogo(isMaster){ const o=isMaster?S.master:P(); o.logoName=''; o.logoUrl=''; paintLeft(); renderWizard(); }
 function sLook(){
   if(S.pageType==='MASTER'){const m=S.master;return `
     <div class="wz-h">How should the master page look?</div>
     <div class="wz-desc">The landing page students see before the dropdown.</div>
     <div class="tglrow"><span class="tgl ${m.logo?'on':''}" onclick="S.master.logo=!S.master.logo;paintLeft();renderWizard()"></span> Show logo</div>
-    ${m.logo?`<div class="fld"><label>Logo image URL (optional)</label><input class="in" value="${esc(m.logoUrl)}" placeholder="https://…/logo.png" oninput="S.master.logoUrl=this.value;paintLeft()"></div>`:''}
+    ${m.logo?logoUploadBlock(true):''}
     <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(m.pageTitle)}" oninput="S.master.pageTitle=this.value;paintLeft();gate()"></div>
     <div class="fld"><label>Page subtitle</label><input class="in" value="${esc(m.pageSubtitle)}" oninput="S.master.pageSubtitle=this.value;paintLeft()"></div>`;}
   const pg=P();return `
   <div class="wz-h">How should the page look?</div>
   <div class="wz-desc">The preview on the left updates as you type.</div>
   <div class="tglrow"><span class="tgl ${pg.logo?'on':''}" onclick="P().logo=!P().logo;paintLeft();renderWizard()"></span> Show logo</div>
-  ${pg.logo?`<div class="fld"><label>Logo image URL (optional)</label><input class="in" value="${esc(pg.logoUrl)}" placeholder="https://…/logo.png — blank uses a placeholder crest" oninput="P().logoUrl=this.value;paintLeft()"></div>`:''}
+  ${pg.logo?logoUploadBlock(false):''}
   <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(pg.pageTitle)}" oninput="P().pageTitle=this.value;paintLeft();gate()"></div>
   <div class="fld"><label>Page subtitle</label><input class="in" value="${esc(pg.pageSubtitle)}" oninput="P().pageSubtitle=this.value;paintLeft()"></div>
   <div class="tglrow"><span class="tgl ${pg.banner.on?'on':''}" onclick="P().banner.on=!P().banner.on;paintLeft();renderWizard()"></span> Show an "About the school" banner</div>
@@ -891,7 +948,8 @@ function createMasterFromLinks(){
 
 /* ---- toggles/mutators (operate on active page or shared state) ---- */
 function toggleClass(g){const i=S.classes.indexOf(g);i<0?S.classes.push(g):S.classes.splice(i,1);paintLeft();renderWizard();gate();}
-function toggleAllClasses(){S.classes=S.classes.length===GRADES.length?[GRADES[0]]:GRADES.slice();paintLeft();renderWizard();gate();}
+function toggleAllClasses(){S.classes=S.classes.length===CLASS_OPTS.length?[CLASS_OPTS[0]]:CLASS_OPTS.slice();paintLeft();renderWizard();gate();}
+function addClass(){ const c=S.classSearch.trim(); if(!c)return; if(!CLASS_OPTS.some(x=>x.toLowerCase()===c.toLowerCase())){CLASS_OPTS.push(c);} if(!S.classes.includes(c))S.classes.push(c); S.classSearch=''; paintLeft(); renderWizard(); gate(); toast('Class "'+c+'" added'); }
 function fixFeeIdx(){P().cards.forEach(c=>{c.feeIdx=c.feeIdx.filter(x=>x<P().fees.length);});}
 function toggleCardFee(ci,fi){const a=P().cards[ci].feeIdx;const i=a.indexOf(fi);i<0?a.push(fi):a.splice(i,1);a.sort((x,y)=>x-y);paintLeft();renderWizard();gate();}
 function addCard(){P().cards.push(mkCard({title:'',feeIdx:[]}));paintLeft();renderWizard();}
