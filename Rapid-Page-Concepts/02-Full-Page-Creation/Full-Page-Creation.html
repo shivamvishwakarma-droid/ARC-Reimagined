@@ -25,10 +25,20 @@
   .pill.erp{background:var(--purple-soft);color:#5a3ed8}
   .pill.fms{background:var(--green-soft);color:#278a5b}
 
-  .body{flex:1;display:flex;min-height:0}
+  .body{flex:1;display:flex;min-height:0;position:relative}
 
-  /* LEFT: live payment page */
-  .page{flex:1;min-width:0;overflow-y:auto;position:relative;padding:26px 40px 60px;display:flex;flex-direction:column;align-items:center;background:#fff}
+  /* PREVIEW as an on-demand right drawer */
+  .pv-fab{position:fixed;right:0;top:50%;transform:translateY(-50%);background:var(--blue);color:#fff;font-weight:600;font-size:13px;padding:16px 9px;border-radius:12px 0 0 12px;cursor:pointer;z-index:60;writing-mode:vertical-rl;box-shadow:-4px 4px 16px rgba(47,91,255,.3);letter-spacing:.5px}
+  .pv-fab:hover{padding-right:13px}
+  .pv-backdrop{position:fixed;inset:0;background:rgba(20,18,40,.35);opacity:0;pointer-events:none;transition:opacity .22s;z-index:65}
+  .pv-backdrop.on{opacity:1;pointer-events:auto}
+  .page-drawer{position:fixed;top:0;right:0;bottom:0;width:min(680px,92vw);display:flex;flex-direction:column;background:#fff;transform:translateX(100%);transition:transform .28s ease;box-shadow:-14px 0 44px rgba(20,18,40,.20);z-index:70}
+  .page-drawer.open{transform:translateX(0)}
+  .pv-close{margin-left:auto;color:var(--muted);font-weight:600;cursor:pointer;font-size:12.5px}
+  .pv-close:hover{color:var(--red)}
+
+  /* live payment page (inside the drawer) */
+  .page{flex:1;min-width:0;overflow-y:auto;position:relative;padding:26px 34px 60px;display:flex;flex-direction:column;align-items:center;background:#fff}
   .dots{position:absolute;opacity:.5;pointer-events:none}
   .dots.l{left:32px;top:54%}.dots.r{right:150px;top:20%}
   .dots i{width:9px;height:9px;border-radius:50%;background:#c9d2ff;display:inline-block;margin:5px}
@@ -84,12 +94,12 @@
   .sched-row{display:flex;justify-content:space-between;padding:9px 13px;font-size:12.5px;border-top:1px dashed #eae4f7}
   .empty-note{max-width:560px;text-align:center;color:var(--muted);font-size:14px;margin-top:40px;line-height:1.6}
 
-  /* RIGHT: wizard */
-  .wiz{width:640px;flex:none;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:#fff;position:relative}
-  .wz-head{background:var(--cream);padding:22px 32px;flex:none}
+  /* wizard — full width; content capped for readability */
+  .wiz{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0;background:#fff;position:relative}
+  .wz-head{background:var(--cream);padding:20px 32px;flex:none}
   .wz-head .ttl{font-size:22px;font-weight:700;text-align:center}
   .wz-head .sub{font-size:12.5px;color:var(--muted);text-align:center;margin-top:3px}
-  .wz-body{flex:1;overflow-y:auto;padding:22px 32px 20px}
+  .wz-body{flex:1;overflow-y:auto;padding:24px 32px 22px;max-width:880px;width:100%;margin:0 auto}
   .wz-h{font-size:20px;font-weight:700;margin:0 0 6px}
   .wz-desc{font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.5}
   .fld{margin-bottom:18px}
@@ -186,12 +196,12 @@
   .rev .kv .k{font-size:13px;color:var(--muted)} .rev .kv .v{font-size:13.5px;text-align:right;font-weight:500}
 
   /* footer + stepper */
-  .wz-foot{flex:none;border-top:1px solid var(--line);padding:14px 32px;display:flex;gap:12px;justify-content:space-between;align-items:center;background:#fff}
+  .wz-foot{flex:none;border-top:1px solid var(--line);padding:14px 32px;display:flex;gap:12px;justify-content:space-between;align-items:center;background:#fff;max-width:880px;width:100%;margin:0 auto}
   .wz-foot .stepc{font-size:12.5px;color:var(--muted);font-weight:600}
   .btn{border:none;border-radius:11px;padding:12px 26px;font-family:inherit;font-weight:600;font-size:14.5px;cursor:pointer}
   .btn.o{background:#fff;border:1px solid var(--line);color:var(--ink)}
   .btn.g{background:var(--blue);color:#fff} .btn.g:disabled{background:#c3ccec;cursor:not-allowed}
-  .stepper{flex:none;border-top:1px solid var(--line);background:#fff;display:flex;padding:14px 20px 16px;gap:0;overflow-x:auto}
+  .stepper{flex:none;border-top:1px solid var(--line);background:#fff;display:flex;padding:14px 20px 16px;gap:0;overflow-x:auto;max-width:900px;width:100%;margin:0 auto}
   .stp{flex:1;min-width:62px;display:flex;flex-direction:column;align-items:center;position:relative}
   .stp .line{position:absolute;top:9px;left:-50%;width:100%;height:2px;background:#e2e2ea;z-index:0}
   .stp:first-child .line{display:none}
@@ -239,15 +249,19 @@
 </head>
 <body>
 <div class="screen">
-  <div class="urlbar"><span class="l">PAGE URL:</span> <a id="url">https://rapid.grayquest.com/…</a><span class="pill" id="typepill"></span></div>
   <div class="body">
-    <div class="page" id="page"></div>
     <aside class="wiz">
       <div class="wz-head"><div class="ttl">Create Payment Page</div><div class="sub" id="wzsub">GrayQuest Rapid · end-to-end</div></div>
       <div class="wz-body" id="wzbody"></div>
       <div class="wz-foot" id="wzfoot"></div>
       <div class="stepper" id="stepper"></div>
     </aside>
+    <div class="pv-fab" id="pvfab" onclick="togglePreview(true)">👁 Preview</div>
+    <div class="pv-backdrop" id="pvbd" onclick="togglePreview(false)"></div>
+    <div class="page-drawer" id="pagedrawer">
+      <div class="urlbar"><span class="l">PAGE URL:</span> <a id="url">https://rapid.grayquest.com/…</a><span class="pill" id="typepill"></span><span class="pv-close" onclick="togglePreview(false)">✕ Close</span></div>
+      <div class="page" id="page"></div>
+    </div>
   </div>
 </div>
 <div class="overlay" id="overlay"><div class="pub" id="pub"></div></div>
@@ -306,7 +320,7 @@ let S={
       mkCard({title:'Pay All Fees Together',feeIdx:[0,1,2],info:'Might have some additional charges involved'}),
     ]),
   ],
-  activePage:0, previewPage:'details', rev:'',
+  activePage:0, previewPage:'details', rev:'', previewOpen:false,
   slugOverrides:{},
   receipt:{ mode:'single', files:{} },   // mode: single | perClass ; files: {__all__|className : filename}
   master:{
@@ -396,7 +410,7 @@ function expiryFor(page,cls){ if(page.perLinkExpiry && page.classExpiry[cls]!==u
 function steps(){
   if(S.pageType==='MASTER') return [
     {k:'type',lb:'Page Type'},{k:'inst',lb:'Institute'},{k:'master',lb:'Dropdown'},{k:'look',lb:'Page Look'},{k:'review',lb:'Review'}];
-  const base=[
+  let base=[
     {k:'type', lb:'Page Type'},
     {k:'inst', lb:'Institute'},
     {k:'pages',lb:'Pages'},
@@ -407,14 +421,24 @@ function steps(){
     {k:'rcpt', lb:'Fee Receipt'},
     {k:'set',  lb:'Settings'},
   ];
+  if(S.pageType==='ERP') base=base.filter(s=>s.k!=='form');   // ERP: student details come from the ERP — no form
   if(S.pageType==='ERP') base.push({k:'hook',lb:'Webhook'});
   base.push({k:'review',lb:'Review'});
   return base;
 }
 const curKey=()=>steps()[S.step].k;
 
+/* =================== PREVIEW drawer (on-demand) =================== */
+function togglePreview(open){
+  S.previewOpen=open;
+  document.getElementById('pagedrawer').classList.toggle('open',open);
+  document.getElementById('pvbd').classList.toggle('on',open);
+  document.getElementById('pvfab').style.display=open?'none':'flex';
+  if(open) paintLeft();   // render only when opened
+}
 /* =================== LEFT — live runtime page (of the active page) =================== */
 function paintLeft(){
+  if(!S.previewOpen) return;   // drawer closed → skip all rendering (fast + declutters)
   const pg=P(), cls=primaryClass();
   document.getElementById('url').textContent='https://rapid.grayquest.com/'+(pageSlug(pg,cls)||'…');
   const tp=document.getElementById('typepill'); tp.className='pill '+(S.pageType==='ERP'?'erp':'fms'); tp.textContent=S.pageType==='ERP'?'ERP · institute-wide':'FMS · per class';
@@ -434,14 +458,16 @@ function paintLeft(){
   let mid;
   if(S.previewPage==='details'){
     const banner=pg.banner.on?`<div class="pbanner"><div class="bt">${esc(pg.banner.title)||'About the school'}</div>${pg.banner.desc?`<div class="bd">${esc(pg.banner.desc)}</div>`:''}</div>`:'';
-    const enabled=pg.fields.filter(f=>f.enabled).concat(pg.customFields);
+    const isERP=S.pageType==='ERP';
+    const enabled = isERP ? pg.fields.filter(f=>f.primary) : pg.fields.filter(f=>f.enabled).concat(pg.customFields);
     const form=`<div class="pform" style="margin-top:4px">
-        <div class="ft">${esc(pg.formTitle)||'Enter details'}</div><div class="fs">${esc(pg.formSubtitle)||''}</div>
+        <div class="ft">${isERP?'Enter Student ID':(esc(pg.formTitle)||'Enter details')}</div><div class="fs">${isERP?'Your details are fetched from the school\'s ERP':esc(pg.formSubtitle)||''}</div>
         ${enabled.map(f=>{
           if(f.type==='select') return `<div class="ffield"><label>${esc(f.label)}${f.required?' <span class="rq">*</span>':''}</label><select><option>Select…</option></select></div>`;
           return `<div class="ffield"><label>${esc(f.label)}${f.required?' <span class="rq">*</span>':''}</label><input placeholder="Enter ${esc(f.label)}"></div>`;
         }).join('')}
-        ${pg.otp?`<div class="hint" style="text-align:center;margin-top:14px">🔒 Mobile OTP verification enabled</div>`:''}
+        ${isERP?`<div class="hint" style="text-align:center;margin-top:14px">Name, fees &amp; other details load from the ERP after Student ID</div>`:''}
+        ${(!isERP&&pg.otp)?`<div class="hint" style="text-align:center;margin-top:14px">🔒 Mobile OTP verification enabled</div>`:''}
       </div>
       <button class="rt-proceed" onclick="S.previewPage='payment';paintLeft()">Proceed to Payment →</button>`;
     mid=banner+form;
@@ -490,7 +516,7 @@ function cardHTML(pg,c,ci){
   return `<div class="pcard ${c.recommended?'rec':''}">
     ${c.ribbon?`<div class="pc-ribbon">${esc(c.ribbon)}</div>`:''}
     <div class="pc-main"><div class="pc-l">
-      <span class="pc-mode ${c.mode}">${c.mode==='DIRECT'?'CARD & UPI':c.mode}</span>
+      <span class="pc-mode ${c.mode}">${c.mode}</span>
       <span class="pc-radio"></span>
       <div class="pc-t">${esc(c.title)||'Payment option'}</div>
       <div class="pc-s">${esc(c.subtitle)||''}</div>
@@ -620,7 +646,7 @@ function addMasterLevel(){ S.master.columns.push('Level '+(S.master.columns.leng
 function removeMasterLevel(){ if(S.master.columns.length<2)return; S.master.columns.pop(); S.master.rows.forEach(r=>r.cells.pop()); S.master.sel=[]; renderWizard(); paintLeft(); }
 
 /* ---- PAGES step: manage multiple pages on the same GILEAYC ---- */
-function modesOf(pg){ return [...new Set(pg.cards.map(c=>c.mode==='DIRECT'?'Card & UPI':(c.mode==='MONTHLY-EMI'?'EMI':c.mode)))].join(', ')||'no options yet'; }
+function modesOf(pg){ return [...new Set(pg.cards.map(c=>c.mode))].join(', ')||'no options yet'; }
 function dupSuffix(base){ let s=base||'copy',n=1; const has=x=>S.pages.some(p=>slugify(p.suffix)===slugify(x)); while(has(s)){n++;s=(base||'copy')+'-'+n;} return s; }
 function sPages(){
   const cls=primaryClass();
@@ -683,14 +709,14 @@ function cardEditor(pg,c,ci){
           <input class="mini" type="date" value="${d.dueDate||''}" onchange="setSched(${ci},${i},'dueDate',this.value);paintLeft();gate()">
           <input class="mini" type="number" min="1" value="${d.debits||1}" onchange="setSched(${ci},${i},'debits',+this.value||1);paintLeft()" title="No. of debits">
         </div>`;}).join(''):'<div class="sched-e" style="grid-template-columns:1fr"><span class="hint" style="margin:0">Tick fees below first.</span></div>'}</div>`
-    : `<div class="hint">Card & UPI — payment gateway routing is handled automatically. Nothing else to set here.</div>`;
+    : `<div class="hint">DIRECT — one-time payment via Card / UPI / Netbanking. Gateway routing is handled automatically; nothing else to set here.</div>`;
   return `<div class="cardbox">
     <div class="cb-h">Payment Option ${ci+1}${pg.cards.length>1?`<span class="del" onclick="P().cards.splice(${ci},1);paintLeft();renderWizard();gate()">Remove</span>`:''}</div>
     <div class="fld"><label>Title <span class="rq">*</span></label><input class="in" value="${esc(c.title)}" oninput="P().cards[${ci}].title=this.value;paintLeft();gate()"></div>
     <div class="fld"><label>Subtitle</label><input class="in" value="${esc(c.subtitle)}" oninput="P().cards[${ci}].subtitle=this.value;paintLeft()"></div>
     <div class="fld"><label>How can they pay? <span class="rq">*</span></label>
       <div class="radios">
-        ${[['EMI','EMI','instalments'],['DIRECT','Card & UPI','one-time'],['AUTO-DEBIT','Auto-Debit','eNACH']].map(([m,l,s])=>`<div class="radio ${c.mode===m?'on':''}" onclick="P().cards[${ci}].mode='${m}';paintLeft();renderWizard();gate()">${l}<small>${s}</small></div>`).join('')}
+        ${[['EMI','EMI','instalments'],['DIRECT','DIRECT','Card / UPI / Netbanking'],['AUTO-DEBIT','AUTO-DEBIT','eNACH']].map(([m,l,s])=>`<div class="radio ${c.mode===m?'on':''}" onclick="P().cards[${ci}].mode='${m}';paintLeft();renderWizard();gate()">${l}<small>${s}</small></div>`).join('')}
       </div></div>
     <div class="fld"><label>Which fees does this cover? <span class="rq">*</span></label>
       <div class="feepick">${pg.fees.map((f,fi)=>`<div class="feetag ${c.feeIdx.includes(fi)?'on':''}" onclick="toggleCardFee(${ci},${fi})"><span class="b">${c.feeIdx.includes(fi)?'✓':''}</span>${esc(f.name||'fee '+(fi+1))}</div>`).join('')||'<span class="hint">Add fees first.</span>'}</div>
@@ -831,7 +857,7 @@ function sReview(){
     ${rev('inst','Institute', kv('Institute',S.institute)+kv('Branch',S.location)+kv('Board',S.board)+(S.pageType==='FMS'?kv('Academic Year',S.ay)+kv('Classes',S.classes.join(', ')):kv('Scope','Institute-wide (GILE)')))}
     ${rev('pages','Pages ('+S.pages.length+')', pagesBody)}
     ${rev('fees','Fees · '+esc(P().name), P().fees.map(f=>kv(f.name,f.mode==='dynamic'?'Dynamic (parent enters)':rs(f.amount))).join(''))}
-    ${rev('cards','Payment options · '+esc(P().name), P().cards.map(c=>kv(c.title,(c.mode==='DIRECT'?'Card & UPI':c.mode)+' · '+c.feeIdx.map(i=>P().fees[i]?.name).filter(Boolean).join(', '))).join(''))}
+    ${rev('cards','Payment options · '+esc(P().name), P().cards.map(c=>kv(c.title,c.mode+' · '+c.feeIdx.map(i=>P().fees[i]?.name).filter(Boolean).join(', '))).join(''))}
     ${(()=>{const r=S.receipt;const files=Object.entries(r.files).filter(([k,v])=>v);const body=r.mode==='perClass'&&S.classes.length>1?(files.length?files.map(([k,v])=>kv(k,v)).join(''):kv('Receipts','none uploaded')):kv('Receipt',(r.files['__all__']||'none')+(r.mode==='perClass'?'':' · all classes'));return rev('rcpt','Fee receipt',body);})()}
     ${S.pageType==='ERP'?rev('hook','Webhook', kv('URL',S.webhookUrl)+kv('Events',S.events.join(', '))):''}
     <div style="font-size:16px;font-weight:700;margin:20px 0 4px">Links & slugs</div>
