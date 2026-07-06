@@ -317,7 +317,7 @@ function mkPage(name,suffix,cards){return {
   name:name, suffix:suffix, fees:mkFees(), cards:cards,
   fields:JSON.parse(JSON.stringify(STD_FIELDS)), customFields:[],
   formTitle:'Enter Student Details', formSubtitle:'Please fill in the details below', otp:false, blockUnverified:false,
-  logo:true, logoUrl:'', pageTitle:'Delhi Public School, Faridabad', pageSubtitle:'FEE PAYMENT',
+  logo:true, logoUrl:'', pageTitle:'', titleEdited:false, pageSubtitle:'FEE PAYMENT',
   banner:{on:false,title:'',desc:''}, ctas:[],
   expiryDays:'', perLinkExpiry:false, classExpiry:{}, allowCheckbox:false, singleSelect:false, dynamicLink:false,
 };}
@@ -342,7 +342,7 @@ let S={
   receipt:{ mode:'single', files:{} },   // mode: single | perClass ; files: {__all__|className : filename}
   master:{
     name:'Master', suffix:'master', level:'GILEAY',
-    logo:true, logoUrl:'', pageTitle:'Delhi Public School, Faridabad', pageSubtitle:'SELECT & PAY',
+    logo:true, logoUrl:'', pageTitle:'', titleEdited:false, pageSubtitle:'SELECT & PAY',
     columns:['Select Your Class'],
     rows:[
       {cells:['IX A'],link:'https://rapid.grayquest.com/dlf-phm-ix-a'},
@@ -418,6 +418,9 @@ function parseMasterExcel(file){
   };
   reader.readAsArrayBuffer(file);
 }
+function gileTitle(){ return S.institute + (S.location?', '+S.location:''); }
+function effTitle(pg){ return (pg.titleEdited && (pg.pageTitle||'').trim()) ? pg.pageTitle : gileTitle(); }
+function effMasterTitle(){ return (S.master.titleEdited && (S.master.pageTitle||'').trim()) ? S.master.pageTitle : gileTitle(); }
 function feeAmount(f){ return f.mode==='dynamic'?0:(+f.amount||0); }
 function cardTotal(pg,c){ return c.feeIdx.reduce((a,i)=>a+feeAmount(pg.fees[i]),0); }
 function cardHasDynamic(pg,c){ return c.feeIdx.some(i=>pg.fees[i]&&pg.fees[i].mode==='dynamic'); }
@@ -463,7 +466,7 @@ function paintLeft(){
   if(S.pageType==='MASTER'){ paintMaster(); return; }
   const dots=`<div class="dots l">${'<i></i>'.repeat(9)}</div><div class="dots r">${'<i></i>'.repeat(11)}</div>`;
   const logo=pg.logo?`<div class="plogo">${pg.logoUrl?`<img src="${esc(pg.logoUrl)}">`:`<div class="crest">${esc((S.institute+' '+S.location).toUpperCase())}</div>`}</div>`:'';
-  const head=`${logo}<div class="ptitle">${esc(pg.pageTitle)||'Institute name'}</div>${pg.pageSubtitle?`<div class="psub">${esc(pg.pageSubtitle)}</div>`:''}
+  const head=`${logo}<div class="ptitle">${esc(effTitle(pg))||'Institute name'}</div>${pg.pageSubtitle?`<div class="psub">${esc(pg.pageSubtitle)}</div>`:''}
     ${cls?`<div class="psub" style="color:var(--muted);font-size:12px;letter-spacing:.5px">${esc(cls)} · ${esc(S.ay)}</div>`:''}
     ${S.pages.length>1?`<div class="psub" style="color:#a99;font-size:11px;letter-spacing:.5px;text-transform:none">previewing: ${esc(pg.name)}</div>`:''}`;
   const tabs=`<div class="rt-tabs">
@@ -498,7 +501,7 @@ function paintMaster(){
   const tp=document.getElementById('typepill'); tp.className='pill'; tp.style.background='var(--cream)'; tp.style.color='#8a6d00'; tp.textContent='MASTER · '+m.level;
   const dots=`<div class="dots l">${'<i></i>'.repeat(9)}</div><div class="dots r">${'<i></i>'.repeat(11)}</div>`;
   const logo=m.logo?`<div class="plogo">${m.logoUrl?`<img src="${esc(m.logoUrl)}">`:`<div class="crest">${esc((S.institute+' '+S.location).toUpperCase())}</div>`}</div>`:'';
-  const head=`${logo}<div class="ptitle">${esc(m.pageTitle)||'Institute name'}</div>${m.pageSubtitle?`<div class="psub">${esc(m.pageSubtitle)}</div>`:''}`;
+  const head=`${logo}<div class="ptitle">${esc(effMasterTitle())||'Institute name'}</div>${m.pageSubtitle?`<div class="psub">${esc(m.pageSubtitle)}</div>`:''}`;
   // cascading dropdowns: show level i only if all previous levels are chosen
   let dd='<div class="mdd">';
   for(let lvl=0; lvl<m.columns.length; lvl++){
@@ -818,14 +821,14 @@ function sLook(){
     <div class="wz-desc">The landing page students see before the dropdown.</div>
     <div class="tglrow"><span class="tgl ${m.logo?'on':''}" onclick="S.master.logo=!S.master.logo;paintLeft();renderWizard()"></span> Show logo</div>
     ${m.logo?logoUploadBlock(true):''}
-    <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(m.pageTitle)}" oninput="S.master.pageTitle=this.value;paintLeft();gate()"></div>
+    <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(effMasterTitle())}" oninput="S.master.pageTitle=this.value;S.master.titleEdited=true;paintLeft();gate()"></div>
     <div class="fld"><label>Page subtitle</label><input class="in" value="${esc(m.pageSubtitle)}" oninput="S.master.pageSubtitle=this.value;paintLeft()"></div>`;}
   const pg=P();return `
   <div class="wz-h">How should the page look?</div>
   <div class="wz-desc">The preview on the left updates as you type.</div>
   <div class="tglrow"><span class="tgl ${pg.logo?'on':''}" onclick="P().logo=!P().logo;paintLeft();renderWizard()"></span> Show logo</div>
   ${pg.logo?logoUploadBlock(false):''}
-  <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(pg.pageTitle)}" oninput="P().pageTitle=this.value;paintLeft();gate()"></div>
+  <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(effTitle(pg))}" oninput="P().pageTitle=this.value;P().titleEdited=true;paintLeft();gate()"><div class="hint">Auto-filled from the institute — edit to override.</div></div>
   <div class="fld"><label>Page subtitle</label><input class="in" value="${esc(pg.pageSubtitle)}" oninput="P().pageSubtitle=this.value;paintLeft()"></div>
   <div class="tglrow"><span class="tgl ${pg.banner.on?'on':''}" onclick="P().banner.on=!P().banner.on;paintLeft();renderWizard()"></span> Show an "About the school" banner</div>
   ${pg.banner.on?`<div class="fld"><label>Banner title</label><input class="in" value="${esc(pg.banner.title)}" oninput="P().banner.title=this.value;paintLeft()"></div>
@@ -961,7 +964,7 @@ function stepOk(){
   const k=curKey();
   if(k==='inst') return !!(S.institute.trim()&&S.location.trim()&&(S.pageType!=='FMS'||S.classes.length));
   if(k==='master') return S.master.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='').length>0;
-  if(k==='look') return S.pageType==='MASTER' ? !!S.master.pageTitle.trim() : !!P().pageTitle.trim();
+  if(k==='look') return S.pageType==='MASTER' ? !!effMasterTitle().trim() : !!effTitle(P()).trim();
   if(k==='pages'){ const sl=S.pages.map(p=>slugify(p.suffix)); return S.pages.every(p=>p.name.trim()) && new Set(sl).size===sl.length; }
   if(k==='fees') return P().fees.length>0 && P().fees.every(f=>f.name.trim());
   if(k==='cards') return P().cards.length>0 && P().cards.every(c=>{
