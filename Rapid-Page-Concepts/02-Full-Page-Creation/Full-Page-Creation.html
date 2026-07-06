@@ -613,12 +613,9 @@ function sInst(){
         <div style="display:flex;gap:10px"><select class="sel" onchange="S.ay=this.value;paintLeft()">${opts(AYS,S.ay)}</select>
         <button class="btn o" style="padding:11px 16px;white-space:nowrap" onclick="addAY()">+ New</button></div></div>
       <div class="fld"><label>Classes <span class="rq">*</span> <span class="hint" style="display:inline">(each page is made per class)</span></label>
-        <input class="in" placeholder="Search a class… or type a new one" value="${esc(S.classSearch)}" oninput="S.classSearch=this.value;renderWizard()">
+        <input class="in" id="classSearch" placeholder="Search a class… or type a new one" value="${esc(S.classSearch)}" oninput="S.classSearch=this.value;renderClassChips()">
         <div class="chk ${S.classes.length===CLASS_OPTS.length?'on':''}" onclick="toggleAllClasses()" style="margin:10px 0 6px"><span class="box">${S.classes.length===CLASS_OPTS.length?'✓':''}</span> Select all classes</div>
-        <div class="chips">
-          ${CLASS_OPTS.filter(g=>g.toLowerCase().includes(S.classSearch.trim().toLowerCase())).map(g=>`<div class="chip ${S.classes.includes(g)?'on':''}" onclick="toggleClass('${esc(g)}')">${esc(g)}</div>`).join('')}
-          ${(S.classSearch.trim() && !CLASS_OPTS.some(c=>c.toLowerCase()===S.classSearch.trim().toLowerCase()))?`<div class="chip" style="border-style:dashed;border-color:var(--blue);color:var(--blue)" onclick="addClass()">+ Add "${esc(S.classSearch.trim())}"</div>`:''}
-        </div>
+        <div class="chips" id="classChips">${classChipsHTML()}</div>
         <div class="hint">Creating <b>${S.classes.length}</b> page${S.classes.length===1?'':'s'} — one per selected class.</div></div>`
     : `<div class="fld"><label>Scope</label><input class="in" value="Institute-wide (GILE level)" readonly><div class="hint">ERP pages sit at institute level — no academic year or per-class selection.</div></div>`;
   return `
@@ -953,6 +950,12 @@ function createMasterFromLinks(){
 function toggleClass(g){const i=S.classes.indexOf(g);i<0?S.classes.push(g):S.classes.splice(i,1);paintLeft();renderWizard();gate();}
 function toggleAllClasses(){S.classes=S.classes.length===CLASS_OPTS.length?[CLASS_OPTS[0]]:CLASS_OPTS.slice();paintLeft();renderWizard();gate();}
 function addClass(){ const c=S.classSearch.trim(); if(!c)return; if(!CLASS_OPTS.some(x=>x.toLowerCase()===c.toLowerCase())){CLASS_OPTS.push(c);} if(!S.classes.includes(c))S.classes.push(c); S.classSearch=''; paintLeft(); renderWizard(); gate(); toast('Class "'+c+'" added'); }
+function classChipsHTML(){
+  const term=S.classSearch.trim();
+  return CLASS_OPTS.filter(g=>g.toLowerCase().includes(term.toLowerCase())).map(g=>`<div class="chip ${S.classes.includes(g)?'on':''}" onclick="toggleClass('${esc(g)}')">${esc(g)}</div>`).join('')
+    + ((term && !CLASS_OPTS.some(c=>c.toLowerCase()===term.toLowerCase()))?`<div class="chip" style="border-style:dashed;border-color:var(--blue);color:var(--blue)" onclick="addClass()">+ Add "${esc(term)}"</div>`:'');
+}
+function renderClassChips(){ const el=document.getElementById('classChips'); if(el) el.innerHTML=classChipsHTML(); }
 function fixFeeIdx(){P().cards.forEach(c=>{c.feeIdx=c.feeIdx.filter(x=>x<P().fees.length);});}
 function toggleCardFee(ci,fi){const a=P().cards[ci].feeIdx;const i=a.indexOf(fi);i<0?a.push(fi):a.splice(i,1);a.sort((x,y)=>x-y);paintLeft();renderWizard();gate();}
 function addCard(){P().cards.push(mkCard({title:'',feeIdx:[]}));paintLeft();renderWizard();}
