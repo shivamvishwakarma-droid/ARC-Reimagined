@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>Create Payment Page · GrayQuest Rapid (End-to-End)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink:#1f2430; --muted:#8a8f9c; --line:#e8e8ef; --soft:#f4f5f8;
+    --blue:#2f5bff; --blue-soft:#eef2ff; --blueink:#2340d8;
+    --green:#3cb27a; --green-soft:#e7f6ee; --cream:#faf5ec; --amber:#f2c94c;
+    --red:#e5484d; --red-soft:#fbe0e0; --purple:#7c5cff; --purple-soft:#efeaff;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:var(--ink);font-size:14px;overflow:hidden}
+  .screen{height:100vh;display:flex;flex-direction:column}
+  .urlbar{flex:none;padding:11px 22px;border-bottom:1px solid var(--line);font-size:13px;background:#fafafd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:10px}
+  .urlbar .l{color:var(--muted);font-weight:600;letter-spacing:.3px}
+  .urlbar a{color:var(--blue);text-decoration:none}
+  .urlbar .pill{margin-left:auto;font-size:11.5px;font-weight:700;border-radius:99px;padding:4px 12px;letter-spacing:.4px}
+  .pill.erp{background:var(--purple-soft);color:#5a3ed8}
+  .pill.fms{background:var(--green-soft);color:#278a5b}
+
+  .body{flex:1;display:flex;min-height:0}
+
+  /* LEFT: live payment page */
+  .page{flex:1;min-width:0;overflow-y:auto;position:relative;padding:26px 40px 60px;display:flex;flex-direction:column;align-items:center;background:#fff}
+  .dots{position:absolute;opacity:.5;pointer-events:none}
+  .dots.l{left:32px;top:54%}.dots.r{right:150px;top:20%}
+  .dots i{width:9px;height:9px;border-radius:50%;background:#c9d2ff;display:inline-block;margin:5px}
+  .plogo{width:74px;height:74px;object-fit:contain;margin:6px 0 14px;display:grid;place-items:center}
+  .plogo .crest{width:70px;height:70px;border:2px solid #2a2a2a;border-radius:50%;display:grid;place-items:center;font-size:8.5px;text-align:center;color:#333;line-height:1.1;font-weight:600;background:#fff;padding:5px}
+  .plogo img{width:74px;height:74px;object-fit:contain}
+  .ptitle{font-size:27px;font-weight:700;text-align:center;line-height:1.15;max-width:560px}
+  .psub{font-size:15px;font-weight:700;color:var(--blue);letter-spacing:1px;margin-top:8px;text-transform:uppercase;text-align:center}
+  .pbanner{margin-top:20px;width:100%;max-width:640px;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .pbanner .bt{font-weight:700;font-size:15px} .pbanner .bd{font-size:13px;color:#555;margin-top:6px;font-style:italic;line-height:1.5}
+  .pform{margin-top:26px;width:100%;max-width:640px;text-align:center}
+  .pform .ft{font-size:21px;font-weight:700} .pform .fs{font-size:14px;color:#444;margin-top:2px}
+  .ffield{margin-top:20px;text-align:left}
+  .ffield label{font-size:14px;color:#333} .ffield label .rq{color:var(--red)}
+  .ffield input,.ffield select{width:100%;margin-top:8px;padding:13px 15px;border:1px solid #dfe0ea;border-radius:11px;font-family:inherit;font-size:14.5px;color:#333;background:#fff}
+  .sectlabel{width:100%;max-width:640px;margin:30px 0 -6px;font-size:12px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+  /* runtime 2-page tabs */
+  .rt-tabs{width:100%;max-width:640px;display:flex;gap:8px;margin-bottom:20px;background:var(--soft);border-radius:12px;padding:5px}
+  .rt-tab{flex:1;text-align:center;font-size:13px;font-weight:600;padding:9px 0;border-radius:9px;cursor:pointer;color:var(--muted)}
+  .rt-tab.on{background:#fff;color:var(--blue);box-shadow:0 2px 8px rgba(40,30,80,.08)}
+  .rt-proceed{width:100%;max-width:640px;margin-top:24px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:15px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer}
+  .rt-back{max-width:640px;width:100%;margin-top:10px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;text-align:center}
+  .dlbtn{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+
+  .pcards{margin-top:16px;width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px}
+  .pcard{border:1px solid #ececf1;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(40,30,80,.05);position:relative}
+  .pcard.rec{border-color:var(--amber);box-shadow:0 6px 22px rgba(242,201,76,.22)}
+  .pc-ribbon{position:absolute;top:0;right:0;background:var(--amber);color:#5c4a00;font-size:11.5px;font-weight:700;padding:5px 13px;border-bottom-left-radius:12px}
+  .pc-main{display:flex}
+  .pc-l{flex:1;padding:18px 20px} .pc-r{width:190px;flex:none;background:#f6f6fa;display:grid;place-items:center;font-size:30px;font-weight:700;text-align:center}
+  .pc-mode{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.5px;border-radius:6px;padding:3px 9px;margin-bottom:9px}
+  .pc-mode.EMI{background:var(--blue-soft);color:var(--blueink)}
+  .pc-mode.DIRECT{background:var(--green-soft);color:#278a5b}
+  .pc-mode.AUTO-DEBIT{background:var(--purple-soft);color:#5a3ed8}
+  .pc-radio{width:18px;height:18px;border:2px solid #bfc3d0;border-radius:50%;float:left;margin:4px 12px 0 0}
+  .pc-t{font-size:16px;font-weight:700} .pc-s{font-size:13px;color:#777;margin-top:6px;line-height:1.5}
+  .pc-uline{width:34px;height:5px;border-radius:3px;background:var(--amber);margin:11px 0 6px}
+  .pc-more{color:var(--blue);font-weight:600;font-size:13.5px;cursor:pointer;display:inline-block;margin-top:4px}
+  .pc-info{background:var(--red-soft);color:#7a2b2e;text-align:center;font-size:13px;padding:10px}
+  .fsd{margin:0 18px 16px;border:1px solid #dbe4f7;border-radius:12px;overflow:hidden}
+  .fsd-h{background:#eef3fd;color:var(--blueink);font-weight:700;font-size:13.5px;padding:10px 14px}
+  .fsd-row{display:flex;justify-content:space-between;padding:10px 14px;font-size:13px;border-top:1px dashed #e2e2ea}
+  .fsd-row .k{color:#555}.fsd-row .v{font-weight:600}
+  .fsd-total{display:flex;justify-content:space-between;padding:11px 14px;font-weight:700;font-size:14px;background:#f7f9ff}
+  .sched{margin:0 18px 16px;border:1px solid #e5ddf7;border-radius:12px;overflow:hidden}
+  .sched-h{background:var(--purple-soft);color:#5a3ed8;font-weight:700;font-size:13px;padding:9px 13px}
+  .sched-row{display:flex;justify-content:space-between;padding:9px 13px;font-size:12.5px;border-top:1px dashed #eae4f7}
+  .empty-note{max-width:560px;text-align:center;color:var(--muted);font-size:14px;margin-top:40px;line-height:1.6}
+
+  /* RIGHT: wizard */
+  .wiz{width:640px;flex:none;border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:#fff;position:relative}
+  .wz-head{background:var(--cream);padding:22px 32px;flex:none}
+  .wz-head .ttl{font-size:22px;font-weight:700;text-align:center}
+  .wz-head .sub{font-size:12.5px;color:var(--muted);text-align:center;margin-top:3px}
+  .wz-body{flex:1;overflow-y:auto;padding:22px 32px 20px}
+  .wz-h{font-size:20px;font-weight:700;margin:0 0 6px}
+  .wz-desc{font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.5}
+  .fld{margin-bottom:18px}
+  .fld > label{font-size:14px;font-weight:500;color:#3a3a46;display:block;margin-bottom:8px}
+  .fld > label .rq{color:var(--red)}
+  .in,.sel{width:100%;padding:13px 14px;border:1px solid #dfe0ea;border-radius:11px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff;outline:none}
+  .in:focus,.sel:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .in[readonly]{background:var(--soft);color:#6a6a76}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a8f9c' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;cursor:pointer}
+  .hint{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.5}
+  .chk{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;cursor:pointer;margin:6px 0}
+  .chk .box{width:21px;height:21px;border-radius:6px;border:2px solid #cfcfda;display:grid;place-items:center;flex:none;font-size:12px}
+  .chk.on .box{background:var(--amber);border-color:var(--amber);color:#fff}
+  .tglrow{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:500;margin:12px 0}
+  .tgl{width:44px;height:25px;border-radius:99px;background:#d5d5e0;position:relative;cursor:pointer;flex:none;transition:.15s}
+  .tgl.on{background:var(--green)}
+  .tgl::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.15s}
+  .tgl.on::after{left:22px}
+  .radios{display:flex;gap:10px;flex-wrap:wrap}
+  .radio{flex:1;min-width:110px;border:1.5px solid #e2e2ea;border-radius:11px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;text-align:center;color:#555;transition:.12s}
+  .radio.on{border-color:var(--blue);background:var(--blue-soft);color:var(--blueink)}
+  .radio small{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:3px}
+  .radio.on small{color:var(--blueink)}
+
+  /* type picker cards (step 0) */
+  .typecards{display:flex;flex-direction:column;gap:16px;margin-top:8px}
+  .typecard{border:2px solid #e6e6ef;border-radius:16px;padding:20px 22px;cursor:pointer;transition:.14s;position:relative}
+  .typecard:hover{border-color:#c9c9dd}
+  .typecard.on{border-color:var(--blue);background:var(--blue-soft)}
+  .typecard .tc-t{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .typecard .tc-d{font-size:13px;color:#666;margin-top:8px;line-height:1.55}
+  .typecard .tc-tag{position:absolute;top:16px;right:18px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.3px}
+
+  /* pages layer */
+  .pagebar{display:flex;align-items:center;gap:10px;background:var(--blue-soft);border:1px solid #d7e0ff;border-radius:11px;padding:10px 14px;margin-bottom:18px;font-size:13px;font-weight:600;color:var(--blueink)}
+  .pagebar select{flex:1;padding:8px 10px;border:1px solid #cdd8ff;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;color:var(--blueink);background:#fff}
+  .pagerow{border:1.5px solid #e6e6ef;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .pagerow.active{border-color:var(--blue);background:var(--blue-soft)}
+  .pagerow .pr-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .pagerow .pr-name{flex:1;font-size:15px;font-weight:700;border:none;background:transparent;font-family:inherit;color:var(--ink);outline:none}
+  .pagerow .pr-slug{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--blue);word-break:break-all;margin-top:2px}
+  .pagerow .pr-modes{font-size:12px;color:var(--muted);margin-top:8px}
+  .pagerow .pr-actions{display:flex;gap:8px;margin-top:12px}
+  .btnmini{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .btnmini.p{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .btnmini.d{color:var(--red)}
+
+  /* fee & card editors */
+  .fh-tbl{border:1px solid #e5e5ee;border-radius:12px;overflow:hidden;margin-top:6px}
+  .fh-r{display:grid;grid-template-columns:44px 1fr 150px 130px 34px;align-items:center;font-size:13px}
+  .fh-r.h{background:var(--soft);color:#6a6a76;font-weight:600;padding:10px 0}
+  .fh-r.h>div,.fh-r>div{padding:0 10px}
+  .fh-r:not(.h){border-top:1px solid #eee;padding:9px 0}
+  .fh-r .del{color:var(--muted);cursor:pointer;text-align:center}
+  .fh-r .del:hover{color:var(--red)}
+  .mini{width:100%;padding:7px 9px;border:1px solid #e2e2ea;border-radius:8px;font-family:inherit;font-size:12.5px}
+  .segmini{display:flex;border:1px solid #e2e2ea;border-radius:8px;overflow:hidden}
+  .segmini span{flex:1;text-align:center;font-size:11.5px;font-weight:600;padding:6px 0;cursor:pointer;color:#888}
+  .segmini span.on{background:var(--blue);color:#fff}
+  .cardbox{background:var(--soft);border:1px solid #e8e8f0;border-radius:14px;padding:16px 16px 18px;margin-bottom:14px}
+  .cardbox .cb-h{font-size:14.5px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between}
+  .cardbox .cb-h .del{color:var(--red);cursor:pointer;font-size:13px;font-weight:600}
+  .feepick{display:flex;flex-wrap:wrap;gap:8px}
+  .feetag{border:1.5px solid #dcdce6;border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;font-weight:500;color:#555;display:flex;align-items:center;gap:7px}
+  .feetag.on{border-color:var(--green);background:var(--green-soft);color:#278a5b}
+  .feetag .b{width:16px;height:16px;border-radius:4px;border:2px solid #cfcfda;display:grid;place-items:center;font-size:10px}
+  .feetag.on .b{background:var(--green);border-color:var(--green);color:#fff}
+  .covers{font-size:12.5px;color:var(--green);font-weight:600;margin-top:8px}
+  .adv{margin-top:12px;border-top:1px dashed #dcdce6;padding-top:12px}
+  .adv-t{font-size:12.5px;color:var(--blue);font-weight:600;cursor:pointer}
+  .addlink{color:var(--blue);font-weight:600;font-size:14px;cursor:pointer;display:inline-block;margin:4px 0}
+  .schedbox{margin-top:10px;border:1px solid #e5ddf7;border-radius:10px;overflow:hidden}
+  .schedbox .sh{background:var(--purple-soft);color:#5a3ed8;font-size:12px;font-weight:700;padding:8px 12px}
+  .sched-e{display:grid;grid-template-columns:1fr 130px 90px;gap:8px;align-items:center;padding:9px 12px;border-top:1px solid #eee;font-size:12.5px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .chip{border:1.5px solid #dcdce6;border-radius:99px;padding:7px 13px;font-size:12.5px;cursor:pointer;font-weight:500;color:#666}
+  .chip.on{border-color:var(--blue);background:var(--blue-soft);color:var(--blueink)}
+
+  /* review */
+  .rev{border-bottom:1px solid var(--line)}
+  .rev .rh{display:flex;align-items:center;justify-content:space-between;padding:16px 2px;cursor:pointer}
+  .rev .rh .t{font-size:16px;font-weight:700}
+  .rev .rh .edit{color:var(--blue);font-weight:600;font-size:13px;margin-right:14px}
+  .rev .rh .cr{color:var(--muted);transition:.15s}
+  .rev.open .rh .cr{transform:rotate(180deg)}
+  .rev .rb{display:none;padding:2px 2px 16px}
+  .rev.open .rb{display:block}
+  .rev .card{background:var(--soft);border-radius:12px;padding:14px 16px}
+  .rev .kv{padding:8px 0;border-bottom:1px dashed #e4e4ec;display:flex;justify-content:space-between;gap:14px}
+  .rev .kv:last-child{border-bottom:none}
+  .rev .kv .k{font-size:13px;color:var(--muted)} .rev .kv .v{font-size:13.5px;text-align:right;font-weight:500}
+
+  /* footer + stepper */
+  .wz-foot{flex:none;border-top:1px solid var(--line);padding:14px 32px;display:flex;gap:12px;justify-content:space-between;align-items:center;background:#fff}
+  .wz-foot .stepc{font-size:12.5px;color:var(--muted);font-weight:600}
+  .btn{border:none;border-radius:11px;padding:12px 26px;font-family:inherit;font-weight:600;font-size:14.5px;cursor:pointer}
+  .btn.o{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.g{background:var(--blue);color:#fff} .btn.g:disabled{background:#c3ccec;cursor:not-allowed}
+  .stepper{flex:none;border-top:1px solid var(--line);background:#fff;display:flex;padding:14px 20px 16px;gap:0;overflow-x:auto}
+  .stp{flex:1;min-width:62px;display:flex;flex-direction:column;align-items:center;position:relative}
+  .stp .line{position:absolute;top:9px;left:-50%;width:100%;height:2px;background:#e2e2ea;z-index:0}
+  .stp:first-child .line{display:none}
+  .stp.done .line,.stp.cur .line{background:var(--green)}
+  .stp .dot{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #d5d5de;z-index:1;font-size:10px;display:grid;place-items:center;color:#fff}
+  .stp.done .dot{background:var(--green);border-color:var(--green)}
+  .stp.cur .dot{border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-soft)}
+  .stp .lb{font-size:11px;margin-top:7px;color:var(--muted);white-space:nowrap;text-align:center}
+  .stp.cur .lb,.stp.done .lb{color:var(--ink);font-weight:500}
+
+  /* publish overlay */
+  .overlay{position:fixed;inset:0;background:rgba(20,18,40,.55);backdrop-filter:blur(4px);display:none;place-items:center;z-index:80;padding:30px}
+  .overlay.on{display:grid}
+  .pub{background:#fff;border-radius:20px;max-width:720px;width:100%;max-height:88vh;overflow-y:auto;padding:30px 34px}
+  .pub h2{margin:0 0 4px;font-size:23px}
+  .pub .psubt{color:var(--muted);font-size:13.5px;margin-bottom:20px}
+  .pub-group{font-size:12px;font-weight:700;letter-spacing:.6px;color:var(--muted);text-transform:uppercase;margin:16px 0 8px}
+  .pub-row{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+  .pub-row .pr-t{font-weight:700;font-size:14.5px;display:flex;justify-content:space-between;align-items:center}
+  .pub-row .pr-u{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--blue);margin-top:6px;word-break:break-all}
+  .toast{position:fixed;bottom:24px;left:34%;transform:translateX(-50%) translateY(20px);background:#1f2430;color:#fff;padding:13px 22px;border-radius:12px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transition:.25s;z-index:90}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* master link */
+  .drop-zone{border:2px dashed #cdd3e6;border-radius:14px;padding:26px;text-align:center;cursor:pointer;background:var(--soft);transition:.15s}
+  .drop-zone:hover{border-color:var(--blue);background:var(--blue-soft)}
+  .drop-zone .dz-i{font-size:30px}
+  .drop-zone .dz-t{font-weight:700;font-size:15px;margin-top:8px}
+  .drop-zone .dz-s{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .lvlchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .lvlchip{background:var(--blue-soft);color:var(--blueink);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:600}
+  .lvlchip.link{background:var(--green-soft);color:#278a5b}
+  .arrow{color:var(--muted);font-size:12px}
+  .mtree{border:1px solid var(--line);border-radius:12px;max-height:280px;overflow:auto;padding:10px 12px;font-size:12.5px;background:#fff}
+  .mtree .node{padding:2px 0}
+  .mtree .leaf{color:var(--blue);font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+  .mdd{width:100%;max-width:520px;margin:14px auto 0;text-align:left}
+  .mdd label{font-size:13px;font-weight:600;color:#333;display:block;margin:14px 0 7px}
+  .mdd select{width:100%;padding:14px 15px;border:1px solid #dfe0ea;border-radius:11px;font-family:inherit;font-size:14.5px;background:#fff}
+  .mdd .mgo{width:100%;margin-top:22px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:15px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer}
+  .mdd .mgo:disabled{background:#c3ccec}
+  .mresolved{margin-top:16px;padding:14px;border:1px solid #dbe4f7;border-radius:11px;background:#f7f9ff;font-size:13px}
+  .mresolved .u{font-family:ui-monospace,Menlo,monospace;color:var(--blue);font-size:12px;word-break:break-all;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="urlbar"><span class="l">PAGE URL:</span> <a id="url">https://rapid.grayquest.com/…</a><span class="pill" id="typepill"></span></div>
+  <div class="body">
+    <div class="page" id="page"></div>
+    <aside class="wiz">
+      <div class="wz-head"><div class="ttl">Create Payment Page</div><div class="sub" id="wzsub">GrayQuest Rapid · end-to-end</div></div>
+      <div class="wz-body" id="wzbody"></div>
+      <div class="wz-foot" id="wzfoot"></div>
+      <div class="stepper" id="stepper"></div>
+    </aside>
+  </div>
+</div>
+<div class="overlay" id="overlay"><div class="pub" id="pub"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Create Payment Page — full backend chain, in plain English =====
+   Shared per GILEAYC: institute, fees pool, form, MERCHANT CREDENTIALS.
+   Per PAGE (a row in payment_pages): slug + payment options (cards) + look + settings.
+   One setup can spawn several pages (e.g. an EMI-only page and a PG-only page). */
+
+const GRADES=['Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'];
+const BOARDS=['CBSE','ICSE','State Board','IB','IGCSE'];
+let AYS=['2025-26','2026-27','2024-25'];
+const EMI_PLANS=[
+  {id:128129,name:'10-Month Zero-Cost EMI',active:true},
+  {id:128130,name:'6-Month EMI',active:true},
+  {id:128131,name:'3-Term Instalment Plan',active:true},
+];
+const EVENTS=['dt.payment.success','dt.payment.failed','dt.payment.initiated','dt.settlement.completed','dt.refund.processed','ad.mandate.registered','ad.debit.success','emi.registered'];
+const STD_FIELDS=[
+  {key:'stud_bd_student_uuid',label:'Student ID',type:'text',enabled:true,required:true,primary:true},
+  {key:'customer_mobile',label:'Mobile Number',type:'text',enabled:true,required:true},
+  {key:'stud_bd_first_name',label:'Student Name',type:'text',enabled:true,required:false},
+  {key:'customer_email',label:'Email ID',type:'text',enabled:false,required:false},
+  {key:'cust_bd_first_name',label:'Parent Name',type:'text',enabled:false,required:false},
+];
+
+/* ---- page factories ---- */
+function mkFees(){return [
+  {name:'Tuition Fee', mode:'fixed', amount:50000, dueDate:''},
+  {name:'Bus Fee',     mode:'fixed', amount:18000, dueDate:''},
+  {name:'Transport Fee',mode:'fixed',amount:12000, dueDate:''},
+];}
+function mkCard(o){return Object.assign({title:'',subtitle:'Pay via UPI, Credit/Debit Card or Net Banking',mode:'DIRECT',feeIdx:[],emiPlan:0,recommended:false,ribbon:'',showBreakup:true,editable:false,verifyMobile:true,info:'',expanded:false,schedule:{},advOpen:false},o);}
+function mkPage(name,suffix,cards){return {
+  name:name, suffix:suffix, fees:mkFees(), cards:cards,
+  fields:JSON.parse(JSON.stringify(STD_FIELDS)), customFields:[],
+  formTitle:'Enter Student Details', formSubtitle:'Please fill in the details below', otp:false, blockUnverified:false,
+  logo:true, logoUrl:'', pageTitle:'Delhi Public School, Faridabad', pageSubtitle:'FEE PAYMENT',
+  banner:{on:false,title:'',desc:''}, ctas:[],
+  expiryDays:'', perLinkExpiry:false, classExpiry:{}, allowCheckbox:false, singleSelect:false, dynamicLink:false,
+};}
+
+/* ---- seeded: an institute wanting TWO pages (EMI-only + PG-only) ---- */
+let S={
+  step:0, pageType:'FMS',
+  group:'Delhi Public School', institute:'DPS', location:'Faridabad', board:'CBSE', ay:'2025-26',
+  classes:['Class 1'],
+  webhookUrl:'', events:EVENTS.slice(0,4),
+  pages:[
+    mkPage('EMI Only','emi',[ mkCard({title:'Pay Tuition in Easy Monthly EMI',subtitle:'Pay in small, convenient monthly payments',mode:'EMI',feeIdx:[0],emiPlan:128129,recommended:true,ribbon:'Pay Rs. 0 Today'}) ]),
+    mkPage('PG Only','pg',[
+      mkCard({title:'Pay Bus Fee',feeIdx:[1]}),
+      mkCard({title:'Pay Transport Fee',feeIdx:[2],showBreakup:false}),
+      mkCard({title:'Pay All Fees Together',feeIdx:[0,1,2],info:'Might have some additional charges involved'}),
+    ]),
+  ],
+  activePage:0, previewPage:'details', rev:'',
+  slugOverrides:{},
+  master:{
+    name:'Master', suffix:'master', level:'GILEAY',
+    logo:true, logoUrl:'', pageTitle:'Delhi Public School, Faridabad', pageSubtitle:'SELECT & PAY',
+    columns:['Select Your Class'],
+    rows:[
+      {cells:['IX A'],link:'https://rapid.grayquest.com/dlf-phm-ix-a'},
+      {cells:['IX B'],link:'https://rapid.grayquest.com/dlf-phm-ix-b'},
+      {cells:['X A'], link:'https://rapid.grayquest.com/dlf-phm-x-a'},
+      {cells:['X B'], link:'https://rapid.grayquest.com/dlf-phm-x-b'},
+      {cells:['XI Science'],link:'https://rapid.grayquest.com/dlf-phm-xi-sci'},
+      {cells:['XI Commerce'],link:'https://rapid.grayquest.com/dlf-phm-xi-com'},
+    ],
+    sel:[],
+  },
+};
+const P=()=>S.pages[S.activePage];
+
+/* ---- helpers ---- */
+const esc=s=>(s==null?'':(''+s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const rs=n=>'Rs. '+Number(n||0).toLocaleString('en-IN');
+const slugify=s=>(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2600);};
+const uuid=()=>'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&0x3|0x8)).toString(16);});
+function primaryClass(){ return S.pageType==='FMS' ? (S.classes[0]||'') : ''; }
+function baseSlug(cls){ let a=[S.institute,S.location,S.board]; if(S.pageType==='FMS'&&cls)a.push(cls); return slugify(a.join(' ')); }
+function linkKey(page,cls){ return cls+'::'+page.suffix; }
+function pageSlug(page,cls){ const k=linkKey(page,cls); if(S.slugOverrides[k]) return S.slugOverrides[k]; const b=baseSlug(cls); return b + (page.suffix?('-'+slugify(page.suffix)):''); }
+function masterSlug(){ const a=[S.institute,S.location]; if(S.master.level==='GILEAY')a.push(S.ay); return slugify(a.join(' '))+(S.master.suffix?('-'+slugify(S.master.suffix)):''); }
+/* port of custom_dropdown.py: all columns = levels, each row's link = leaf value */
+function buildMasterTree(){
+  const cols=S.master.columns, rows=S.master.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='') && (r.link||'').trim()!=='');
+  function nest(subset,level){
+    const col=cols[level];
+    if(level===cols.length-1){
+      return subset.map(r=>({label:String(r.cells[level]),value:String(r.link),dropdown_label:'Select your '+col}));
+    }
+    const out=[]; const seen=[];
+    subset.forEach(r=>{ if(!seen.includes(r.cells[level])) seen.push(r.cells[level]); });
+    seen.forEach(v=>{ out.push({label:String(v),value:String(v),dropdown_label:'Select your '+col,
+      dropdown_options:nest(subset.filter(r=>r.cells[level]===v),level+1)}); });
+    return out;
+  }
+  return [{visible:true,dropdown:{visible:true,data:nest(rows,0)}}];
+}
+function masterLevelOptions(level){ // distinct values at a level given current sel[]
+  let rows=S.master.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='');
+  for(let i=0;i<level;i++) rows=rows.filter(r=>r.cells[i]===S.master.sel[i]);
+  const seen=[]; rows.forEach(r=>{ if(!seen.includes(r.cells[level]))seen.push(r.cells[level]); });
+  return seen;
+}
+function masterResolvedLink(){
+  const c=S.master.columns.length;
+  if(S.master.sel.length<c || S.master.sel.some(x=>x==null||x==='')) return '';
+  const row=S.master.rows.find(r=>r.cells.every((cell,i)=>cell===S.master.sel[i]));
+  return row?row.link:'';
+}
+function parseMasterExcel(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(!aoa.length){toast('Empty sheet');return;}
+      const header=aoa[0].map(h=>String(h).trim()).filter(h=>h!=='');
+      if(header.length<2){toast('Need at least 2 columns (level + Link)');return;}
+      const cols=header.slice(0,-1);
+      const body=aoa.slice(1).filter(r=>r.some(c=>String(c).trim()!==''));
+      const rows=body.map(r=>({cells:cols.map((_,i)=>String(r[i]??'').trim()),link:String(r[header.length-1]??'').trim()}))
+                     .filter(r=>r.cells.every(c=>c!=='')&&r.link!=='');
+      S.master.columns=cols; S.master.rows=rows; S.master.sel=[];
+      toast(rows.length+' rows loaded across '+cols.length+' level(s)');
+      paintLeft(); renderWizard();
+    }catch(err){ toast('Could not read file'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function feeAmount(f){ return f.mode==='dynamic'?0:(+f.amount||0); }
+function cardTotal(pg,c){ return c.feeIdx.reduce((a,i)=>a+feeAmount(pg.fees[i]),0); }
+function cardHasDynamic(pg,c){ return c.feeIdx.some(i=>pg.fees[i]&&pg.fees[i].mode==='dynamic'); }
+function expiryFor(page,cls){ if(page.perLinkExpiry && page.classExpiry[cls]!==undefined) return page.classExpiry[cls]; return page.expiryDays; }
+
+/* ---- dynamic step list ---- */
+function steps(){
+  if(S.pageType==='MASTER') return [
+    {k:'type',lb:'Page Type'},{k:'inst',lb:'Institute'},{k:'master',lb:'Dropdown'},{k:'look',lb:'Page Look'},{k:'review',lb:'Review'}];
+  const base=[
+    {k:'type', lb:'Page Type'},
+    {k:'inst', lb:'Institute'},
+    {k:'pages',lb:'Pages'},
+    {k:'fees', lb:'Fees'},
+    {k:'cards',lb:'Payment Options'},
+    {k:'form', lb:'Form'},
+    {k:'look', lb:'Page Look'},
+    {k:'set',  lb:'Settings'},
+  ];
+  if(S.pageType==='ERP') base.push({k:'hook',lb:'Webhook'});
+  base.push({k:'review',lb:'Review'});
+  return base;
+}
+const curKey=()=>steps()[S.step].k;
+
+/* =================== LEFT — live runtime page (of the active page) =================== */
+function paintLeft(){
+  const pg=P(), cls=primaryClass();
+  document.getElementById('url').textContent='https://rapid.grayquest.com/'+(pageSlug(pg,cls)||'…');
+  const tp=document.getElementById('typepill'); tp.className='pill '+(S.pageType==='ERP'?'erp':'fms'); tp.textContent=S.pageType==='ERP'?'ERP · institute-wide':'FMS · per class';
+  const p=document.getElementById('page');
+  if(curKey()==='type'){
+    p.innerHTML=`<div class="empty-note">👋 Pick a page type on the right.<br>The live payment page — exactly as a parent will see it — builds here as you go.</div>`; return;
+  }
+  if(S.pageType==='MASTER'){ paintMaster(); return; }
+  const dots=`<div class="dots l">${'<i></i>'.repeat(9)}</div><div class="dots r">${'<i></i>'.repeat(11)}</div>`;
+  const logo=pg.logo?`<div class="plogo">${pg.logoUrl?`<img src="${esc(pg.logoUrl)}">`:`<div class="crest">${esc((S.institute+' '+S.location).toUpperCase())}</div>`}</div>`:'';
+  const head=`${logo}<div class="ptitle">${esc(pg.pageTitle)||'Institute name'}</div>${pg.pageSubtitle?`<div class="psub">${esc(pg.pageSubtitle)}</div>`:''}
+    ${cls?`<div class="psub" style="color:var(--muted);font-size:12px;letter-spacing:.5px">${esc(cls)} · ${esc(S.ay)}</div>`:''}
+    ${S.pages.length>1?`<div class="psub" style="color:#a99;font-size:11px;letter-spacing:.5px;text-transform:none">previewing: ${esc(pg.name)}</div>`:''}`;
+  const tabs=`<div class="rt-tabs">
+    <span class="rt-tab ${S.previewPage==='details'?'on':''}" onclick="S.previewPage='details';paintLeft()">① Student Details</span>
+    <span class="rt-tab ${S.previewPage==='payment'?'on':''}" onclick="S.previewPage='payment';paintLeft()">② Payment</span></div>`;
+  let mid;
+  if(S.previewPage==='details'){
+    const banner=pg.banner.on?`<div class="pbanner"><div class="bt">${esc(pg.banner.title)||'About the school'}</div>${pg.banner.desc?`<div class="bd">${esc(pg.banner.desc)}</div>`:''}</div>`:'';
+    const enabled=pg.fields.filter(f=>f.enabled).concat(pg.customFields);
+    const form=`<div class="pform" style="margin-top:4px">
+        <div class="ft">${esc(pg.formTitle)||'Enter details'}</div><div class="fs">${esc(pg.formSubtitle)||''}</div>
+        ${enabled.map(f=>{
+          if(f.type==='select') return `<div class="ffield"><label>${esc(f.label)}${f.required?' <span class="rq">*</span>':''}</label><select><option>Select…</option></select></div>`;
+          return `<div class="ffield"><label>${esc(f.label)}${f.required?' <span class="rq">*</span>':''}</label><input placeholder="Enter ${esc(f.label)}"></div>`;
+        }).join('')}
+        ${pg.otp?`<div class="hint" style="text-align:center;margin-top:14px">🔒 Mobile OTP verification enabled</div>`:''}
+      </div>
+      <button class="rt-proceed" onclick="S.previewPage='payment';paintLeft()">Proceed to Payment →</button>`;
+    mid=banner+form;
+  } else {
+    mid=`<div class="ptitle" style="font-size:20px;margin-top:6px">Please select a Payment Option</div>
+      <div class="pcards" style="margin-top:22px">${pg.cards.map((c,ci)=>cardHTML(pg,c,ci)).join('')||'<div class="empty-note" style="margin-top:16px">No payment options yet.</div>'}</div>
+      <button class="rt-back" onclick="S.previewPage='details';paintLeft()">← Back to student details</button>`;
+  }
+  p.innerHTML=dots+head+tabs+mid;
+}
+function paintMaster(){
+  const m=S.master, p=document.getElementById('page');
+  document.getElementById('url').textContent='https://rapid.grayquest.com/'+(masterSlug()||'…');
+  const tp=document.getElementById('typepill'); tp.className='pill'; tp.style.background='var(--cream)'; tp.style.color='#8a6d00'; tp.textContent='MASTER · '+m.level;
+  const dots=`<div class="dots l">${'<i></i>'.repeat(9)}</div><div class="dots r">${'<i></i>'.repeat(11)}</div>`;
+  const logo=m.logo?`<div class="plogo">${m.logoUrl?`<img src="${esc(m.logoUrl)}">`:`<div class="crest">${esc((S.institute+' '+S.location).toUpperCase())}</div>`}</div>`:'';
+  const head=`${logo}<div class="ptitle">${esc(m.pageTitle)||'Institute name'}</div>${m.pageSubtitle?`<div class="psub">${esc(m.pageSubtitle)}</div>`:''}`;
+  // cascading dropdowns: show level i only if all previous levels are chosen
+  let dd='<div class="mdd">';
+  for(let lvl=0; lvl<m.columns.length; lvl++){
+    if(lvl>0 && (m.sel[lvl-1]==null||m.sel[lvl-1]==='')) break;
+    const optsL=masterLevelOptions(lvl);
+    dd+=`<label>Select your ${esc(m.columns[lvl])}</label>
+      <select onchange="masterPick(${lvl},this.value)"><option value="">Select…</option>${optsL.map(o=>`<option ${m.sel[lvl]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  }
+  const link=masterResolvedLink();
+  dd+=`<button class="mgo" ${link?'':'disabled'} onclick="${link?`window.open('${link}','_blank')`:''}">Proceed to Pay →</button>`;
+  if(link) dd+=`<div class="mresolved">Redirects to:<div class="u">${esc(link)}</div></div>`;
+  dd+='</div>';
+  p.innerHTML=dots+head+`<div style="max-width:520px;width:100%;margin-top:20px;text-align:center;font-weight:700;font-size:16px">Please select to continue</div>`+dd;
+}
+function masterPick(lvl,val){ S.master.sel=S.master.sel.slice(0,lvl); S.master.sel[lvl]=val; paintLeft(); }
+function cardHTML(pg,c,ci){
+  const total=cardTotal(pg,c); const dyn=cardHasDynamic(pg,c);
+  const amtLabel = dyn && total===0 ? '<span style="font-size:17px">Enter<br>amount</span>' : inr(total);
+  let detail='';
+  if(c.mode==='AUTO-DEBIT'){
+    detail=`<div class="sched"><div class="sched-h">Auto-Debit Schedule (eNACH)</div>
+      ${c.feeIdx.map(i=>{const f=pg.fees[i];if(!f)return'';const d=(c.schedule&&c.schedule[i])||{};
+        return `<div class="sched-row"><span>${esc(f.name)}</span><span>${esc(d.dueDate||'set due date')} · ${esc(d.freq||'MONTHLY')} ×${d.debits||1}</span></div>`;}).join('')}</div>`;
+  } else if(c.showBreakup){
+    detail=`<div class="fsd"><div class="fsd-h">Fee Structure Details</div>
+      ${c.feeIdx.map(i=>{const f=pg.fees[i];if(!f)return'';return `<div class="fsd-row"><span class="k">${esc(f.name)}</span><span class="v">${f.mode==='dynamic'?'Parent enters':rs(feeAmount(f))}</span></div>`;}).join('')}
+      <div class="fsd-total"><span>Total Payable</span><span>${dyn?'Parent enters':rs(total)}</span></div></div>`;
+  }
+  return `<div class="pcard ${c.recommended?'rec':''}">
+    ${c.ribbon?`<div class="pc-ribbon">${esc(c.ribbon)}</div>`:''}
+    <div class="pc-main"><div class="pc-l">
+      <span class="pc-mode ${c.mode}">${c.mode==='DIRECT'?'CARD & UPI':c.mode}</span>
+      <span class="pc-radio"></span>
+      <div class="pc-t">${esc(c.title)||'Payment option'}</div>
+      <div class="pc-s">${esc(c.subtitle)||''}</div>
+      <div class="pc-uline"></div>
+      ${(c.mode!=='AUTO-DEBIT'&&c.showBreakup)?`<span class="pc-more" onclick="P().cards[${ci}].expanded=!P().cards[${ci}].expanded;paintLeft()">${c.expanded?'Less Details ⌃':'More Details ⌄'}</span>`:''}
+    </div><div class="pc-r">${amtLabel}</div></div>
+    ${(c.mode==='AUTO-DEBIT')?detail:(c.expanded?detail:'')}
+    ${c.info?`<div class="pc-info">${esc(c.info)}</div>`:''}
+  </div>`;
+}
+
+/* =================== RIGHT — wizard =================== */
+function opts(arr,val){return arr.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('');}
+function pageBar(){
+  if(S.pages.length<2) return '';
+  return `<div class="pagebar">Editing page:
+    <select onchange="S.activePage=+this.value;S.rev='';paintLeft();renderWizard()">${S.pages.map((p,i)=>`<option value="${i}" ${i===S.activePage?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+    (${S.activePage+1} of ${S.pages.length})</div>`;
+}
+function renderWizard(){
+  document.getElementById('wzsub').textContent = S.pageType==='ERP'?'ERP page · GILE level · webhook':'FMS page · per class';
+  const map={type:sType,inst:sInst,pages:sPages,fees:sFees,cards:sCards,form:sForm,look:sLook,set:sSet,hook:sHook,master:sMaster,review:sReview};
+  const k=curKey();
+  const bar = (S.pageType!=='MASTER' && ['fees','cards','form','look','set'].includes(k)) ? pageBar() : '';
+  document.getElementById('wzbody').innerHTML=bar+map[k]();
+  renderFoot(); renderStepper();
+}
+
+function sType(){return `
+  <div class="wz-h">What kind of page?</div>
+  <div class="wz-desc">This decides the whole setup. You can change it now, not later.</div>
+  <div class="typecards">
+    <div class="typecard ${S.pageType==='FMS'?'on':''}" onclick="S.pageType='FMS';S.step=0;paintLeft();renderWizard()">
+      <span class="tc-tag" style="background:var(--green-soft);color:#278a5b">Most common</span>
+      <div class="tc-t">🏫 FMS Payment Page</div>
+      <div class="tc-d">One page per class. You type the fee amounts. Create the same page for many classes at once (Class 1–12). No school-software connection.</div></div>
+    <div class="typecard ${S.pageType==='ERP'?'on':''}" onclick="S.pageType='ERP';S.step=0;paintLeft();renderWizard()">
+      <span class="tc-tag" style="background:var(--purple-soft);color:#5a3ed8">For ERPs</span>
+      <div class="tc-t">🔗 ERP Payment Page</div>
+      <div class="tc-d">One page for the whole institute. Adds a webhook step so their system is notified of payments. Produces integration credentials.</div></div>
+    <div class="typecard ${S.pageType==='MASTER'?'on':''}" onclick="S.pageType='MASTER';S.step=0;paintLeft();renderWizard()">
+      <span class="tc-tag" style="background:var(--cream);color:#8a6d00">Router</span>
+      <div class="tc-t">🧭 Master Link</div>
+      <div class="tc-d">One landing URL with a cascading dropdown that sends each student to the right payment page. Upload an Excel (levels → link) and it builds itself. GILE / GILE-AY level.</div></div>
+  </div>`;}
+
+function sInst(){
+  if(S.pageType==='MASTER'){
+    return `
+    <div class="wz-h">Which institute is this master for?</div>
+    <div class="wz-desc">A master link routes students to existing payment pages. It sits at <b>GILE</b> or <b>GILE-AY</b> level (not tied to any ERP).</div>
+    <div class="row2">
+      <div class="fld"><label>Group</label><input class="in" value="${esc(S.group)}" oninput="S.group=this.value;paintLeft()"></div>
+      <div class="fld"><label>Institute <span class="rq">*</span></label><input class="in" value="${esc(S.institute)}" oninput="S.institute=this.value;paintLeft();gate()"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>Branch / Location <span class="rq">*</span></label><input class="in" value="${esc(S.location)}" oninput="S.location=this.value;paintLeft();gate()"></div>
+      <div class="fld"><label>Board</label><select class="sel" onchange="S.board=this.value;paintLeft()">${opts(BOARDS,S.board)}</select></div>
+    </div>
+    <div class="fld"><label>Master level</label>
+      <div class="radios">
+        <div class="radio ${S.master.level==='GILE'?'on':''}" onclick="S.master.level='GILE';paintLeft();renderWizard()">GILE<small>whole institute</small></div>
+        <div class="radio ${S.master.level==='GILEAY'?'on':''}" onclick="S.master.level='GILEAY';paintLeft();renderWizard()">GILE-AY<small>per academic year</small></div>
+      </div></div>
+    ${S.master.level==='GILEAY'?`<div class="fld"><label>Academic Year</label><div style="display:flex;gap:10px"><select class="sel" onchange="S.ay=this.value;paintLeft()">${opts(AYS,S.ay)}</select><button class="btn o" style="padding:11px 16px;white-space:nowrap" onclick="addAY()">+ New</button></div></div>`:''}
+    <div class="fld"><label>Master URL suffix</label>
+      <div style="display:flex;align-items:center;gap:8px"><input class="mini" style="max-width:160px" value="${esc(S.master.suffix)}" oninput="S.master.suffix=this.value;paintLeft()"></div>
+      <div class="pr-slug" style="margin-top:8px">rapid.grayquest.com/${esc(masterSlug())}</div></div>`;
+  }
+  const fmsBlock = S.pageType==='FMS'
+    ? `<div class="fld"><label>Academic Year <span class="rq">*</span></label>
+        <div style="display:flex;gap:10px"><select class="sel" onchange="S.ay=this.value;paintLeft()">${opts(AYS,S.ay)}</select>
+        <button class="btn o" style="padding:11px 16px;white-space:nowrap" onclick="addAY()">+ New</button></div></div>
+      <div class="fld"><label>Classes <span class="rq">*</span> <span class="hint" style="display:inline">(each page is made per class)</span></label>
+        <div class="chk ${S.classes.length===GRADES.length?'on':''}" onclick="toggleAllClasses()" style="margin-bottom:6px"><span class="box">${S.classes.length===GRADES.length?'✓':''}</span> Select all classes</div>
+        <div class="chips">${GRADES.map(g=>`<div class="chip ${S.classes.includes(g)?'on':''}" onclick="toggleClass('${g}')">${g}</div>`).join('')}</div></div>`
+    : `<div class="fld"><label>Scope</label><input class="in" value="Institute-wide (GILE level)" readonly><div class="hint">ERP pages sit at institute level — no academic year or per-class selection.</div></div>`;
+  return `
+  <div class="wz-h">Who is this page for?</div>
+  <div class="wz-desc">Search the school. IDs are handled for you behind the scenes. This — plus the credentials — is shared by every page you create.</div>
+  <div class="row2">
+    <div class="fld"><label>Group</label><input class="in" value="${esc(S.group)}" oninput="S.group=this.value;paintLeft()"></div>
+    <div class="fld"><label>Institute <span class="rq">*</span></label><input class="in" value="${esc(S.institute)}" oninput="S.institute=this.value;paintLeft();gate()"></div>
+  </div>
+  <div class="row2">
+    <div class="fld"><label>Branch / Location <span class="rq">*</span></label><input class="in" value="${esc(S.location)}" oninput="S.location=this.value;paintLeft();gate()"></div>
+    <div class="fld"><label>Board</label><select class="sel" onchange="S.board=this.value;paintLeft()">${opts(BOARDS,S.board)}</select></div>
+  </div>
+  ${fmsBlock}`;}
+function addAY(){
+  const v=prompt('New Academic Year (format 2027-28):','');
+  if(!v)return; const t=v.trim();
+  if(!/^\d{4}-\d{2}$/.test(t)){toast('Use format 2027-28');return;}
+  if(!AYS.includes(t))AYS.unshift(t);
+  S.ay=t; paintLeft(); renderWizard();
+}
+
+/* ---- MASTER dropdown step ---- */
+function sMaster(){
+  const m=S.master; const nCols=m.columns.length;
+  const validRows=m.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='').length;
+  const gridCols=`repeat(${nCols},1fr) 1.4fr 30px`;
+  return `
+  <div class="wz-h">Build the cascading dropdown</div>
+  <div class="wz-desc">Upload an Excel and it builds itself — every column except the last becomes a dropdown level; the <b>last column is the payment link</b>. Or edit the table below.</div>
+  <div class="drop-zone" onclick="document.getElementById('xlsx').click()">
+    <div class="dz-i">📄⬆️</div><div class="dz-t">Upload Excel (.xlsx)</div>
+    <div class="dz-s">Columns = dropdown levels · last column = Link</div></div>
+  <input type="file" id="xlsx" accept=".xlsx,.xls" style="display:none" onchange="if(this.files[0])parseMasterExcel(this.files[0])">
+  <div class="lvlchips" style="margin:16px 0">${m.columns.map((c,i)=>`<span class="lvlchip">${esc(c)}</span>${i<nCols-1?'<span class="arrow">→</span>':''}`).join('')}<span class="arrow">→</span><span class="lvlchip link">Link</span></div>
+  <div style="font-size:13px;font-weight:700;margin:14px 0 8px">Data (${validRows} valid row${validRows===1?'':'s'})</div>
+  <div class="fh-tbl" style="overflow-x:auto"><div style="min-width:${nCols*140+180}px">
+    <div class="fh-r h" style="grid-template-columns:${gridCols}">${m.columns.map((c,i)=>`<div><input class="mini" value="${esc(c)}" onchange="S.master.columns[${i}]=this.value;renderWizard();paintLeft()" style="font-weight:600"></div>`).join('')}<div>Link</div><div></div></div>
+    ${m.rows.map((r,ri)=>`<div class="fh-r" style="grid-template-columns:${gridCols}">
+      ${m.columns.map((_,ci)=>`<div><input class="mini" value="${esc(r.cells[ci]||'')}" oninput="S.master.rows[${ri}].cells[${ci}]=this.value;paintLeft()"></div>`).join('')}
+      <div><input class="mini" value="${esc(r.link)}" placeholder="https://rapid.grayquest.com/…" oninput="S.master.rows[${ri}].link=this.value;paintLeft()"></div>
+      <div class="del" onclick="S.master.rows.splice(${ri},1);paintLeft();renderWizard()">✕</div>
+    </div>`).join('')}
+  </div></div>
+  <div style="display:flex;gap:14px;margin-top:8px">
+    <span class="addlink" onclick="S.master.rows.push({cells:S.master.columns.map(()=>''),link:''});renderWizard()">+ Add row</span>
+    <span class="addlink" onclick="addMasterLevel()">+ Add level</span>
+    ${nCols>1?`<span class="addlink" style="color:var(--red)" onclick="removeMasterLevel()">− Remove last level</span>`:''}
+  </div>
+  <div class="hint" style="margin-top:10px">Rows with any blank cell are skipped (same as the team's script). The live preview on the left cascades exactly as a student will use it.</div>`;}
+function addMasterLevel(){ S.master.columns.push('Level '+(S.master.columns.length+1)); S.master.rows.forEach(r=>r.cells.push('')); S.master.sel=[]; renderWizard(); paintLeft(); }
+function removeMasterLevel(){ if(S.master.columns.length<2)return; S.master.columns.pop(); S.master.rows.forEach(r=>r.cells.pop()); S.master.sel=[]; renderWizard(); paintLeft(); }
+
+/* ---- PAGES step: manage multiple pages on the same GILEAYC ---- */
+function modesOf(pg){ return [...new Set(pg.cards.map(c=>c.mode==='DIRECT'?'Card & UPI':(c.mode==='MONTHLY-EMI'?'EMI':c.mode)))].join(', ')||'no options yet'; }
+function dupSuffix(base){ let s=base||'copy',n=1; const has=x=>S.pages.some(p=>slugify(p.suffix)===slugify(x)); while(has(s)){n++;s=(base||'copy')+'-'+n;} return s; }
+function sPages(){
+  const cls=primaryClass();
+  return `
+  <div class="wz-h">Payment pages for this ${S.pageType==='FMS'?'class':'institute'}</div>
+  <div class="wz-desc">One institute can have several pages — e.g. an <b>EMI-only</b> page and a <b>PG-only</b> page — each with its own URL and payment options. They share the same institute, fees pool and credentials.</div>
+  ${S.pages.map((pg,i)=>`<div class="pagerow ${i===S.activePage?'active':''}">
+    <div class="pr-top">
+      <input class="pr-name" value="${esc(pg.name)}" oninput="S.pages[${i}].name=this.value;renderStepper && paintLeft()" onchange="renderWizard()">
+      ${i===S.activePage?'<span class="badge" style="background:var(--blue-soft);color:var(--blueink)">Editing</span>':''}
+    </div>
+    <div class="fld" style="margin:0 0 4px"><label style="font-size:12.5px">URL suffix</label>
+      <div style="display:flex;align-items:center;gap:8px"><span class="hint" style="margin:0">${esc(baseSlug(cls))}-</span>
+      <input class="mini" style="max-width:150px" value="${esc(pg.suffix)}" oninput="S.pages[${i}].suffix=this.value;if(${i}===S.activePage)paintLeft()" onchange="renderWizard()"></div></div>
+    <div class="pr-slug">rapid.grayquest.com/${esc(pageSlug(pg,cls))}</div>
+    <div class="pr-modes">Options: ${modesOf(pg)} · ${pg.cards.length} card${pg.cards.length===1?'':'s'}</div>
+    <div class="pr-actions">
+      ${i===S.activePage?'':`<button class="btnmini p" onclick="S.activePage=${i};S.rev='';paintLeft();renderWizard()">Select to edit</button>`}
+      <button class="btnmini" onclick="clonePage(${i})">Duplicate</button>
+      ${S.pages.length>1?`<button class="btnmini d" onclick="removePage(${i})">Remove</button>`:''}
+    </div>
+  </div>`).join('')}
+  <span class="addlink" onclick="addPage()">+ Add another page</span>
+  <div class="hint" style="margin-top:8px">The next steps (Fees, Payment Options, Form, Look, Settings) configure the <b>selected</b> page. Switch pages anytime from the bar at the top of those steps.</div>`;}
+function addPage(){ const s=dupSuffix('new'); S.pages.push(mkPage('New Page',s,[mkCard({title:'Pay Fee via Payment Gateway',feeIdx:[]})])); S.activePage=S.pages.length-1; renderWizard(); paintLeft(); }
+function clonePage(i){ const src=JSON.parse(JSON.stringify(S.pages[i])); src.name=src.name+' (copy)'; src.suffix=dupSuffix(src.suffix||'copy'); S.pages.splice(i+1,0,src); S.activePage=i+1; renderWizard(); paintLeft(); toast('Page duplicated — change its options'); }
+function removePage(i){ if(S.pages.length<2)return; S.pages.splice(i,1); if(S.activePage>=S.pages.length)S.activePage=S.pages.length-1; renderWizard(); paintLeft(); }
+
+function sFees(){const pg=P();return `
+  <div class="wz-h">What fees are you collecting?</div>
+  <div class="wz-desc">Type each fee. The amount is either a fixed number you set, or one the parent enters themselves.</div>
+  <div class="fh-tbl">
+    <div class="fh-r h"><div>#</div><div>Fee name</div><div>Amount</div><div>Type</div><div></div></div>
+    ${pg.fees.map((f,i)=>`<div class="fh-r">
+      <div>${i+1}</div>
+      <div><input class="mini" value="${esc(f.name)}" placeholder="e.g. Tuition Fee" oninput="P().fees[${i}].name=this.value;paintLeft();gate()"></div>
+      <div>${f.mode==='fixed'?`<input class="mini" type="number" value="${f.amount}" oninput="P().fees[${i}].amount=+this.value||0;paintLeft()">`:`<span class="hint" style="margin:0">parent enters</span>`}</div>
+      <div><div class="segmini"><span class="${f.mode==='fixed'?'on':''}" onclick="P().fees[${i}].mode='fixed';paintLeft();renderWizard()">Fixed</span><span class="${f.mode==='dynamic'?'on':''}" onclick="P().fees[${i}].mode='dynamic';paintLeft();renderWizard()">Dynamic</span></div></div>
+      <div class="del" onclick="P().fees.splice(${i},1);fixFeeIdx();paintLeft();renderWizard();gate()">✕</div>
+    </div>`).join('')}
+  </div>
+  <span class="addlink" onclick="P().fees.push({name:'',mode:'fixed',amount:0,dueDate:''});renderWizard()">+ Add another fee</span>
+  <div class="hint" style="margin-top:10px"><b>Fixed</b> = you set the ₹ amount. <b>Dynamic</b> = the parent types the amount they want to pay (open amount). Due dates live inside a payment option when Auto-Debit is used.</div>`;}
+
+function sCards(){const pg=P();return `
+  <div class="wz-h">How can parents pay?</div>
+  <div class="wz-desc">Each option = a card on this page. Give it a name, pick how they pay, tick which fees it covers.</div>
+  ${pg.cards.map((c,ci)=>cardEditor(pg,c,ci)).join('')}
+  <span class="addlink" onclick="addCard()">+ Add another payment option</span>`;}
+function cardEditor(pg,c,ci){
+  const modeExtra = c.mode==='EMI'
+    ? `<div class="fld"><label>EMI Plan <span class="rq">*</span></label>
+        <select class="sel" onchange="P().cards[${ci}].emiPlan=+this.value;renderWizard()">
+          <option value="0">Select an active plan…</option>${EMI_PLANS.map(p=>`<option value="${p.id}" ${c.emiPlan===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+        ${c.emiPlan?'':'<div class="hint" style="color:var(--red)">No plan selected — the card will save but stay inactive/expired until an active EMI product exists.</div>'}</div>`
+    : c.mode==='AUTO-DEBIT'
+    ? `<div class="schedbox"><div class="sh">Set a due date for each fee (required for Auto-Debit)</div>
+        ${c.feeIdx.length?c.feeIdx.map(i=>{const f=pg.fees[i];const d=(c.schedule&&c.schedule[i])||{};return `<div class="sched-e">
+          <span>${esc(f?f.name:'fee')}</span>
+          <input class="mini" type="date" value="${d.dueDate||''}" onchange="setSched(${ci},${i},'dueDate',this.value);paintLeft();gate()">
+          <input class="mini" type="number" min="1" value="${d.debits||1}" onchange="setSched(${ci},${i},'debits',+this.value||1);paintLeft()" title="No. of debits">
+        </div>`;}).join(''):'<div class="sched-e" style="grid-template-columns:1fr"><span class="hint" style="margin:0">Tick fees below first.</span></div>'}</div>`
+    : `<div class="hint">Card & UPI — payment gateway routing is handled automatically. Nothing else to set here.</div>`;
+  return `<div class="cardbox">
+    <div class="cb-h">Payment Option ${ci+1}${pg.cards.length>1?`<span class="del" onclick="P().cards.splice(${ci},1);paintLeft();renderWizard();gate()">Remove</span>`:''}</div>
+    <div class="fld"><label>Title <span class="rq">*</span></label><input class="in" value="${esc(c.title)}" oninput="P().cards[${ci}].title=this.value;paintLeft();gate()"></div>
+    <div class="fld"><label>Subtitle</label><input class="in" value="${esc(c.subtitle)}" oninput="P().cards[${ci}].subtitle=this.value;paintLeft()"></div>
+    <div class="fld"><label>How can they pay? <span class="rq">*</span></label>
+      <div class="radios">
+        ${[['EMI','EMI','instalments'],['DIRECT','Card & UPI','one-time'],['AUTO-DEBIT','Auto-Debit','eNACH']].map(([m,l,s])=>`<div class="radio ${c.mode===m?'on':''}" onclick="P().cards[${ci}].mode='${m}';paintLeft();renderWizard();gate()">${l}<small>${s}</small></div>`).join('')}
+      </div></div>
+    <div class="fld"><label>Which fees does this cover? <span class="rq">*</span></label>
+      <div class="feepick">${pg.fees.map((f,fi)=>`<div class="feetag ${c.feeIdx.includes(fi)?'on':''}" onclick="toggleCardFee(${ci},${fi})"><span class="b">${c.feeIdx.includes(fi)?'✓':''}</span>${esc(f.name||'fee '+(fi+1))}</div>`).join('')||'<span class="hint">Add fees first.</span>'}</div>
+      <div class="covers">Covers: ${cardHasDynamic(pg,c)&&cardTotal(pg,c)===0?'Parent enters (dynamic)':inr(cardTotal(pg,c))}</div></div>
+    ${modeExtra}
+    <div class="adv">
+      <div class="adv-t" onclick="P().cards[${ci}].advOpen=!P().cards[${ci}].advOpen;renderWizard()">${c.advOpen?'▾':'▸'} Advanced options</div>
+      ${c.advOpen?`<div style="margin-top:10px">
+        <div class="chk ${c.recommended?'on':''}" onclick="P().cards[${ci}].recommended=!P().cards[${ci}].recommended;paintLeft();renderWizard()"><span class="box">${c.recommended?'✓':''}</span> ⭐ Mark as recommended (highlight)</div>
+        <div class="chk ${c.showBreakup?'on':''}" onclick="P().cards[${ci}].showBreakup=!P().cards[${ci}].showBreakup;paintLeft();renderWizard()"><span class="box">${c.showBreakup?'✓':''}</span> 👁 Show fee breakup on card</div>
+        <div class="chk ${c.editable?'on':''}" onclick="P().cards[${ci}].editable=!P().cards[${ci}].editable;renderWizard()"><span class="box">${c.editable?'✓':''}</span> ✏️ Let parent edit the amount</div>
+        <div class="chk ${c.verifyMobile?'on':''}" onclick="P().cards[${ci}].verifyMobile=!P().cards[${ci}].verifyMobile;renderWizard()"><span class="box">${c.verifyMobile?'✓':''}</span> 📱 Verify mobile (OTP)</div>
+        <div class="fld" style="margin-top:10px"><label>Ribbon text</label><input class="in" value="${esc(c.ribbon)}" placeholder="e.g. Pay Rs. 0 Today" oninput="P().cards[${ci}].ribbon=this.value;paintLeft()"></div>
+        <div class="fld"><label>Info text</label><input class="in" value="${esc(c.info)}" oninput="P().cards[${ci}].info=this.value;paintLeft()"></div>
+      </div>`:''}
+    </div>
+  </div>`;}
+
+function sForm(){const pg=P();return `
+  <div class="wz-h">What should parents fill in?</div>
+  <div class="wz-desc">Standard fields are ready. Turn on what you need; add custom fields for anything extra.</div>
+  ${pg.fields.map((f,i)=>`<div class="cardbox" style="padding:12px 14px;margin-bottom:10px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="tgl ${f.enabled||f.primary?'on':''}" onclick="${f.primary?'':`P().fields[${i}].enabled=!P().fields[${i}].enabled;paintLeft();renderWizard()`}" ${f.primary?'style="opacity:.5;cursor:not-allowed"':''}></span>
+      <div style="flex:1"><b style="font-size:14px">${esc(f.label)}</b>${f.primary?' <span class="badge" style="background:var(--blue-soft);color:var(--blueink)">Primary ID</span>':''}<div class="hint" style="margin:2px 0 0">${esc(f.key)}</div></div>
+      ${(f.enabled||f.primary)?`<div class="chk ${f.required?'on':''}" onclick="P().fields[${i}].required=!P().fields[${i}].required;paintLeft()" style="margin:0"><span class="box">${f.required?'✓':''}</span> Required</div>`:''}
+    </div></div>`).join('')}
+  <div style="font-size:13px;font-weight:700;margin:16px 0 8px">Custom fields</div>
+  ${pg.customFields.map((f,i)=>`<div class="cardbox" style="padding:12px 14px;margin-bottom:10px">
+    <div class="row2"><div class="fld" style="margin:0"><label>Label</label><input class="in" value="${esc(f.label)}" oninput="P().customFields[${i}].label=this.value;paintLeft()"></div>
+    <div class="fld" style="margin:0"><label>Type</label><select class="sel" onchange="P().customFields[${i}].type=this.value;paintLeft()">${opts(['text','select','radio','date'],f.type)}</select></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+      <div class="chk ${f.required?'on':''}" onclick="P().customFields[${i}].required=!P().customFields[${i}].required;paintLeft()" style="margin:0"><span class="box">${f.required?'✓':''}</span> Required</div>
+      <span class="del" style="color:var(--red);cursor:pointer;font-size:13px;font-weight:600" onclick="P().customFields.splice(${i},1);paintLeft();renderWizard()">Remove</span></div>
+  </div>`).join('')}
+  <span class="addlink" onclick="P().customFields.push({label:'New field',type:'text',required:false});paintLeft();renderWizard()">+ Add custom field</span>
+  <div class="fld" style="margin-top:18px"><label>Form title</label><input class="in" value="${esc(pg.formTitle)}" oninput="P().formTitle=this.value;paintLeft()"></div>
+  <div class="tglrow"><span class="tgl ${pg.otp?'on':''}" onclick="P().otp=!P().otp;paintLeft();renderWizard()"></span> Verify parent's mobile with OTP</div>
+  <div class="tglrow"><span class="tgl ${pg.blockUnverified?'on':''}" onclick="P().blockUnverified=!P().blockUnverified;renderWizard()"></span> Block payment if student ID not verified</div>`;}
+
+function sLook(){
+  if(S.pageType==='MASTER'){const m=S.master;return `
+    <div class="wz-h">How should the master page look?</div>
+    <div class="wz-desc">The landing page students see before the dropdown.</div>
+    <div class="tglrow"><span class="tgl ${m.logo?'on':''}" onclick="S.master.logo=!S.master.logo;paintLeft();renderWizard()"></span> Show logo</div>
+    ${m.logo?`<div class="fld"><label>Logo image URL (optional)</label><input class="in" value="${esc(m.logoUrl)}" placeholder="https://…/logo.png" oninput="S.master.logoUrl=this.value;paintLeft()"></div>`:''}
+    <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(m.pageTitle)}" oninput="S.master.pageTitle=this.value;paintLeft();gate()"></div>
+    <div class="fld"><label>Page subtitle</label><input class="in" value="${esc(m.pageSubtitle)}" oninput="S.master.pageSubtitle=this.value;paintLeft()"></div>`;}
+  const pg=P();return `
+  <div class="wz-h">How should the page look?</div>
+  <div class="wz-desc">The preview on the left updates as you type.</div>
+  <div class="tglrow"><span class="tgl ${pg.logo?'on':''}" onclick="P().logo=!P().logo;paintLeft();renderWizard()"></span> Show logo</div>
+  ${pg.logo?`<div class="fld"><label>Logo image URL (optional)</label><input class="in" value="${esc(pg.logoUrl)}" placeholder="https://…/logo.png — blank uses a placeholder crest" oninput="P().logoUrl=this.value;paintLeft()"></div>`:''}
+  <div class="fld"><label>Page title <span class="rq">*</span></label><input class="in" value="${esc(pg.pageTitle)}" oninput="P().pageTitle=this.value;paintLeft();gate()"></div>
+  <div class="fld"><label>Page subtitle</label><input class="in" value="${esc(pg.pageSubtitle)}" oninput="P().pageSubtitle=this.value;paintLeft()"></div>
+  <div class="tglrow"><span class="tgl ${pg.banner.on?'on':''}" onclick="P().banner.on=!P().banner.on;paintLeft();renderWizard()"></span> Show an "About the school" banner</div>
+  ${pg.banner.on?`<div class="fld"><label>Banner title</label><input class="in" value="${esc(pg.banner.title)}" oninput="P().banner.title=this.value;paintLeft()"></div>
+    <div class="fld"><label>Banner text</label><input class="in" value="${esc(pg.banner.desc)}" oninput="P().banner.desc=this.value;paintLeft()"></div>`:''}`;}
+
+function expOpts(v){return `<option value="">Never</option>`+['1','7','15','30','60','90'].map(d=>`<option value="${d}" ${v===d?'selected':''}>${d} days</option>`).join('');}
+function sSet(){
+  const pg=P();
+  const multi = S.pageType==='FMS' && S.classes.length>1;
+  const expiryUI = (multi && pg.perLinkExpiry)
+    ? `<div class="fh-tbl">
+        <div class="fh-r h" style="grid-template-columns:1fr 150px"><div>Link (class)</div><div>Expires after</div></div>
+        ${S.classes.map(c=>`<div class="fh-r" style="grid-template-columns:1fr 150px"><div>${esc(c)}</div>
+          <div><select class="mini" onchange="P().classExpiry['${c}']=this.value">${expOpts(pg.classExpiry[c]!==undefined?pg.classExpiry[c]:pg.expiryDays)}</select></div></div>`).join('')}
+      </div>`
+    : `<select class="sel" onchange="P().expiryDays=this.value">${expOpts(pg.expiryDays)}</select>
+       <div class="hint">After this many days this page's link stops working.${pg.expiryDays?' ('+(+pg.expiryDays*1440)+' minutes)':' No expiry.'}</div>`;
+  return `
+  <div class="wz-h">Page settings</div>
+  <div class="wz-desc">Expiry and how parents pick fees — for <b>${esc(pg.name)}</b>.</div>
+  <div class="fld"><label>Link expires after</label>
+    ${multi?`<div class="tglrow" style="margin:0 0 12px"><span class="tgl ${pg.perLinkExpiry?'on':''}" onclick="P().perLinkExpiry=!P().perLinkExpiry;renderWizard()"></span> Set a different expiry per class link (${S.classes.length} links)</div>`:''}
+    ${expiryUI}</div>
+  <div class="tglrow"><span class="tgl ${pg.allowCheckbox?'on':''}" onclick="P().allowCheckbox=!P().allowCheckbox;renderWizard()"></span> Let parents tick which fees to pay</div>
+  ${pg.allowCheckbox?`<div class="tglrow" style="margin-left:14px"><span class="tgl ${pg.singleSelect?'on':''}" onclick="P().singleSelect=!P().singleSelect;renderWizard()"></span> Only one fee at a time</div>`:''}
+  ${S.pageType==='ERP'?`<div class="tglrow"><span class="tgl ${pg.dynamicLink?'on':''}" onclick="P().dynamicLink=!P().dynamicLink;renderWizard()"></span> Dynamic link (fee data resolved per student at runtime)</div>`:''}`;}
+
+function sHook(){return `
+  <div class="wz-h">Connect the school's software</div>
+  <div class="wz-desc">ERP only — shared by every page of this institute. GrayQuest notifies their system when payments happen.</div>
+  <div class="fld"><label>Webhook URL <span class="rq">*</span></label><input class="in" value="${esc(S.webhookUrl)}" placeholder="https://erp.school.com/gq/webhook" oninput="S.webhookUrl=this.value;gate()"><div class="hint">A signing secret is generated automatically on publish.</div></div>
+  <div class="fld"><label>Which events should we send?</label>
+    <div class="chips">${EVENTS.map(e=>`<div class="chip ${S.events.includes(e)?'on':''}" onclick="toggleEvent('${e}')">${e}</div>`).join('')}</div></div>`;}
+
+function sReview(){
+  const cls=primaryClass();
+  const rev=(k,title,body)=>{const idx=steps().findIndex(s=>s.k===k);return `<div class="rev ${S.rev===k?'open':''}"><div class="rh" onclick="S.rev=S.rev==='${k}'?'':'${k}';renderWizard()">
+    <span class="t">${title}</span><span><span class="edit" onclick="event.stopPropagation();S.step=${idx};syncPreview();renderWizard();paintLeft()">✎ Edit</span><span class="cr">⌄</span></span></div>
+    <div class="rb"><div class="card">${body}</div></div></div>`;};
+  const kv=(k,v)=>`<div class="kv"><div class="k">${k}</div><div class="v">${esc(v)||'—'}</div></div>`;
+  if(S.pageType==='MASTER'){
+    const m=S.master; const validRows=m.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='').length;
+    return `<div class="wz-h">Review & publish</div>
+      <div class="wz-desc">Publishes <b>one master link</b> with a ${m.columns.length}-level dropdown routing to <b>${validRows}</b> pages.</div>
+      ${rev('inst','Institute', kv('Institute',S.institute)+kv('Branch',S.location)+kv('Board',S.board)+kv('Level',m.level+(m.level==='GILEAY'?' · '+S.ay:'')))}
+      ${rev('master','Dropdown', kv('Levels',m.columns.join(' → '))+kv('Destinations',validRows+' pages'))}
+      <div class="rev"><div class="rh" style="cursor:default"><span class="t">Master URL</span></div><div class="rb" style="display:block"><div class="card"><div class="pr-slug">rapid.grayquest.com/${esc(masterSlug())}</div></div></div></div>`;
+  }
+  const pagesBody=S.pages.map(pg=>kv(pg.name, 'rapid.grayquest.com/'+pageSlug(pg,cls)+' · '+modesOf(pg))).join('');
+  const nLinks = S.pageType==='FMS' ? S.pages.length*Math.max(1,S.classes.length) : S.pages.length;
+  // per-link slug editor
+  const targets = S.pageType==='FMS' ? S.classes : [''];
+  let slugRows='';
+  targets.forEach(t=>{ S.pages.forEach((pg,pi)=>{ const k=linkKey(pg,t);
+    slugRows+=`<div class="fh-r" style="grid-template-columns:1fr 1.4fr">
+      <div style="font-size:12.5px">${esc((S.pageType==='FMS'?t+' · ':'')+pg.name)}</div>
+      <div><input class="mini" value="${esc(pageSlug(pg,t))}" oninput="S.slugOverrides['${k}']=this.value;paintLeft()"></div></div>`; }); });
+  return `<div class="wz-h">Review & publish</div>
+    <div class="wz-desc">This will create <b>${nLinks}</b> link${nLinks===1?'':'s'} (${S.pages.length} page${S.pages.length===1?'':'s'}${S.pageType==='FMS'?' × '+Math.max(1,S.classes.length)+' class'+(S.classes.length===1?'':'es'):''}), all sharing the institute credentials.</div>
+    ${rev('inst','Institute', kv('Institute',S.institute)+kv('Branch',S.location)+kv('Board',S.board)+(S.pageType==='FMS'?kv('Academic Year',S.ay)+kv('Classes',S.classes.join(', ')):kv('Scope','Institute-wide (GILE)')))}
+    ${rev('pages','Pages ('+S.pages.length+')', pagesBody)}
+    ${rev('fees','Fees · '+esc(P().name), P().fees.map(f=>kv(f.name,f.mode==='dynamic'?'Dynamic (parent enters)':rs(f.amount))).join(''))}
+    ${rev('cards','Payment options · '+esc(P().name), P().cards.map(c=>kv(c.title,(c.mode==='DIRECT'?'Card & UPI':c.mode)+' · '+c.feeIdx.map(i=>P().fees[i]?.name).filter(Boolean).join(', '))).join(''))}
+    ${S.pageType==='ERP'?rev('hook','Webhook', kv('URL',S.webhookUrl)+kv('Events',S.events.join(', '))):''}
+    <div style="font-size:16px;font-weight:700;margin:20px 0 4px">Links & slugs</div>
+    <div class="wz-desc" style="margin-bottom:10px">Edit any slug before publishing — each can differ.</div>
+    <div class="fh-tbl"><div class="fh-r h" style="grid-template-columns:1fr 1.4fr"><div>Page</div><div>Slug</div></div>${slugRows}</div>`;}
+
+/* ---- toggles/mutators (operate on active page or shared state) ---- */
+function toggleClass(g){const i=S.classes.indexOf(g);i<0?S.classes.push(g):S.classes.splice(i,1);paintLeft();renderWizard();gate();}
+function toggleAllClasses(){S.classes=S.classes.length===GRADES.length?[GRADES[0]]:GRADES.slice();paintLeft();renderWizard();gate();}
+function fixFeeIdx(){P().cards.forEach(c=>{c.feeIdx=c.feeIdx.filter(x=>x<P().fees.length);});}
+function toggleCardFee(ci,fi){const a=P().cards[ci].feeIdx;const i=a.indexOf(fi);i<0?a.push(fi):a.splice(i,1);a.sort((x,y)=>x-y);paintLeft();renderWizard();gate();}
+function addCard(){P().cards.push(mkCard({title:'',feeIdx:[]}));paintLeft();renderWizard();}
+function setSched(ci,fi,k,v){const c=P().cards[ci];c.schedule=c.schedule||{};c.schedule[fi]=c.schedule[fi]||{freq:'MONTHLY',debits:1};c.schedule[fi][k]=v;}
+function toggleEvent(e){const i=S.events.indexOf(e);i<0?S.events.push(e):S.events.splice(i,1);renderWizard();}
+
+/* ---- gating ---- */
+function stepOk(){
+  const k=curKey();
+  if(k==='inst') return !!(S.institute.trim()&&S.location.trim()&&(S.pageType!=='FMS'||S.classes.length));
+  if(k==='master') return S.master.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='').length>0;
+  if(k==='look') return S.pageType==='MASTER' ? !!S.master.pageTitle.trim() : !!P().pageTitle.trim();
+  if(k==='pages'){ const sl=S.pages.map(p=>slugify(p.suffix)); return S.pages.every(p=>p.name.trim()) && new Set(sl).size===sl.length; }
+  if(k==='fees') return P().fees.length>0 && P().fees.every(f=>f.name.trim());
+  if(k==='cards') return P().cards.length>0 && P().cards.every(c=>{
+      if(!c.title.trim()||!c.feeIdx.length) return false;
+      if(c.mode==='AUTO-DEBIT') return c.feeIdx.every(i=>c.schedule&&c.schedule[i]&&c.schedule[i].dueDate);
+      return true;});
+  if(k==='hook') return !!S.webhookUrl.trim();
+  return true;
+}
+function renderFoot(){
+  const last=S.step===steps().length-1;
+  document.getElementById('wzfoot').innerHTML=
+    `<span class="stepc">Step ${S.step+1} of ${steps().length} · ${steps()[S.step].lb}</span>
+     <span style="display:flex;gap:12px">${S.step>0?`<button class="btn o" onclick="go(-1)">Back</button>`:''}
+     <button class="btn g" id="nextBtn" ${stepOk()?'':'disabled'} onclick="${last?'publish()':'go(1)'}">${last?'Publish →':'Continue'}</button></span>`;
+}
+function gate(){const n=document.getElementById('nextBtn');if(n)n.disabled=!stepOk();}
+function syncPreview(){const k=curKey();if(k==='cards')S.previewPage='payment';else if(k==='form'||k==='inst'||k==='look'||k==='pages')S.previewPage='details';}
+function go(d){if(d>0&&!stepOk())return;S.step=Math.max(0,Math.min(steps().length-1,S.step+d));syncPreview();renderWizard();paintLeft();document.getElementById('wzbody').scrollTop=0;}
+function renderStepper(){
+  document.getElementById('stepper').innerHTML=steps().map((s,i)=>`<div class="stp ${i<S.step?'done':''} ${i===S.step?'cur':''}"><div class="line"></div><div class="dot">${i<S.step?'✓':''}</div><div class="lb">${s.lb}</div></div>`).join('');
+}
+
+/* ---- publish → links (grouped); creds are ERP-only, downloadable ---- */
+let PUBLISHED=[];
+function publish(){
+  if(S.pageType==='MASTER'){ publishMaster(); return; }
+  const rows=[];
+  if(S.pageType==='FMS'){
+    S.classes.forEach(cls=>S.pages.forEach(pg=>rows.push({
+      group:cls, label:pg.name, url:'https://rapid.grayquest.com/'+pageSlug(pg,cls),
+      expiry:expiryFor(pg,cls), client_id:'GQ-'+uuid().slice(0,8), api_key:uuid(), secret:uuid()
+    })));
+  } else {
+    S.pages.forEach(pg=>rows.push({
+      group:'Institute-wide', label:pg.name, url:'https://rapid.grayquest.com/'+pageSlug(pg,''),
+      expiry:pg.expiryDays, client_id:'GQ-'+uuid().slice(0,8), api_key:uuid(), secret:uuid()
+    }));
+  }
+  PUBLISHED=rows;
+  const isERP=S.pageType==='ERP';
+  const groups=[...new Set(rows.map(r=>r.group))];
+  document.getElementById('pub').innerHTML=`
+    <h2>✅ Published</h2>
+    <div class="psubt">${rows.length} link${rows.length>1?'s':''} created · ${S.pages.length} page${S.pages.length>1?'s':''} on ${S.institute}${isERP?'':' × '+Math.max(1,S.classes.length)+' class'+(S.classes.length===1?'':'es')}</div>
+    ${groups.map(g=>`${S.pageType==='FMS'?`<div class="pub-group">${esc(g)}</div>`:''}
+      ${rows.filter(r=>r.group===g).map(r=>`<div class="pub-row">
+        <div class="pr-t">${esc(r.label)}<span class="badge" style="background:var(--green-soft);color:#278a5b">Live</span></div>
+        <div class="pr-u">${esc(r.url)}</div>
+        <div class="hint" style="margin-top:6px">Expires: ${r.expiry?r.expiry+' days':'never'}</div>
+      </div>`).join('')}`).join('')}
+    ${isERP?`<div class="pub-row" style="border-color:var(--purple);background:var(--purple-soft)">
+        <div class="pr-t">🔗 Integration credentials</div>
+        <div class="hint" style="margin:6px 0 12px;color:#5a3ed8">Client ID, API Key & Secret for your ERP team to integrate the GrayQuest SDK. Download and share securely — they aren't shown here.</div>
+        <button class="dlbtn" onclick="downloadCreds()">⬇ Download credentials (.json)</button>
+        <div class="pub-row" style="margin:12px 0 0;background:#fff"><div class="pr-t" style="font-size:14px">Webhook connected</div><div class="pr-u">${esc(S.webhookUrl)}</div><div class="hint" style="margin-top:6px">Events: ${esc(S.events.join(', '))}</div></div>
+      </div>`:`<div class="hint" style="margin:6px 2px 0">FMS pages — just share the links with parents. No integration credentials needed.</div>`}
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:18px">
+      <button class="btn o" onclick="document.getElementById('overlay').classList.remove('on')">Close</button>
+      <button class="btn g" onclick="toast('Links copied (demo)')">Copy links</button></div>`;
+  document.getElementById('overlay').classList.add('on');
+}
+function publishMaster(){
+  const m=S.master; const tree=buildMasterTree();
+  const validRows=m.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='').length;
+  document.getElementById('pub').innerHTML=`
+    <h2>✅ Master link published</h2>
+    <div class="psubt">${m.columns.length}-level dropdown routing to ${validRows} payment pages</div>
+    <div class="pub-row">
+      <div class="pr-t">${esc(m.pageTitle)}<span class="badge" style="background:var(--cream);color:#8a6d00">Master</span></div>
+      <div class="pr-u">https://rapid.grayquest.com/${esc(masterSlug())}</div>
+      <div class="hint" style="margin-top:6px">Levels: ${esc(m.columns.join(' → '))}</div>
+    </div>
+    <div class="pub-row" style="border-color:#dbe4f7;background:#f7f9ff">
+      <div class="pr-t">🧭 Dependent-dropdown JSON</div>
+      <div class="hint" style="margin:6px 0 12px">This goes into the master page's <b>content_blocks</b> — same shape as the team's script output.</div>
+      <button class="dlbtn" style="background:var(--blue)" onclick="downloadMasterJson()">⬇ Download content_blocks (.json)</button>
+    </div>
+    <div class="mtree">${renderTreeHTML(tree[0].dropdown.data,0)}</div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:18px">
+      <button class="btn o" onclick="document.getElementById('overlay').classList.remove('on')">Close</button>
+      <button class="btn g" onclick="toast('Master link copied (demo)')">Copy link</button></div>`;
+  document.getElementById('overlay').classList.add('on');
+}
+function renderTreeHTML(nodes,depth){
+  return nodes.map(n=>`<div class="node" style="padding-left:${depth*14}px">${'•'} ${esc(n.label)}${n.dropdown_options?`<div>${renderTreeHTML(n.dropdown_options,depth+1)}</div>`:` → <span class="leaf">${esc(n.value)}</span>`}</div>`).join('');
+}
+function downloadMasterJson(){
+  const blob=new Blob([JSON.stringify(buildMasterTree(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=masterSlug()+'-dropdown.json';a.click();
+  toast('content_blocks JSON downloaded');
+}
+function downloadCreds(){
+  const payload={institute:S.institute,location:S.location,board:S.board,type:S.pageType,
+    webhook:{url:S.webhookUrl,events:S.events},
+    pages:PUBLISHED.map(r=>({page:r.label,url:r.url,client_id:r.client_id,api_key:r.api_key,secret:r.secret}))};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=slugify(S.institute+' '+S.location)+'-credentials.json';a.click();
+  toast('Credentials downloaded — share with the ERP team');
+}
+
+renderWizard(); paintLeft();
+</script>
+</body>
+</html>
