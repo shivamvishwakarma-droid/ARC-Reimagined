@@ -439,21 +439,17 @@ function expiryFor(page,cls){ if(page.perLinkExpiry && page.classExpiry[cls]!==u
 /* ---- dynamic step list ---- */
 function steps(){
   if(S.pageType==='MASTER') return [
-    {k:'type',lb:'Page Type'},{k:'inst',lb:'Institute'},{k:'master',lb:'Dropdown'},{k:'look',lb:'Page Look'},{k:'review',lb:'Review'}];
-  let base=[
-    {k:'type', lb:'Page Type'},
-    {k:'inst', lb:'Institute'},
-    {k:'pages',lb:'Pages'},
-    {k:'fees', lb:'Fees'},
-    {k:'cards',lb:'Payment Options'},
-    {k:'look', lb: S.pageType==='ERP'?'Page Look':'Page & Form'},
-    {k:'set',  lb:'Settings'},
+    {k:'setup',lb:'Setup'},{k:'build',lb:'Dropdown'},{k:'finish',lb:'Page Look'},{k:'review',lb:'Review'}];
+  return [
+    {k:'setup', lb:'Setup'},
+    {k:'build', lb:'Fees & Payment'},
+    {k:'finish',lb:'Page Setup'},
+    {k:'review',lb:'Review'},
   ];
-  if(S.pageType==='ERP') base.push({k:'hook',lb:'Webhook'});
-  base.push({k:'review',lb:'Review'});
-  return base;
 }
 const curKey=()=>steps()[S.step].k;
+// review "Edit" links reference old section keys → map them to the 4 new steps
+const OLD2NEW={inst:'setup',pages:'build',fees:'build',cards:'build',look:'finish',rcpt:'finish',set:'finish',hook:'finish',master:'build'};
 
 /* =================== PREVIEW drawer (on-demand) =================== */
 function togglePreview(open){
@@ -470,8 +466,8 @@ function paintLeft(){
   document.getElementById('url').textContent='https://rapid.grayquest.com/'+(pageSlug(pg,cls)||'…');
   const tp=document.getElementById('typepill'); tp.className='pill '+(S.pageType==='ERP'?'erp':'fms'); tp.textContent=S.pageType==='ERP'?'ERP · institute-wide':'FMS · per class';
   const p=document.getElementById('page');
-  if(curKey()==='type'){
-    p.innerHTML=`<div class="empty-note">👋 Pick a page type on the right.<br>The live payment page — exactly as a parent will see it — builds here as you go.</div>`; return;
+  if(curKey()==='setup'){
+    p.innerHTML=`<div class="empty-note">👋 Choose a page type & institute on the right.<br>The live payment page — exactly as a parent will see it — builds here as you go.</div>`; return;
   }
   if(S.pageType==='MASTER'){ paintMaster(); return; }
   const dots=`<div class="dots l">${'<i></i>'.repeat(9)}</div><div class="dots r">${'<i></i>'.repeat(11)}</div>`;
@@ -574,11 +570,40 @@ function pageBar(){
 }
 function renderWizard(){
   document.getElementById('wzsub').textContent = S.pageType==='ERP'?'ERP page · GILE level · webhook':(S.pageType==='MASTER'?'Master link · routes to pages':'FMS page · per class');
-  const map={type:sType,inst:sInst,pages:sPages,fees:sFees,cards:sCards,look:sLook,set:sSet,hook:sHook,master:sMaster,review:sReview};
-  const k=curKey();
-  const bar = (S.pageType!=='MASTER' && ['fees','cards','look','set'].includes(k)) ? pageBar() : '';
-  document.getElementById('wzbody').innerHTML=bar+map[k]();
+  const map={setup:sSetup, build:sBuild, finish:sFinish, review:sReview};
+  document.getElementById('wzbody').innerHTML=map[curKey()]();
   renderFoot(); renderStepper();
+}
+/* ---- the 4 composed steps ---- */
+function sSetup(){ return sType() + `<div style="height:6px"></div>` + sInst(); }
+function sBuild(){
+  if(S.pageType==='MASTER') return sMaster();
+  return pagesStrip() + sFees() + `<div style="height:4px"></div>` + sCards();
+}
+function sFinish(){
+  if(S.pageType==='MASTER') return sLook();
+  return pageBar() + sLook() + sSet() + (S.pageType==='ERP'?sHook():'');
+}
+function pagesStrip(){
+  const cls=primaryClass();
+  return `<div class="pagebar" style="flex-wrap:wrap;gap:8px">
+      <span style="font-weight:600">Pages:</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${S.pages.map((p,i)=>`<div class="ptab ${i===S.activePage?'on':''}" onclick="S.activePage=${i};S.rev='';paintLeft();renderWizard()">${esc(p.name)}</div>`).join('')}
+        <div class="ptab add" onclick="addPage()">+ Add page</div>
+      </div>
+    </div>
+    <div class="cardbox" style="padding:12px 14px;margin-bottom:16px">
+      <div class="row2">
+        <div class="fld" style="margin:0"><label>Page name</label><input class="in" value="${esc(P().name)}" oninput="P().name=this.value" onchange="renderWizard()"></div>
+        <div class="fld" style="margin:0"><label>URL suffix</label><input class="in" value="${esc(P().suffix)}" oninput="P().suffix=this.value" onchange="renderWizard()"></div>
+      </div>
+      <div class="pr-slug" style="margin-top:8px">rapid.grayquest.com/${esc(pageSlug(P(),cls))}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btnmini" onclick="clonePage(S.activePage)">Duplicate page</button>
+        ${S.pages.length>1?`<button class="btnmini d" onclick="removePage(S.activePage)">Remove this page</button>`:''}
+      </div>
+    </div>`;
 }
 
 function sType(){return `
@@ -925,7 +950,7 @@ function sHook(){return `
 
 function sReview(){
   const cls=primaryClass();
-  const rev=(k,title,body,jumpK)=>{const idx=steps().findIndex(s=>s.k===(jumpK||k));return `<div class="rev ${S.rev===k?'open':''}"><div class="rh" onclick="S.rev=S.rev==='${k}'?'':'${k}';renderWizard()">
+  const rev=(k,title,body,jumpK)=>{const tk=jumpK||k; const idx=steps().findIndex(s=>s.k===(OLD2NEW[tk]||tk));return `<div class="rev ${S.rev===k?'open':''}"><div class="rh" onclick="S.rev=S.rev==='${k}'?'':'${k}';renderWizard()">
     <span class="t">${title}</span><span><span class="edit" onclick="event.stopPropagation();S.step=${idx};syncPreview();renderWizard();paintLeft()">✎ Edit</span><span class="cr">⌄</span></span></div>
     <div class="rb"><div class="card">${body}</div></div></div>`;};
   const kv=(k,v)=>`<div class="kv"><div class="k">${k}</div><div class="v">${esc(v)||'—'}</div></div>`;
@@ -978,7 +1003,7 @@ function createMasterFromLinks(){
   }
   S.master.sel=[]; S.master.pageTitle=S.institute+', '+S.location;
   S.pageType='MASTER';
-  S.step = steps().findIndex(s=>s.k==='master');   // jump to the dropdown step
+  S.step = steps().findIndex(s=>s.k==='build');   // jump to the dropdown step
   renderWizard(); paintLeft();
   toast('Master seeded from your '+S.master.rows.length+' links — review & publish');
 }
@@ -1002,21 +1027,32 @@ function toggleEvent(e){const i=S.events.indexOf(e);i<0?S.events.push(e):S.event
 /* ---- gating ---- */
 function stepOk(){
   const k=curKey();
-  if(k==='inst') return !!(S.institute.trim()&&S.location.trim()&&(S.pageType!=='FMS'||S.classes.length));
-  if(k==='master') return S.master.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='').length>0;
-  if(k==='look') return S.pageType==='MASTER' ? !!effMasterTitle().trim() : !!effTitle(P()).trim();
-  if(k==='pages'){ const sl=S.pages.map(p=>slugify(p.suffix)); return S.pages.every(p=>p.name.trim()) && new Set(sl).size===sl.length; }
-  if(k==='fees') return P().fees.length>0 && P().fees.every(f=>f.name.trim());
-  if(k==='cards') return P().cards.length>0 && P().cards.every(c=>{
+  if(k==='setup'){
+    const instOk = !!(S.institute.trim()&&S.location.trim()&&(S.pageType!=='FMS'||S.classes.length));
+    return instOk;
+  }
+  if(k==='build'){
+    if(S.pageType==='MASTER') return S.master.rows.filter(r=>r.cells.every(c=>(c||'').trim()!=='')&&(r.link||'').trim()!=='').length>0;
+    const slugs=S.pages.map(p=>slugify(p.suffix));
+    const pagesOk = S.pages.every(p=>p.name.trim()) && new Set(slugs).size===slugs.length;
+    const feesOk = P().fees.length>0 && P().fees.every(f=>f.name.trim());
+    const cardsOk = P().cards.length>0 && P().cards.every(c=>{
       if(!c.title.trim()||!c.feeIdx.length) return false;
       if(c.mode==='AUTO-DEBIT') return c.feeIdx.every(i=>c.schedule&&c.schedule[i]&&c.schedule[i].dueDate);
       return true;});
-  if(k==='hook') return !!S.webhookUrl.trim();
+    return pagesOk && feesOk && cardsOk;
+  }
+  if(k==='finish'){
+    const titleOk = S.pageType==='MASTER' ? !!effMasterTitle().trim() : !!effTitle(P()).trim();
+    const hookOk = S.pageType==='ERP' ? !!S.webhookUrl.trim() : true;
+    return titleOk && hookOk;
+  }
   return true;
 }
 function phaseOf(k){
-  if(['type','inst','pages'].includes(k)) return 'Setup';
-  if(['fees','cards','look','master'].includes(k)) return 'Build';
+  if(k==='setup') return 'Setup';
+  if(k==='build') return 'Build';
+  if(k==='finish') return 'Finish';
   return 'Publish';
 }
 function renderFoot(){
@@ -1027,7 +1063,7 @@ function renderFoot(){
      <button class="btn g" id="nextBtn" ${stepOk()?'':'disabled'} onclick="${last?'publish()':'go(1)'}">${last?'Publish →':'Continue'}</button></span>`;
 }
 function gate(){const n=document.getElementById('nextBtn');if(n)n.disabled=!stepOk();}
-function syncPreview(){const k=curKey();if(k==='cards')S.previewPage='payment';else if(k==='form'||k==='inst'||k==='look'||k==='pages')S.previewPage='details';}
+function syncPreview(){const k=curKey();if(k==='build'&&S.pageType!=='MASTER')S.previewPage='payment';else S.previewPage='details';}
 function go(d){if(d>0&&!stepOk())return;S.step=Math.max(0,Math.min(steps().length-1,S.step+d));syncPreview();renderWizard();paintLeft();document.getElementById('wzbody').scrollTop=0;}
 function renderStepper(){
   document.getElementById('stepper').innerHTML=steps().map((s,i)=>`<div class="stp ${i<S.step?'done':''} ${i===S.step?'cur':''}"><div class="line"></div><div class="dot">${i<S.step?'✓':''}</div><div class="lb">${s.lb}</div></div>`).join('');
