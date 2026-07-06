@@ -102,6 +102,7 @@
   .wz-body{flex:1;overflow-y:auto;padding:24px 32px 22px;max-width:880px;width:100%;margin:0 auto}
   .wz-h{font-size:20px;font-weight:700;margin:0 0 6px}
   .wz-desc{font-size:13px;color:var(--muted);margin:0 0 18px;line-height:1.5}
+  .secdiv{font-size:16px;font-weight:700;margin:26px 0 12px;padding-top:20px;border-top:1px solid var(--line)}
   .fld{margin-bottom:18px}
   .fld > label{font-size:14px;font-weight:500;color:#3a3a46;display:block;margin-bottom:8px}
   .fld > label .rq{color:var(--red)}
@@ -416,12 +417,9 @@ function steps(){
     {k:'pages',lb:'Pages'},
     {k:'fees', lb:'Fees'},
     {k:'cards',lb:'Payment Options'},
-    {k:'form', lb:'Form'},
-    {k:'look', lb:'Page Look'},
-    {k:'rcpt', lb:'Fee Receipt'},
+    {k:'look', lb: S.pageType==='ERP'?'Page Look':'Page & Form'},
     {k:'set',  lb:'Settings'},
   ];
-  if(S.pageType==='ERP') base=base.filter(s=>s.k!=='form');   // ERP: student details come from the ERP — no form
   if(S.pageType==='ERP') base.push({k:'hook',lb:'Webhook'});
   base.push({k:'review',lb:'Review'});
   return base;
@@ -538,9 +536,9 @@ function pageBar(){
 }
 function renderWizard(){
   document.getElementById('wzsub').textContent = S.pageType==='ERP'?'ERP page · GILE level · webhook':'FMS page · per class';
-  const map={type:sType,inst:sInst,pages:sPages,fees:sFees,cards:sCards,form:sForm,look:sLook,rcpt:sReceipt,set:sSet,hook:sHook,master:sMaster,review:sReview};
+  const map={type:sType,inst:sInst,pages:sPages,fees:sFees,cards:sCards,look:sLook,set:sSet,hook:sHook,master:sMaster,review:sReview};
   const k=curKey();
-  const bar = (S.pageType!=='MASTER' && ['fees','cards','form','look','set'].includes(k)) ? pageBar() : '';
+  const bar = (S.pageType!=='MASTER' && ['fees','cards','look','set'].includes(k)) ? pageBar() : '';
   document.getElementById('wzbody').innerHTML=bar+map[k]();
   renderFoot(); renderStepper();
 }
@@ -735,9 +733,9 @@ function cardEditor(pg,c,ci){
     </div>
   </div>`;}
 
-function sForm(){const pg=P();return `
-  <div class="wz-h">What should parents fill in?</div>
-  <div class="wz-desc">Standard fields are ready. Turn on what you need; add custom fields for anything extra.</div>
+function formSection(){const pg=P();return `
+  <div class="secdiv">Student form</div>
+  <div class="wz-desc">What parents fill in. Turn on what you need; add custom fields for extras.</div>
   ${pg.fields.map((f,i)=>`<div class="cardbox" style="padding:12px 14px;margin-bottom:10px">
     <div style="display:flex;align-items:center;gap:10px">
       <span class="tgl ${f.enabled||f.primary?'on':''}" onclick="${f.primary?'':`P().fields[${i}].enabled=!P().fields[${i}].enabled;paintLeft();renderWizard()`}" ${f.primary?'style="opacity:.5;cursor:not-allowed"':''}></span>
@@ -774,9 +772,10 @@ function sLook(){
   <div class="fld"><label>Page subtitle</label><input class="in" value="${esc(pg.pageSubtitle)}" oninput="P().pageSubtitle=this.value;paintLeft()"></div>
   <div class="tglrow"><span class="tgl ${pg.banner.on?'on':''}" onclick="P().banner.on=!P().banner.on;paintLeft();renderWizard()"></span> Show an "About the school" banner</div>
   ${pg.banner.on?`<div class="fld"><label>Banner title</label><input class="in" value="${esc(pg.banner.title)}" oninput="P().banner.title=this.value;paintLeft()"></div>
-    <div class="fld"><label>Banner text</label><input class="in" value="${esc(pg.banner.desc)}" oninput="P().banner.desc=this.value;paintLeft()"></div>`:''}`;}
+    <div class="fld"><label>Banner text</label><input class="in" value="${esc(pg.banner.desc)}" oninput="P().banner.desc=this.value;paintLeft()"></div>`:''}
+  ${S.pageType==='FMS'?formSection():''}`;}
 
-function sReceipt(){
+function receiptSection(){
   const r=S.receipt; const multi = S.pageType==='FMS' && S.classes.length>1;
   const upl=(key,label)=>{const fn=r.files[key];return `<div class="upl">
       <span class="ic">🧾</span>
@@ -785,7 +784,7 @@ function sReceipt(){
           :`<button class="btnmini p" onclick="rcptPick('${key}')">Upload</button>`}
     </div>`;};
   return `
-  <div class="wz-h">Fee receipt</div>
+  <div class="secdiv">Fee receipt</div>
   <div class="wz-desc">Upload the fee receipt / acknowledgement format the parent gets after paying. ${multi?'Use one receipt for all classes, or a different one per class.':'One receipt for this page.'}</div>
   ${multi?`<div class="radios" style="margin-bottom:16px">
       <div class="radio ${r.mode==='single'?'on':''}" onclick="S.receipt.mode='single';renderWizard()">Single for all classes<small>same receipt everywhere</small></div>
@@ -820,7 +819,8 @@ function sSet(){
     ${expiryUI}</div>
   <div class="tglrow"><span class="tgl ${pg.allowCheckbox?'on':''}" onclick="P().allowCheckbox=!P().allowCheckbox;renderWizard()"></span> Let parents tick which fees to pay</div>
   ${pg.allowCheckbox?`<div class="tglrow" style="margin-left:14px"><span class="tgl ${pg.singleSelect?'on':''}" onclick="P().singleSelect=!P().singleSelect;renderWizard()"></span> Only one fee at a time</div>`:''}
-  ${S.pageType==='ERP'?`<div class="tglrow"><span class="tgl ${pg.dynamicLink?'on':''}" onclick="P().dynamicLink=!P().dynamicLink;renderWizard()"></span> Dynamic link (fee data resolved per student at runtime)</div>`:''}`;}
+  ${S.pageType==='ERP'?`<div class="tglrow"><span class="tgl ${pg.dynamicLink?'on':''}" onclick="P().dynamicLink=!P().dynamicLink;renderWizard()"></span> Dynamic link (fee data resolved per student at runtime)</div>`:''}
+  ${receiptSection()}`;}
 
 function sHook(){return `
   <div class="wz-h">Connect the school's software</div>
@@ -831,7 +831,7 @@ function sHook(){return `
 
 function sReview(){
   const cls=primaryClass();
-  const rev=(k,title,body)=>{const idx=steps().findIndex(s=>s.k===k);return `<div class="rev ${S.rev===k?'open':''}"><div class="rh" onclick="S.rev=S.rev==='${k}'?'':'${k}';renderWizard()">
+  const rev=(k,title,body,jumpK)=>{const idx=steps().findIndex(s=>s.k===(jumpK||k));return `<div class="rev ${S.rev===k?'open':''}"><div class="rh" onclick="S.rev=S.rev==='${k}'?'':'${k}';renderWizard()">
     <span class="t">${title}</span><span><span class="edit" onclick="event.stopPropagation();S.step=${idx};syncPreview();renderWizard();paintLeft()">✎ Edit</span><span class="cr">⌄</span></span></div>
     <div class="rb"><div class="card">${body}</div></div></div>`;};
   const kv=(k,v)=>`<div class="kv"><div class="k">${k}</div><div class="v">${esc(v)||'—'}</div></div>`;
@@ -858,7 +858,7 @@ function sReview(){
     ${rev('pages','Pages ('+S.pages.length+')', pagesBody)}
     ${rev('fees','Fees · '+esc(P().name), P().fees.map(f=>kv(f.name,f.mode==='dynamic'?'Dynamic (parent enters)':rs(f.amount))).join(''))}
     ${rev('cards','Payment options · '+esc(P().name), P().cards.map(c=>kv(c.title,c.mode+' · '+c.feeIdx.map(i=>P().fees[i]?.name).filter(Boolean).join(', '))).join(''))}
-    ${(()=>{const r=S.receipt;const files=Object.entries(r.files).filter(([k,v])=>v);const body=r.mode==='perClass'&&S.classes.length>1?(files.length?files.map(([k,v])=>kv(k,v)).join(''):kv('Receipts','none uploaded')):kv('Receipt',(r.files['__all__']||'none')+(r.mode==='perClass'?'':' · all classes'));return rev('rcpt','Fee receipt',body);})()}
+    ${(()=>{const r=S.receipt;const files=Object.entries(r.files).filter(([k,v])=>v);const body=r.mode==='perClass'&&S.classes.length>1?(files.length?files.map(([k,v])=>kv(k,v)).join(''):kv('Receipts','none uploaded')):kv('Receipt',(r.files['__all__']||'none')+(r.mode==='perClass'?'':' · all classes'));return rev('rcpt','Fee receipt',body,'set');})()}
     ${S.pageType==='ERP'?rev('hook','Webhook', kv('URL',S.webhookUrl)+kv('Events',S.events.join(', '))):''}
     <div style="font-size:16px;font-weight:700;margin:20px 0 4px">Links & slugs</div>
     <div class="wz-desc" style="margin-bottom:10px">Edit any slug before publishing — each can differ.</div>
@@ -913,10 +913,15 @@ function stepOk(){
   if(k==='hook') return !!S.webhookUrl.trim();
   return true;
 }
+function phaseOf(k){
+  if(['type','inst','pages'].includes(k)) return 'Setup';
+  if(['fees','cards','look','master'].includes(k)) return 'Build';
+  return 'Publish';
+}
 function renderFoot(){
   const last=S.step===steps().length-1;
   document.getElementById('wzfoot').innerHTML=
-    `<span class="stepc">Step ${S.step+1} of ${steps().length} · ${steps()[S.step].lb}</span>
+    `<span class="stepc"><b style="color:var(--blue)">${phaseOf(curKey())}</b> · Step ${S.step+1} of ${steps().length} · ${steps()[S.step].lb}</span>
      <span style="display:flex;gap:12px">${S.step>0?`<button class="btn o" onclick="go(-1)">Back</button>`:''}
      <button class="btn g" id="nextBtn" ${stepOk()?'':'disabled'} onclick="${last?'publish()':'go(1)'}">${last?'Publish →':'Continue'}</button></span>`;
 }
