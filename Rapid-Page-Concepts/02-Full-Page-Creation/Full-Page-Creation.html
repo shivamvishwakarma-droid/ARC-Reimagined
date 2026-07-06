@@ -315,7 +315,7 @@ function mkFees(){return [
   {name:'Bus Fee',     mode:'fixed', amount:18000, dueDate:'', offClasses:[]},
   {name:'Transport Fee',mode:'fixed',amount:12000, dueDate:'', offClasses:[]},
 ];}
-function mkCard(o){return Object.assign({title:'',subtitle:'Pay via UPI, Credit/Debit Card or Net Banking',mode:'DIRECT',feeIdx:[],emiPlan:0,recommended:false,ribbon:'',showBreakup:true,editable:false,verifyMobile:true,info:'',expanded:false,schedule:{},advOpen:false,offClasses:[]},o);}
+function mkCard(o){return Object.assign({title:'',subtitle:'Pay via UPI, Credit/Debit Card or Net Banking',mode:'DIRECT',feeIdx:[],emiPlan:0,recommended:false,ribbon:'',showBreakup:true,editable:false,verifyMobile:true,info:'',expanded:false,schedule:{},advOpen:false,offClasses:[],titleEdited:false,subtitleEdited:false},o);}
 // per-class availability (deactivate a fee / card for specific classes)
 function multiClass(){ return S.pageType==='FMS' && S.classes.length>1; }
 function scopeLabel(off){ const bad=(off||[]).filter(c=>S.classes.includes(c)); return bad.length===0?'All classes':((S.classes.length-bad.length)+' of '+S.classes.length+' classes'); }
@@ -323,6 +323,8 @@ function feeOffFor(f,cls){ return (f.offClasses||[]).includes(cls); }
 function cardOffFor(c,cls){ return (c.offClasses||[]).includes(cls); }
 function toggleFeeClass(i,c){ const f=P().fees[i]; f.offClasses=f.offClasses||[]; const j=f.offClasses.indexOf(c); j<0?f.offClasses.push(c):f.offClasses.splice(j,1); paintLeft(); renderWizard(); }
 function toggleCardClass(ci,c){ const k=P().cards[ci]; k.offClasses=k.offClasses||[]; const j=k.offClasses.indexOf(c); j<0?k.offClasses.push(c):k.offClasses.splice(j,1); paintLeft(); renderWizard(); }
+const CARD_DEFAULTS={'EMI':{title:'Pay Fee via Monthly EMI',subtitle:'Pay in small, convenient monthly payments'},'DIRECT':{title:'Pay Fee via Payment Gateway',subtitle:'Pay via UPI, Credit/Debit Card or Net Banking'},'AUTO-DEBIT':{title:'Pay Fee via Auto-Debit (eNACH)',subtitle:'Fee will be auto-debited from your bank account as per the schedule'}};
+function setCardMode(ci,m){const c=P().cards[ci];c.mode=m;if(!c.titleEdited)c.title=CARD_DEFAULTS[m].title;if(!c.subtitleEdited)c.subtitle=CARD_DEFAULTS[m].subtitle;paintLeft();renderWizard();gate();}
 function mkPage(name,suffix,cards){return {
   name:name, suffix:suffix, fees:mkFees(), cards:cards,
   fields:JSON.parse(JSON.stringify(STD_FIELDS)), customFields:[],
@@ -777,11 +779,11 @@ function cardEditor(pg,c,ci){
     : `<div class="hint">DIRECT — one-time payment via Card / UPI / Netbanking. Gateway routing is handled automatically; nothing else to set here.</div>`;
   return `<div class="cardbox">
     <div class="cb-h">Payment Option ${ci+1}${pg.cards.length>1?`<span class="del" onclick="P().cards.splice(${ci},1);paintLeft();renderWizard();gate()">Remove</span>`:''}</div>
-    <div class="fld"><label>Title <span class="rq">*</span></label><input class="in" value="${esc(c.title)}" oninput="P().cards[${ci}].title=this.value;paintLeft();gate()"></div>
-    <div class="fld"><label>Subtitle</label><input class="in" value="${esc(c.subtitle)}" oninput="P().cards[${ci}].subtitle=this.value;paintLeft()"></div>
+    <div class="fld"><label>Title <span class="rq">*</span></label><input class="in" value="${esc(c.title)}" oninput="P().cards[${ci}].title=this.value;P().cards[${ci}].titleEdited=true;paintLeft();gate()"></div>
+    <div class="fld"><label>Subtitle</label><input class="in" value="${esc(c.subtitle)}" oninput="P().cards[${ci}].subtitle=this.value;P().cards[${ci}].subtitleEdited=true;paintLeft()"></div>
     <div class="fld"><label>How can they pay? <span class="rq">*</span></label>
       <div class="radios">
-        ${[['EMI','EMI','instalments'],['DIRECT','DIRECT','Card / UPI / Netbanking'],['AUTO-DEBIT','AUTO-DEBIT','eNACH']].map(([m,l,s])=>`<div class="radio ${c.mode===m?'on':''}" onclick="P().cards[${ci}].mode='${m}';paintLeft();renderWizard();gate()">${l}<small>${s}</small></div>`).join('')}
+        ${[['EMI','EMI','instalments'],['DIRECT','DIRECT','Card / UPI / Netbanking'],['AUTO-DEBIT','AUTO-DEBIT','eNACH']].map(([m,l,s])=>`<div class="radio ${c.mode===m?'on':''}" onclick="setCardMode(${ci},'${m}')">${l}<small>${s}</small></div>`).join('')}
       </div></div>
     <div class="fld"><label>Which fees does this cover? <span class="rq">*</span></label>
       <div class="feepick">${pg.fees.map((f,fi)=>`<div class="feetag ${c.feeIdx.includes(fi)?'on':''}" onclick="toggleCardFee(${ci},${fi})"><span class="b">${c.feeIdx.includes(fi)?'✓':''}</span>${esc(f.name||'fee '+(fi+1))}</div>`).join('')||'<span class="hint">Add fees first.</span>'}</div>
